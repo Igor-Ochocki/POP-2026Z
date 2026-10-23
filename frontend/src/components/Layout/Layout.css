@@ -7,7 +7,7 @@
 .layout__header {
   padding: 0.75rem 1.5rem;
   border-bottom: 1px solid var(--color-border);
-  background: var(--color-surface);
+  background: var(--color-text-secondary);
 }
 
 .layout__nav {
@@ -24,7 +24,7 @@
 }
 
 .layout__link.active {
-  color: var(--color-primary);
+  color: var(--color-text-primary);
   font-weight: 600;
 }
 

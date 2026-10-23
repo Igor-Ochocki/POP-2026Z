@@ -13,7 +13,7 @@ import './Calendar.css';
 interface CalendarProps {
   events: CalendarEvent[];
   onEventDetails?: (eventId: string) => void;
-  onDateClick?: (dateStr: string) => void; // nie wiem czy dni miesiąca będą klikalne ale może się przyda kiedyś
+  onDateClick?: (dateStr: string) => void;
 }
 
 export default function Calendar({
@@ -26,7 +26,6 @@ export default function Calendar({
       <FullCalendar
         plugins={[themePlugin, dayGridPlugin, interactionPlugin]}
         initialView='dayGridMonth'
-        initialDate={new Date().toISOString().split('T')[0]}
         locale={plLocale}
         firstDay={1}
         dayCellTopInnerClass='calendar-day-number'
@@ -49,7 +48,7 @@ export default function Calendar({
         }
         rowEventClass='calendar-event'
         eventClick={(info) => onEventDetails?.(info.event.id)}
-        dateClick={(info) => onDateClick?.(info.dateStr)} // i tu, i jeszcze w calendarpage.tsx jest
+        dateClick={(info) => onDateClick?.(info.dateStr)}
       />
     </div>
   );

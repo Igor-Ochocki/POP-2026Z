@@ -1,19 +1,19 @@
 .calendar {
   width: 100%;
   max-width: var(--calendar-max-width);
-  color: var(--color-text);
+  color: var(--color-text-primary);
 
-  --fc-classic-background: var(--color-dark-background);
+  --fc-classic-background: var(--color-bg);
   --fc-classic-border: #000000;
   --fc-classic-today: hsl(240, 6%, 26%);
   --fc-classic-muted: var(--color-btn-secondary);
-  --fc-classic-muted-foreground: var(--color-text);
+  --fc-classic-muted-foreground: var(--color-text-primary);
 
   --fc-classic-button: var(--color-btn-secondary);
   --fc-classic-button-border: var(--color-btn-secondary);
   --fc-classic-button-strong: var(--color-btn-primary);
   --fc-classic-button-strong-border: var(--color-btn-primary);
-  --fc-classic-button-foreground: var(--color-text);
+  --fc-classic-button-foreground: var(--color-text-primary);
 
   --fc-classic-primary: var(--color-accent);
   --fc-classic-primary-foreground: var(--color-btn-secondary);
@@ -27,7 +27,7 @@
 .calendar .calendar-title {
   font-size: 1.1rem;
   font-weight: 500;
-  color: var(--color-text);
+  color: var(--color-text-primary);
 }
 
 .calendar .calendar-button {
@@ -38,8 +38,8 @@
 /* nazwy dni tygodnia */
 .calendar .calendar-day-header,
 .calendar .calendar-day-header * {
-  background: var(--color-dark-background);
-  color: var(--color-text);
+  background: var(--color-bg);
+  color: var(--color-text-primary);
   font-size: 1.1rem;
   font-weight: 500;
 }
@@ -55,7 +55,7 @@
 
 /* numery dni */
 .calendar .calendar-day-number {
-  color: var(--color-text);
+  color: var(--color-text-primary);
   font-weight: 700;
   font-size: 1.1rem;
 }

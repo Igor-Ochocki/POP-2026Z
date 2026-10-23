@@ -8,7 +8,7 @@ export default function MainMenuPage() {
   return (
     <main className='main-menu'>
       <h1>Menu główne</h1>
-      <Button onClick={() => navigate('/kalendarz')}>Kalendarz ›</Button>
+      <Button onClick={() => navigate('/calendar')}>Kalendarz ›</Button>
     </main>
   );
 }
