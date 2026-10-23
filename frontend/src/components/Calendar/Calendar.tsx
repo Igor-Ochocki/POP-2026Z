@@ -1,4 +1,5 @@
 import FullCalendar from '@fullcalendar/react';
+import type { DayCellInfo } from '@fullcalendar/react';
 import themePlugin from '@fullcalendar/react/themes/classic';
 import dayGridPlugin from '@fullcalendar/react/daygrid';
 import interactionPlugin from '@fullcalendar/react/interaction';
@@ -14,6 +15,13 @@ interface CalendarProps {
   events: CalendarEvent[];
   onEventDetails?: (eventId: string) => void;
   onDateClick?: (dateStr: string) => void;
+}
+
+function getDayCellClass({ isOther, isToday }: DayCellInfo): string {
+  const classes = ['calendar-cell'];
+  if (isOther) classes.push('calendar-cell--other');
+  if (isToday) classes.push('calendar-cell--today');
+  return classes.join(' ');
 }
 
 export default function Calendar({
@@ -37,15 +45,7 @@ export default function Calendar({
         toolbarTitleClass='calendar-title'
         buttonClass='calendar-button'
         dayHeaderClass='calendar-day-header'
-        dayCellClass={(info) =>
-          [
-            'calendar-cell',
-            info.isOther && 'calendar-cell--other',
-            info.isToday && 'calendar-cell--today',
-          ]
-            .filter(Boolean)
-            .join(' ')
-        }
+        dayCellClass={getDayCellClass}
         rowEventClass='calendar-event'
         eventClick={(info) => onEventDetails?.(info.event.id)}
         dateClick={(info) => onDateClick?.(info.dateStr)}

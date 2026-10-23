@@ -1,6 +1,7 @@
 :root {
   --color-surface: #f5f5f7;
   --color-border: #d2d2d7;
+  --color-border-strong: #000000;
   --color-success: #2b8a3e;
   --color-error: #c92a2a;
 
