@@ -13,13 +13,13 @@ import './Calendar.css';
 interface CalendarProps {
   events: CalendarEvent[];
   onEventDetails?: (eventId: string) => void;
-  onDateClick?: (dateStr: string) => void;
+  onDateClick?: (dateStr: string) => void; // nie wiem czy dni miesiąca będą klikalne ale może się przyda kiedyś
 }
 
 export default function Calendar({
   events,
   onEventDetails,
-  onDateClick,
+  onDateClick, // to samo tu
 }: CalendarProps) {
   return (
     <div className='calendar'>
@@ -49,7 +49,7 @@ export default function Calendar({
         }
         rowEventClass='calendar-event'
         eventClick={(info) => onEventDetails?.(info.event.id)}
-        dateClick={(info) => onDateClick?.(info.dateStr)}
+        dateClick={(info) => onDateClick?.(info.dateStr)} // i tu, i jeszcze w calendarpage.tsx jest
       />
     </div>
   );

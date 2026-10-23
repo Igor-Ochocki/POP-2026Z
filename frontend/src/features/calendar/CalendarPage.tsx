@@ -24,7 +24,7 @@ export default function CalendarPage() {
       <Calendar
         events={mockEvents}
         onEventDetails={(id) => console.log('Szczegóły wydarzenia', id)}
-        onDateClick={(date) => console.log('Kliknięto dzień', date)}
+        onDateClick={(date) => console.log('Kliknięto dzień', date)} // nie wiem czy to będzie potrzebne
       />
 
       <div className='calendar-page__actions'>
