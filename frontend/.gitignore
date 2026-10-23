@@ -22,11 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-<<<<<<< HEAD
 
 # Env
 .env
 .env.*
 !.env.example
-=======
->>>>>>> 1951b33 (FE: init)

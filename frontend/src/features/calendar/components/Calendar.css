@@ -1,0 +1,88 @@
+.calendar {
+  width: 100%;
+  max-width: var(--calendar-max-width);
+  color: var(--color-text);
+
+  --fc-classic-background: var(--color-dark-background);
+  --fc-classic-border: #000000;
+  --fc-classic-today: hsl(240, 6%, 26%);
+  --fc-classic-muted: var(--color-btn-secondary);
+  --fc-classic-muted-foreground: var(--color-text);
+
+  --fc-classic-button: var(--color-btn-secondary);
+  --fc-classic-button-border: var(--color-btn-secondary);
+  --fc-classic-button-strong: var(--color-btn-primary);
+  --fc-classic-button-strong-border: var(--color-btn-primary);
+  --fc-classic-button-foreground: var(--color-text);
+
+  --fc-classic-primary: var(--color-accent);
+  --fc-classic-primary-foreground: var(--color-btn-secondary);
+}
+
+/* pasek nad kalendarzem */
+.calendar .calendar-toolbar {
+  margin-bottom: 12px;
+}
+
+.calendar .calendar-title {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.calendar .calendar-button {
+  border-radius: 999px;
+  padding: 8px 18px;
+}
+
+/* nazwy dni tygodnia */
+.calendar .calendar-day-header,
+.calendar .calendar-day-header * {
+  background: var(--color-dark-background);
+  color: var(--color-text);
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+/* kafelki dni z czarną ramką */
+.calendar .calendar-cell {
+  background: var(--color-btn-secondary);
+  border: 1px solid #000000;
+  border-top-width: 2px;
+  border-bottom-width: 2px;
+}
+
+/* numery dni */
+.calendar .calendar-day-number {
+  color: var(--color-text);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+/* dni z sąsiednich miesięcy */
+.calendar .calendar-cell--other {
+  opacity: 0.5;
+}
+
+/* dzisiejszy dzień */
+.calendar .calendar-cell--today {
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+}
+
+/* wydarzenia */
+.calendar .calendar-event,
+.calendar .calendar-event * {
+  color: var(--color-btn-secondary);
+}
+
+.calendar .calendar-event {
+  background: var(--color-accent);
+  border: none;
+  border-radius: 999px;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  cursor: pointer;
+  margin: 0 4px;
+}

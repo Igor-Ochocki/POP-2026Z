@@ -1,0 +1,19 @@
+.btn {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 20px;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background-color: var(--color-btn-primary);
+  color: black;
+}
+
+.btn-secondary {
+  background-color: var(--color-btn-secondary);
+}
+
+.btn:hover {
+  filter: brightness(1.15);
+}
