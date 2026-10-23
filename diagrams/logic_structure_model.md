@@ -24,40 +24,79 @@ package "View (React Components)" as V {
 }
 
 package "Presenter (App Logic - React Hooks)" as P {
-    component [GameDefinitionPresenter\n(useGameDefinition Hook)] as P_Definition
-    component [CalendarPresenter\n(useCalendar Hook)] as P_Calendar
+    component [GameDefinitionPresenter\n(useGameDefinition Hook)\nowns GameDefinitionViewModel] as P_Definition
+    component [CalendarPresenter\n(useCalendar Hook)\nowns CalendarViewModel] as P_Calendar
 
     P_Definition -up-( IV_Definition : <<binds state & events>>
     P_Calendar -up-( IV_Calendar : <<binds state & events>>
 }
 
-package "Model (FastApi Services)" as M {
-    component [GamesService\n(/api/v1/games)] as M_Games
-    component [ActionsService\n(/api/v1/actions)] as M_Actions
-    component [ScenariosService\n(/api/v1/scenarios)] as M_Scenarios
-    component [CalendarService\n(/api/v1/reservations)] as M_Calendar
+package "API Proxy (Axios)" as A {
+    component [apiClient\n(unified API facade)] as A_Client
+    component [gamesApi] as A_Games
+    component [actionsApi] as A_Actions
+    component [scenariosApi] as A_Scenarios
+    component [reservationsApi] as A_Reservations
+    component [httpClient\n(single Axios instance)] as A_Http
+
+    A_Client *-down- A_Games
+    A_Client *-down- A_Actions
+    A_Client *-down- A_Scenarios
+    A_Client *-down- A_Reservations
+
+    A_Games -down-> A_Http
+    A_Actions -down-> A_Http
+    A_Scenarios -down-> A_Http
+    A_Reservations -down-> A_Http
 }
 
-P_Definition -down-> M_Games : <<HTTP/REST>>\nPOST/PUT /api/v1/games
-P_Definition -down-> M_Actions : <<HTTP/REST>>\nPOST/GET /api/v1/actions
-P_Definition -down-> M_Scenarios : <<HTTP/REST>>\nPOST/GET /api/v1/scenarios
-P_Calendar -down-> M_Calendar : <<HTTP/REST>>\nPOST/GET /api/v1/reservations
+P_Definition -down-> A_Client : apiClient.games.*\napiClient.actions.*\napiClient.scenarios.*
+P_Calendar -down-> A_Client : apiClient.reservations.*
+
+package "Model (FastAPI)" as M {
+    component [GamesController\n(/api/v1/games)] as C_Games
+    component [ActionsController\n(/api/v1/actions)] as C_Actions
+    component [ScenariosController\n(/api/v1/scenarios)] as C_Scenarios
+    component [CalendarController\n(/api/v1/reservations)] as C_Calendar
+
+    component [GamesService] as M_Games
+    component [ActionsService] as M_Actions
+    component [ScenariosService] as M_Scenarios
+    component [CalendarService] as M_Calendar
+
+    C_Games -down-> M_Games
+    C_Actions -down-> M_Actions
+    C_Scenarios -down-> M_Scenarios
+    C_Calendar -down-> M_Calendar
+}
+
+A_Http -down-> C_Games : <<HTTP/REST>>\nPOST/PUT
+A_Http -down-> C_Actions : <<HTTP/REST>>\nPOST/GET
+A_Http -down-> C_Scenarios : <<HTTP/REST>>\nPOST/GET
+A_Http -down-> C_Calendar : <<HTTP/REST>>\nPOST/GET
 
 package "Data" as D {
     database [SQLite DBMS] as DB_Sqlite
 }
 
-M_Games -down-> DB_Sqlite : port: DB Access (SQL)
-M_Actions -down-> DB_Sqlite : port: DB Access (SQL)
-M_Scenarios -down-> DB_Sqlite : port: DB Access (SQL)
-M_Calendar -down-> DB_Sqlite : port: DB Access (SQL)
+M_Games -down-> DB_Sqlite : port: DB Access (SQLAlchemy ORM)
+M_Actions -down-> DB_Sqlite : port: DB Access (SQLAlchemy ORM)
+M_Scenarios -down-> DB_Sqlite : port: DB Access (SQLAlchemy ORM)
+M_Calendar -down-> DB_Sqlite : port: DB Access (SQLAlchemy ORM)
 
 V -[hidden]down-> P
-P -[hidden]down-> M
+P -[hidden]down-> A
+A -[hidden]down-> M
 M -[hidden]down-> D
 
 V_GameDefinition -[hidden]right-> V_Calendar
 P_Definition -[hidden]right-> P_Calendar
+A_Games -[hidden]right-> A_Actions
+A_Actions -[hidden]right-> A_Scenarios
+A_Scenarios -[hidden]right-> A_Reservations
+C_Games -[hidden]right-> C_Actions
+C_Actions -[hidden]right-> C_Scenarios
+C_Scenarios -[hidden]right-> C_Calendar
 M_Games -[hidden]right-> M_Actions
 M_Actions -[hidden]right-> M_Scenarios
 M_Scenarios -[hidden]right-> M_Calendar

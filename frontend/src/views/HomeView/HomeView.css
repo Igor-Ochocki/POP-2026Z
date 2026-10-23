@@ -1,0 +1,36 @@
+.home-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.home-view__status {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.home-view__ok {
+  color: var(--color-success);
+}
+
+.home-view__error {
+  color: var(--color-error);
+}
+
+.home-view__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-surface);
+  color: inherit;
+  cursor: pointer;
+}
+
+.home-view__button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

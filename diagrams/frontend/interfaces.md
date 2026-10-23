@@ -55,6 +55,13 @@ package "View Models & DTOs" {
         + basePrice: number
     }
 
+    class ScenarioDetailDTO <<DTO>> {
+        + scenarioId: string
+        + gameId: string
+        + tasks: TaskDTO[*]
+        + victoryConditions: string[*]
+    }
+
     class ReservationSummaryDTO <<DTO>> {
         + reservationId: string
         + slotId: string
@@ -90,7 +97,6 @@ package "View Models & DTOs" {
 
 package "View Actions" {
     interface IGameDefinitionActions {
-        + state: GameDefinitionViewModel
         + onSaveMetadata(metadata: GameMetadataDTO): void
         + onSaveDraft(): void
         + onSubmitForReview(): void
@@ -102,7 +108,6 @@ package "View Actions" {
     }
 
     interface ICalendarActions {
-        + state: CalendarViewModel
         + onOpenCalendar(gameId: string): void
         + onSelectTimeSlot(slotId: string): void
         + onConfirmReservation(participantCount: number): void
@@ -111,12 +116,74 @@ package "View Actions" {
     }
 }
 
-IGameDefinitionActions ..> GameDefinitionViewModel : presents
-ICalendarActions ..> CalendarViewModel : presents
+package "Presenters (React Hooks)" {
+    class useGameDefinition <<Hook>> {
+        - state: GameDefinitionViewModel <<useState>>
+        + useGameDefinition(): { state, actions: IGameDefinitionActions }
+    }
+
+    class useCalendar <<Hook>> {
+        - state: CalendarViewModel <<useState>>
+        + useCalendar(): { state, actions: ICalendarActions }
+    }
+}
+
+package "API Proxy (Axios)" {
+    class httpClient <<AxiosInstance>> {
+        + baseURL: string = VITE_API_URL + "/api/v1"
+        + interceptors
+    }
+
+    class apiClient <<Singleton>> {
+        + games: GamesApi
+        + actions: ActionsApi
+        + scenarios: ScenariosApi
+        + reservations: ReservationsApi
+    }
+
+    interface GamesApi {
+        + saveGame(metadata: GameMetadataDTO, asDraft: boolean): Promise<GameMetadataDTO>
+        + submitToReviewer(gameId: string): Promise<boolean>
+    }
+
+    interface ActionsApi {
+        + getActionTypes(): Promise<string[*]>
+        + createAction(action: ActionDTO): Promise<string>
+    }
+
+    interface ScenariosApi {
+        + loadScenario(gameId: string): Promise<ScenarioDetailDTO>
+        + addTask(scenarioId: string, task: TaskDTO): Promise<boolean>
+    }
+
+    interface ReservationsApi {
+        + getAvailableSlots(gameId: string, startDate: string, endDate: string): Promise<TimeSlotDTO[*]>
+        + createReservation(slotId: string, gameId: string, participantCount: number): Promise<ReservationSummaryDTO>
+        + markPaymentCompleted(reservationId: string): Promise<boolean>
+    }
+}
+
+useGameDefinition ..|> IGameDefinitionActions
+useCalendar ..|> ICalendarActions
+useGameDefinition *-- GameDefinitionViewModel : owns
+useCalendar *-- CalendarViewModel : owns
+
+useGameDefinition ..> apiClient : apiClient.games / actions / scenarios
+useCalendar ..> apiClient : apiClient.reservations
+
+apiClient *-- GamesApi
+apiClient *-- ActionsApi
+apiClient *-- ScenariosApi
+apiClient *-- ReservationsApi
+GamesApi ..> httpClient
+ActionsApi ..> httpClient
+ScenariosApi ..> httpClient
+ReservationsApi ..> httpClient
 
 GameDefinitionViewModel *-- GameMetadataDTO
 GameDefinitionViewModel *-- ActionDTO
 GameDefinitionViewModel *-- TaskDTO
+ScenarioDetailDTO *-- TaskDTO
 CalendarViewModel *-- TimeSlotDTO
 CalendarViewModel *-- ReservationSummaryDTO
 
