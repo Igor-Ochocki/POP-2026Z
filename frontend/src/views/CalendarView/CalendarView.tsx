@@ -1,12 +1,11 @@
-import { useNavigate } from 'react-router';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import Button from '@components/Button/Button';
 import Calendar from '@components/Calendar/Calendar';
-import { mockEvents } from './mocks';
+import { useCalendar } from '@hooks/useCalendar';
 import './CalendarView.css';
 
 export function CalendarView() {
-  const navigate = useNavigate();
+  const { state, actions } = useCalendar();
 
   return (
     <main className='calendar-page'>
@@ -15,23 +14,20 @@ export function CalendarView() {
         <Button
           className='calendar-page__back'
           aria-label='Powrót'
-          onClick={() => navigate('/')}
+          onClick={actions.onBack}
         >
           <ChevronLeftIcon fontSize='large' />
         </Button>
       </header>
 
       <Calendar
-        events={mockEvents}
-        onEventDetails={(id) => console.log('Szczegóły wydarzenia', id)}
-        onDateClick={(date) => console.log('Kliknięto dzień', date)}
+        events={state.events}
+        onEventDetails={actions.onEventDetails}
+        onDateClick={actions.onDateClick}
       />
 
       <div className='calendar-page__actions'>
-        <Button
-          variant='primary'
-          onClick={() => console.log('Dodaj wydarzenie')}
-        >
+        <Button variant='primary' onClick={actions.onAddEvent}>
           Dodaj wydarzenie
         </Button>
       </div>
