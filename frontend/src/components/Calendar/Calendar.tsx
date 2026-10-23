@@ -3,7 +3,7 @@ import themePlugin from '@fullcalendar/react/themes/classic';
 import dayGridPlugin from '@fullcalendar/react/daygrid';
 import interactionPlugin from '@fullcalendar/react/interaction';
 import plLocale from '@fullcalendar/react/locales/pl';
-import type { CalendarEvent } from '../types';
+import type { CalendarEvent } from '@app-types/calendar';
 
 import '@fullcalendar/react/skeleton.css';
 import '@fullcalendar/react/themes/classic/theme.css';

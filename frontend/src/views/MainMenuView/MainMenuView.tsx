@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router';
-import Button from '../../shared/components/button/Button';
-import './MainMenuPage.css';
+import Button from '@components/Button/Button';
+import './MainMenuView.css';
 
-export default function MainMenuPage() {
+export function MainMenuView() {
   const navigate = useNavigate();
 
   return (

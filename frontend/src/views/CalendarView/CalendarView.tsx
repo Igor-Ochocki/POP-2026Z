@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router';
-import Button from '../../shared/components/button/Button';
-import Calendar from './components/Calendar';
-import { mockEvents } from './mocks';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import './CalendarPage.css';
+import Button from '@components/Button/Button';
+import Calendar from '@components/Calendar/Calendar';
+import { mockEvents } from './mocks';
+import './CalendarView.css';
 
-export default function CalendarPage() {
+export function CalendarView() {
   const navigate = useNavigate();
 
   return (
