@@ -1,7 +1,7 @@
-import { createBrowserRouter } from 'react-router'
-import { Layout } from '@components/Layout/Layout'
-import { HomeView } from '@views/HomeView/HomeView'
-import { NotFoundView } from '@views/NotFoundView/NotFoundView'
+import { createBrowserRouter } from 'react-router';
+import { Layout } from '@components/Layout/Layout';
+import { HomeView } from '@views/HomeView/HomeView';
+import { NotFoundView } from '@views/NotFoundView/NotFoundView';
 
 export const router = createBrowserRouter([
   {
@@ -12,4 +12,4 @@ export const router = createBrowserRouter([
       { path: '*', element: <NotFoundView /> },
     ],
   },
-])
+]);
