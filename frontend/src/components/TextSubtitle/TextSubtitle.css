@@ -1,0 +1,4 @@
+.text-subtitle {
+  font: var(--font-subtitle);
+  color: var(--clr-text-dim);
+}

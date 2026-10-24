@@ -1,0 +1,40 @@
+.button {
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+}
+
+.button--primary {
+  font: var(--font-emph);
+  border-radius: 0.5rem;
+  background-color: var(--color-primary);
+  color: var(--color-surface);
+}
+
+.button--primary:hover {
+  background-color: var(--color-primary-dim);
+}
+
+.button--secondary {
+  font: var(--font-label);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border-radius: 100vw;
+}
+
+.button--secondary:hover {
+  background-color: var(--color-surface-light);
+}
+
+.button--danger {
+  font: var(--font-emph);
+  border-radius: 0.5rem;
+  background-color: var(--color-error);
+  color: var(--color-surface);
+}

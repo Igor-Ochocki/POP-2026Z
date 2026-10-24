@@ -1,0 +1,9 @@
+.table-cell {
+  border-bottom: 1px solid var(--color-surface-light);
+  padding: 0.25rem 0.5rem;
+  font: var(--font-label);
+}
+
+.table-cell--number {
+  text-align: right;
+}
