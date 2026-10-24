@@ -27,7 +27,7 @@
 }
 
 .subtitled-list-item__subtitle {
-  color: var(--clr-text-dim);
+  color: var(--color-text-dim);
   font: var(--font-subtitle);
   display: flex;
   align-items: center;

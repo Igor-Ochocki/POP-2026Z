@@ -11,7 +11,7 @@ export default function MenuItem({ label, image, onClick }: MenuItemProps) {
     <li>
       <button onClick={onClick} className='menu-item'>
         <span>{label}</span>
-        {image && image}
+        {image}
       </button>
     </li>
   );

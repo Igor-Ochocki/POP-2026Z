@@ -5,7 +5,7 @@ export interface TextAreaProps {
   value?: string;
   name?: string;
   placeholder?: string;
-  onchange?: (e: ChangeEvent<HTMLTextAreaElement>) => void;
+  onChange?: (e: ChangeEvent<HTMLTextAreaElement>) => void;
   error?: boolean;
 }
 
@@ -13,7 +13,7 @@ export default function TextArea({
   value,
   name,
   placeholder,
-  onchange,
+  onChange,
   error,
 }: TextAreaProps) {
   return (
@@ -22,7 +22,7 @@ export default function TextArea({
       value={value}
       name={name}
       placeholder={placeholder}
-      onChange={onchange}
+      onChange={onChange}
     />
   );
 }

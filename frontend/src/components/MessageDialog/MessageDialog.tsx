@@ -28,7 +28,12 @@ export default function MessageDialog({
   }, [open, dialog]);
 
   return (
-    <dialog className='message-dialog' ref={dialog}>
+    <dialog
+      className='message-dialog'
+      ref={dialog}
+      onClose={() => onClosed()}
+      closedby='any'
+    >
       <TextHeading level={2}>{title}</TextHeading>
       <TextLabel>{message}</TextLabel>
       <Button onClick={() => onClosed()}>Ok</Button>

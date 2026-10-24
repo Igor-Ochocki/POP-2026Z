@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 import '@components/Button/Button.css';
 import type { ButtonProps } from '@components/Button/Button';
 
-interface LinkButtonProps extends Pick<ButtonProps, "variant"> {
+interface LinkButtonProps extends Pick<ButtonProps, 'variant'> {
   children: React.ReactNode;
   to: string;
 }

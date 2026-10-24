@@ -31,7 +31,12 @@ export default function ConfirmDialog({
   }, [open, dialog]);
 
   return (
-    <dialog className='confirm-dialog' ref={dialog}>
+    <dialog
+      className='confirm-dialog'
+      onClose={() => onClosed(false)}
+      ref={dialog}
+      closedby='any'
+    >
       <TextHeading level={2}>{title}</TextHeading>
       <TextLabel>{message}</TextLabel>
       <ElementRow>

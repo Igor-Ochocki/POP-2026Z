@@ -11,7 +11,7 @@ export default function Button({
   children,
   variant = 'primary',
   onClick,
-  type,
+  type = 'button',
 }: ButtonProps) {
   return (
     <button

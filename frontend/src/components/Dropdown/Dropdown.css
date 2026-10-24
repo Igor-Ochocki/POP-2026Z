@@ -17,7 +17,8 @@
   border-color: var(--color-surface-light);
 }
 
-.dropdown--active, .dropdown--active:hover {
+.dropdown--active,
+.dropdown--active:hover {
   border-color: var(--color-primary);
   background-color: var(--color-surface-light);
 }
