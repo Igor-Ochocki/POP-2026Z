@@ -1,0 +1,11 @@
+.dropdown-field {
+  display: grid;
+  gap: 0.25rem;
+  position: relative;
+}
+
+.dropdown-field__menu {
+  position: absolute;
+  width: 100%;
+  top: 100%;
+}

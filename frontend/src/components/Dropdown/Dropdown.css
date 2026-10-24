@@ -1,0 +1,30 @@
+.dropdown {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-surface);
+  display: flex;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  color: var(--color-text);
+  font: var(--font-label);
+  gap: 0.5rem;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+
+.dropdown:hover {
+  background-color: var(--color-surface-light);
+  border-color: var(--color-surface-light);
+}
+
+.dropdown--active,
+.dropdown--active:hover {
+  border-color: var(--color-primary);
+  background-color: var(--color-surface-light);
+}
+
+.dropdown__icon {
+  display: grid;
+  place-items: center;
+  margin: -4px 0 -4px -2px;
+}
