@@ -68,4 +68,4 @@ NewTaskWindows .d.|> INewTaskWindows
 @enduml
 ```
 
-![](rendered/new-task-view.md)
+![](rendered/new-task-view.svg)

@@ -39,4 +39,4 @@ interface INewTaskWindows <<interface>> {
 @enduml
 ```
 
-![](rendered/new-task-presenter.md)
+![](rendered/new-task-presenter.svg)
