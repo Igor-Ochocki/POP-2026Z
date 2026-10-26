@@ -39,10 +39,8 @@ const initialState: GameDefinitionViewModel = {
 type SetState = React.Dispatch<React.SetStateAction<GameDefinitionViewModel>>;
 
 function parsePositiveInt(value: string): number | null {
-  const trimmed = value.trim();
-  if (!/^\d+$/.test(trimmed)) return null;
-  const parsed = Number(trimmed);
-  return parsed > 0 ? parsed : null;
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
 }
 
 function validateParameters(form: GameParametersForm): GameParametersErrors {
