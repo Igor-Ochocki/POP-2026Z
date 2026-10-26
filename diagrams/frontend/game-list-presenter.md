@@ -26,10 +26,16 @@ class useGameList {
     +onShowMore()
 }
 
+class GameListViewModel <<State>> {
+    +games: GameMetadataDTO[*]
+    +searchString: string
+    +filterTags: string[*]
+}
+
 useGameList -u-> IGameListWindows
 useGameList .|> IGameListActions
 useGameList -->  IGamesApi
-
+GameListViewModel *- useGameList
 
 @enduml
 ```
