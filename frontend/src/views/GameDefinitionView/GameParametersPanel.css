@@ -1,0 +1,25 @@
+.game-parameters-panel {
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+.game-parameters-panel__category {
+  max-width: 16rem;
+}
+
+.game-parameters-panel__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem 1rem;
+}
+
+.game-parameters-panel__footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 30rem) {
+  .game-parameters-panel__grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,23 @@
+.form-section {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.form-section + .form-section {
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--color-surface-lighter);
+}
+
+.form-section__header {
+  display: grid;
+  gap: 0.125rem;
+}
+
+.form-section__header .text-subheading {
+  color: var(--color-primary);
+}
+
+.form-section__content {
+  display: grid;
+  gap: 0.5rem;
+}

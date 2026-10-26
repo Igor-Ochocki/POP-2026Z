@@ -13,6 +13,23 @@
   --color-success: #2b8a3e;
   --color-error: #c92a2a;
 
+  --color-primary-soft: color-mix(
+    in srgb,
+    var(--color-primary) 15%,
+    transparent
+  );
+  --color-success-soft: color-mix(
+    in srgb,
+    var(--color-success) 15%,
+    transparent
+  );
+
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+
+  --transition-fast: 150ms ease;
+
   --font-family: Comme, sans-serif;
 
   --font-huge: 700 3.5rem var(--font-family);

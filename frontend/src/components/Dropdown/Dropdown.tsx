@@ -5,12 +5,21 @@ export interface DropdownProps {
   label: string;
   open: boolean;
   onToggleOpen: () => void;
+  error?: boolean;
 }
 
-export default function Dropdown({ label, open, onToggleOpen }: DropdownProps) {
+export default function Dropdown({
+  label,
+  open,
+  onToggleOpen,
+  error,
+}: DropdownProps) {
   return (
     <button
-      className={`dropdown ${open ? 'dropdown--active' : ''}`}
+      type='button'
+      className={`dropdown ${open ? 'dropdown--active' : ''} ${
+        error ? 'dropdown--error' : ''
+      }`}
       onClick={() => onToggleOpen()}
     >
       <div className='dropdown__icon'>
