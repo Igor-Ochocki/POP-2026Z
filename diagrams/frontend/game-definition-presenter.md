@@ -16,6 +16,8 @@ class useGameDefinition <<Hook>> {
     + onSaveMetadata()
     + onParametersSavedMessageDialogConfirm()
     + onIncorrectDataMessageDialogConfirm()
+    + onAddSensor()
+    + onEditScenario()
     + onSaveDraft()
     + onGameSavedMessageDialogConfirm()
     + onSubmitForReview()
@@ -32,6 +34,8 @@ interface IGameDefinitionActions <<interface>> {
     + onSaveMetadata()
     + onParametersSavedMessageDialogConfirm()
     + onIncorrectDataMessageDialogConfirm()
+    + onAddSensor()
+    + onEditScenario()
     + onSaveDraft()
     + onGameSavedMessageDialogConfirm()
     + onSubmitForReview()
@@ -45,6 +49,8 @@ interface IGameDefinitionWindows <<interface>> {
     + showGameListView()
     + showGameDefinitionView()
     + showGameParametersView()
+    + showSensorDefinitionView()
+    + showScenarioEditorView()
     + showParametersSavedMessageDialog()
     + showIncorrectDataMessageDialog(errors: GameParametersErrors)
     + showGameSavedMessageDialog()
@@ -80,11 +86,19 @@ enum GameDefinitionDialog {
 class GameParametersForm {
     + title: string
     + description: string
-    + category: string
     + minPlayers: string
     + maxPlayers: string
     + durationMinutes: string
     + requiresInvitation: boolean
+}
+
+enum GameCategory {
+    Fantasy
+    Science fiction
+    Historyczna
+    Kryminalna
+    Horror
+    Przygodowa
 }
 
 class GameMetadataDTO <<DTO>> {
@@ -107,6 +121,12 @@ useGameDefinition *-- "1" GameDefinitionViewModel : state
 GameDefinitionViewModel *-- "1" GameParametersForm : parametersForm
 GameDefinitionViewModel *-- "0..1" GameMetadataDTO : activeGame
 GamesApi ..> GameMetadataDTO
+GameParametersForm --> GameCategory : category
+
+note right of GameCategory
+    Ta sama lista ma być na backendzie.
+    Kategoria trafia do tags[0] w GameMetadataDTO.
+end note
 @enduml
 ```
 

@@ -16,10 +16,14 @@ class CreatorPanelView {
 }
 
 class GameListView
+class SensorDefinitionView
+class ScenarioEditorView
 
 class GameDefinitionView {
     + show(game: GameMetadataDTO | null, isSubmitting: boolean)
     + onEditParametersClick()
+    + onAddSensorClick()
+    + onEditScenarioClick()
     + onSaveAndSubmitClick()
     + onSaveClick()
     + onCancelClick()
@@ -54,6 +58,8 @@ interface IGameDefinitionActions <<interface>> {
     + onSaveMetadata()
     + onParametersSavedMessageDialogConfirm()
     + onIncorrectDataMessageDialogConfirm()
+    + onAddSensor()
+    + onEditScenario()
     + onSaveDraft()
     + onGameSavedMessageDialogConfirm()
     + onSubmitForReview()
@@ -75,6 +81,8 @@ interface IGameDefinitionWindows <<interface>> {
     + showGameListView()
     + showGameDefinitionView()
     + showGameParametersView()
+    + showSensorDefinitionView()
+    + showScenarioEditorView()
     + showParametersSavedMessageDialog()
     + showIncorrectDataMessageDialog(errors: GameParametersErrors)
     + showGameSavedMessageDialog()
@@ -87,6 +95,8 @@ class GameDefinitionWindows {
     + showGameListView()
     + showGameDefinitionView()
     + showGameParametersView()
+    + showSensorDefinitionView()
+    + showScenarioEditorView()
     + showParametersSavedMessageDialog()
     + showIncorrectDataMessageDialog(errors: GameParametersErrors)
     + showGameSavedMessageDialog()
@@ -100,6 +110,8 @@ GameDefinitionWindows --> CreatorPanelView
 GameDefinitionWindows --> GameListView
 GameDefinitionWindows --> GameDefinitionView
 GameDefinitionWindows --> GameParametersPanel
+GameDefinitionWindows --> SensorDefinitionView
+GameDefinitionWindows --> ScenarioEditorView
 GameDefinitionWindows --> ParametersSavedMessageDialog
 GameDefinitionWindows --> IncorrectDataMessageDialog
 GameDefinitionWindows --> GameSavedMessageDialog
@@ -115,10 +127,15 @@ note bottom of GameListView
 end note
 
 note right of GameDefinitionView
-    Przyciski "Edytuj scenariusz gry" (PU56),
-    "Edytuj mapę gry" (PU60), "Zdefiniuj akcję" (PU51)
-    i "Dodaj nowy czujnik" (PU50) są nieaktywne
-    do czasu implementacji tych przypadków użycia.
+    "Dodaj nowy czujnik" (scenariusz B, PU50)
+    i "Edytuj scenariusz gry" (scenariusz C, PU56)
+    oraz "Edytuj mapę gry" (PU60) i "Zdefiniuj akcję" (PU51)
+    są nieaktywne do czasu implementacji tych przypadków użycia.
+end note
+
+note bottom of SensorDefinitionView
+    Widoki z PU50 i PU56. Po ich zakończeniu
+    system wraca do GameDefinitionView.
 end note
 @enduml
 ```
