@@ -11,17 +11,17 @@ skinparam linetype polyline
 title PU49 Zdefiniowanie gry - presenter
 
 class useGameDefinition <<Hook>> {
-    - state: GameDefinitionViewModel <<useState>>
     + onEditParameters()
     + onChangeParameter(field: string, value: string | boolean)
     + onSaveMetadata()
+    + onParametersSavedMessageDialogConfirm()
+    + onIncorrectDataMessageDialogConfirm()
     + onSaveDraft()
+    + onGameSavedMessageDialogConfirm()
     + onSubmitForReview()
+    + onGameSubmittedMessageDialogConfirm()
+    + onSaveErrorMessageDialogConfirm()
     + onCancelGameCreation()
-    + onOpenScenarioEditor()
-    + onOpenMapEditor()
-    + onOpenActionDefinition()
-    + onCloseDialog()
     - validateParameters(form: GameParametersForm): GameParametersErrors
     - saveGame(asDraft: boolean)
 }
@@ -30,23 +30,51 @@ interface IGameDefinitionActions <<interface>> {
     + onEditParameters()
     + onChangeParameter(field: string, value: string | boolean)
     + onSaveMetadata()
+    + onParametersSavedMessageDialogConfirm()
+    + onIncorrectDataMessageDialogConfirm()
     + onSaveDraft()
+    + onGameSavedMessageDialogConfirm()
     + onSubmitForReview()
+    + onGameSubmittedMessageDialogConfirm()
+    + onSaveErrorMessageDialogConfirm()
     + onCancelGameCreation()
-    + onOpenScenarioEditor()
-    + onOpenMapEditor()
-    + onOpenActionDefinition()
-    + onCloseDialog()
+}
+
+interface IGameDefinitionWindows <<interface>> {
+    + showCreatorPanelView()
+    + showGameListView()
+    + showGameDefinitionView()
+    + showGameParametersView()
+    + showParametersSavedMessageDialog()
+    + showIncorrectDataMessageDialog(errors: GameParametersErrors)
+    + showGameSavedMessageDialog()
+    + showGameSubmittedMessageDialog()
+    + showSaveErrorMessageDialog()
+}
+
+interface GamesApi <<interface>> {
+    + saveGame(metadata: GameMetadataDTO, asDraft: boolean): Promise<GameMetadataDTO>
+    + submitToReviewer(gameId: string): Promise<boolean>
 }
 
 class GameDefinitionViewModel <<State>> {
-    + activePanel: "definition" | "parameters"
-    + activeGame: GameMetadataDTO | null
-    + parametersForm: GameParametersForm
+    + activePanel: GameDefinitionPanel
     + validationErrors: GameParametersErrors
-    + isDirty: boolean
     + isSubmitting: boolean
     + dialog: GameDefinitionDialog | null
+}
+
+enum GameDefinitionPanel {
+    definition
+    parameters
+}
+
+enum GameDefinitionDialog {
+    parametersSaved
+    incorrectData
+    gameSaved
+    gameSubmitted
+    saveError
 }
 
 class GameParametersForm {
@@ -57,13 +85,6 @@ class GameParametersForm {
     + maxPlayers: string
     + durationMinutes: string
     + requiresInvitation: boolean
-}
-
-class GameDefinitionDialog {
-    + title: string
-    + message: string
-    + redirectTo: string | null
-    + returnToDefinition: boolean
 }
 
 class GameMetadataDTO <<DTO>> {
@@ -78,18 +99,13 @@ class GameMetadataDTO <<DTO>> {
     + status: string
 }
 
-interface GamesApi <<interface>> {
-    + saveGame(metadata: GameMetadataDTO, asDraft: boolean): Promise<GameMetadataDTO>
-    + submitToReviewer(gameId: string): Promise<boolean>
-}
-
 useGameDefinition .u.|> IGameDefinitionActions
-useGameDefinition *-- GameDefinitionViewModel : owns
+useGameDefinition -u-> IGameDefinitionWindows
 useGameDefinition --> GamesApi : apiClient.games
+useGameDefinition *-- "1" GameDefinitionViewModel : state
 
-GameDefinitionViewModel *-- GameParametersForm
-GameDefinitionViewModel *-- GameDefinitionDialog
-GameDefinitionViewModel *-- GameMetadataDTO
+GameDefinitionViewModel *-- "1" GameParametersForm : parametersForm
+GameDefinitionViewModel *-- "0..1" GameMetadataDTO : activeGame
 GamesApi ..> GameMetadataDTO
 @enduml
 ```
