@@ -3,8 +3,8 @@
 class useNewTask {
     onSubmitNewTask(task :TaskDTO)
     onCancelNewTask()
-    onConfirmCancelNewTask()
-    onCancelCancelNewTask()
+    onCancelNewTaskConfirm()
+    onCancelNewTaskCancel()
     onNewTaskSuccessMessageDialogConfirm()
     onIncorrectDataMessageDialogConfirm()
     onConflictMessageDialogConfirm()
@@ -13,8 +13,8 @@ class useNewTask {
 interface INewTaskActions <<interface>> {
     onSubmitNewTask(task :TaskDTO)
     onCancelNewTask()
-    onConfirmCancelNewTask()
-    onCancelCancelNewTask()
+    onCancelNewTaskConfirm()
+    onCancelNewTaskCancel()
     onNewTaskSuccessMessageDialogConfirm()
     onIncorrectDataMessageDialogConfirm()
     onConflictMessageDialogConfirm()
@@ -31,7 +31,7 @@ interface IGamesApi <<interface>> {
 
 interface INewTaskWindows <<interface>> {
     showNewTaskView()
-    showNewTaskCancelConfirmationDialog()
+    showCancelNewTaskConfirmationDialog()
     showConflictMessageDialog()
     showIncorrectDataMessageDialog()
     showNewTaskSuccessMessageDialog()
