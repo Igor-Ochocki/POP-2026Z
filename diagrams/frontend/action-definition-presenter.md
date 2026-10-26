@@ -1,5 +1,5 @@
 <div hidden>
-
+  
 ```
 @startuml
 title PU51 Zdefiniowanie akcji - prezenter
