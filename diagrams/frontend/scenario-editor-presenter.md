@@ -40,24 +40,10 @@ class ScenarioEditorViewModel <<State>> {
     + scenario: ScenarioDetailDTO | null
 }
 
-class GameMetadataDTO <<DTO>>
-class ScenarioDetailDTO <<DTO>> {
-    + scenarioId: string
-    + gameId: string
-    + tasks: TaskDTO[*]
-    + victoryConditions: string[*]
-}
-class TaskDTO <<DTO>>
-
 useScenarioEditor .u.|> IScenarioEditorActions
 useScenarioEditor -u-> IScenarioEditorWindows
 useScenarioEditor --> ScenariosApi : apiClient.scenarios
 useScenarioEditor *-- "1" ScenarioEditorViewModel : state
-
-ScenarioEditorViewModel --> GameMetadataDTO
-ScenarioEditorViewModel --> ScenarioDetailDTO
-ScenarioDetailDTO *-- "*" TaskDTO
-ScenariosApi ..> ScenarioDetailDTO
 
 note bottom of useScenarioEditor
     onOpenScenarioEditor wczytuje scenariusz przez loadScenario(gameId),
@@ -68,7 +54,7 @@ end note
 note right of ScenarioEditorViewModel
     activeGame pochodzi ze stanu PU49
     (GameDefinitionViewModel.activeGame).
-    Pełne pola DTO: interfaces.md.
+    Typy DTO (GameMetadataDTO, ScenarioDetailDTO, TaskDTO): interfaces.md.
 end note
 @enduml
 ```
