@@ -1,3 +1,6 @@
+<div>
+
+```
 @startuml
 title PU51 Zdefiniowanie akcji - widok
 
@@ -74,3 +77,6 @@ GameDefinitionView ..> ActionFormView : Zdefiniuj akcję
 
 
 @enduml
+```
+<\div>
+![](rendered/action-definition-view.svg)
