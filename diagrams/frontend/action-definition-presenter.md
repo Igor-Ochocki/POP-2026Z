@@ -120,5 +120,5 @@ ActionDto ..> EffectKind
 
 @enduml
 ```
-</div>
+<\div>
 ![](rendered/action-definition-presenter.svg)
