@@ -1,6 +1,7 @@
 <div hidden>
 
 ```
+
 @startuml reservation-view
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
@@ -8,116 +9,111 @@ skinparam shadowing false
 skinparam roundcorner 4
 skinparam linetype polyline
 
-title PU2 Rezerwacja czasu dla gry - widok
+title PU2 - Game Time Reservation - View
 
-class CalendarView
+class CalendarView <<External PU1>>
 
 class ReservationView {
-    + show(slot: TimeSlotDTO, reservation: ReservationSummaryDTO | null, isConfirmationDialogOpen: boolean, errorMessage: string)
+    +render()
 }
 
 class ReservationFormPanel {
-    + show(slot: TimeSlotDTO)
-    + onParticipantCountChange(participantCount: number)
-    + onConfirmReservationClick()
-    + onCancelClick()
+    +onGameChange(gameId: string)
+    +onTimeSlotChange(slotId: string)
+    +onParticipantCountChange(participantCount: number)
+    +onSubmitReservationClick()
+    +onCancelClick()
 }
 
 class ReservationConfirmDialog {
-    + show(reservation: ReservationSummaryDTO)
-    + onConfirmClick()
-    + onCancelClick()
+    +onConfirmClick()
+    +onCancelClick()
 }
 
 class PaymentPanel {
-    + show(reservation: ReservationSummaryDTO)
-    + onPayClick()
+    +onPayClick()
+    +onPayLaterClick()
 }
 
 class MessageDialog {
-    + show(title: string, message: string)
-    + onOkClick()
+    +onOkClick()
 }
 
-class ReservationCompletedMessageDialog
+class PaymentCompletedMessageDialog
 class SlotUnavailableMessageDialog
 
-ReservationCompletedMessageDialog -u-|> MessageDialog
+PaymentCompletedMessageDialog -u-|> MessageDialog
 SlotUnavailableMessageDialog -u-|> MessageDialog
 
-ReservationView *-- ReservationFormPanel
-ReservationView *-- ReservationConfirmDialog
-ReservationView *-- PaymentPanel
-ReservationView *-- ReservationCompletedMessageDialog
-ReservationView *-- SlotUnavailableMessageDialog
-
 interface ICalendarActions <<interface>> {
-    + onReserveEventClick()
-    + onSelectTimeSlot(slotId: string)
-    + onParticipantCountChange(participantCount: number)
-    + onConfirmReservation(participantCount: number)
-    + onCancelReservation()
-    + onProceedToPayment(reservationId: string)
-    + onPay()
-    + onPaymentCompletedMessageDialogConfirm()
-    + onSlotUnavailableMessageDialogConfirm()
+    +onReserveEventClick()
+    +onSelectTimeSlot(slotId: string)
+    +onParticipantCountChange(participantCount: number)
+    +onConfirmReservation()
+    +onCancelReservation()
+    +onProceedToPayment()
+    +onPay()
+    +onPayLater()
+    +onPaymentCompletedMessageDialogConfirm()
+    +onSlotUnavailableMessageDialogConfirm()
 }
 
-ICalendarActions <-u- ReservationFormPanel
-ICalendarActions <-u- ReservationConfirmDialog
-ICalendarActions <-u- PaymentPanel
-ICalendarActions <-u- ReservationCompletedMessageDialog
-ICalendarActions <-u- SlotUnavailableMessageDialog
-
 interface ICalendarWindows <<interface>> {
-    + showReservationView(slot: TimeSlotDTO)
-    + showReservationConfirmDialog(reservation: ReservationSummaryDTO)
-    + showPaymentView(reservation: ReservationSummaryDTO)
-    + showPaymentCompletedMessageDialog()
-    + showSlotUnavailableMessageDialog()
+    +showReservationView()
+    +showReservationConfirmDialog()
+    +showPaymentView()
+    +showPaymentCompletedMessageDialog()
+    +showSlotUnavailableMessageDialog()
 }
 
 class CalendarWindows {
-    + showReservationView(slot: TimeSlotDTO)
-    + showReservationConfirmDialog(reservation: ReservationSummaryDTO)
-    + showPaymentView(reservation: ReservationSummaryDTO)
-    + showPaymentCompletedMessageDialog()
-    + showSlotUnavailableMessageDialog()
+    +showReservationView()
+    +showReservationConfirmDialog()
+    +showPaymentView()
+    +showPaymentCompletedMessageDialog()
+    +showSlotUnavailableMessageDialog()
 }
 
 CalendarWindows .u.|> ICalendarWindows
-CalendarWindows -u-> ReservationView
+CalendarWindows --> ReservationView : displays
 
-CalendarView ..> ReservationView : "Rezerwuj" przy wydarzeniu
-CalendarView ..> ReservationView : wybór kafelka wolnego terminu
+CalendarView ..> ReservationView : opens from reserve button
+CalendarView ..> ReservationView : opens from calendar slot
+
+ReservationView *-- ReservationFormPanel : contains
+ReservationView -- ReservationConfirmDialog : displays
+ReservationView -- PaymentPanel : displays
+ReservationView -- PaymentCompletedMessageDialog : displays
+ReservationView -- SlotUnavailableMessageDialog : displays
+
+ReservationFormPanel ..> ICalendarActions : dispatches actions
+ReservationConfirmDialog ..> ICalendarActions : dispatches actions
+PaymentPanel ..> ICalendarActions : dispatches actions
+PaymentCompletedMessageDialog ..> ICalendarActions : dispatches actions
+SlotUnavailableMessageDialog ..> ICalendarActions : dispatches actions
+
+note right of ReservationView
+    One reservation view for the whole flow.
+    UI elements render from Hook state.
+    
+    No show() parameters are needed.
+end note
 
 note right of CalendarView
-    Widok z PU1 - brak własnego interfejsu
-    (zawartość kalendarza projektuje PU1).
-    Dwie ścieżki wejścia do PU2:
-    - przycisk „Rezerwuj” przy wydarzeniu,
-    - wybranie kafelka wolnego terminu -
-    w obu przypadkach termin przekazywany
-    z góry (showReservationView).
+    PU1 owns the calendar.
+    
+    Entry paths:
+    - Reserve button: no initial slot
+    - Calendar slot: selected slot supplied
+      to the reservation Hook as initial state
 end note
 
-note right of ReservationFormPanel
-    Wybór liczby uczestników to zwykły
-    input field, nie osobny widok.
+note bottom of PaymentPanel
+    The organizer can pay now or later.
+    Choosing pay later leaves payment
+    status as UNPAID.
 end note
 
-note right of PaymentPanel
-    Płatność przez zewnętrzną bramę -
-    po jej zakończeniu frontend wywołuje
-    markPaymentCompleted.
-end note
-
-note right of ReservationCompletedMessageDialog
-    Potwierdzenie rezerwacji wysyła backend
-    do skrzynki wiadomości organizatora.
-    Skrzynka wiadomości to osobny PU -
-    tu wyświetlany jest tylko komunikat.
-end note
 @enduml
 ```
 
