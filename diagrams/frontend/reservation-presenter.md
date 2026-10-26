@@ -94,37 +94,37 @@ ReservationsApi ..> ReservationSummaryDTO
 
 note right of ICalendarActions
     Na diagramie tylko metody PU2. Metody PU1
-    (onOpenCalendar, onShowCalendar, obsluga sesji)
-    sa zdefiniowane w interfaces.md i w diagramie PU1.
+    (onOpenCalendar, onShowCalendar, obsługa sesji)
+    są zdefiniowane w interfaces.md i w diagramie PU1.
 end note
 
 note right of ICalendarWindows
     Okna kalendarza (showCalendarView, showSessionExpiredMessageDialog,
-    showLoginView) naleza do PU1 - powrot do kalendarza
-    po cofnieciu odbywa sie przez showCalendarView z diagramu PU1.
+    showLoginView) należą do PU1 - powrót do kalendarza
+    po cofnięciu odbywa się przez showCalendarView z diagramu PU1.
 end note
 
 note bottom of CalendarViewModel
-    Pelna definicja stanu (pola PU1: availableSlots,
-    isSessionExpired) znajduje sie w interfaces.md.
+    Pełną definicję stanu (pola PU1: availableSlots,
+    isSessionExpired) zawiera interfaces.md.
 end note
 
 note bottom of ReservationsApi
     cancelReservation jest rozszerzeniem specyfikacji
-    interfaces.md - wymagane przez opcje cofniecia
-    prosby o potwierdzenie (slot musi zostac zwolniony).
+    interfaces.md - wymagane przez opcję cofnięcia
+    prośby o potwierdzenie (slot musi zostać zwolniony).
 end note
 
 note bottom of useCalendar
-    Mapowanie scenariusza PU2 (glowny):
-    1. wybor wolnego terminu w kalendarzu (PU1) -> onSelectTimeSlot / onReserveEventClick
-    2. otwarcie widoku rezerwacji z terminem przekazanym z gory -> showReservationView
-    3. podanie liczby uczestnikow -> onParticipantCountChange
+    Mapowanie scenariusza PU2 (główny):
+    1. wybór wolnego terminu w kalendarzu (PU1) -> onSelectTimeSlot / onReserveEventClick
+    2. otwarcie widoku rezerwacji z terminem przekazanym z góry -> showReservationView
+    3. podanie liczby uczestników -> onParticipantCountChange
     4. utworzenie rezerwacji (status unpaid) -> createReservation
-    5. prosba o potwierdzenie (z opcja cofniecia) -> showReservationConfirmDialog
-    6. potwierdzenie -> onProceedToPayment / cofniecie -> onCancelReservation
-    7. wymaganie platnosci -> showPaymentView; oplata -> onPay (markPaymentCompleted)
-    8. potwierdzenie rezerwacji wysyla backend do skrzynki wiadomosci organizatora
+    5. prośba o potwierdzenie (z opcją cofnięcia) -> showReservationConfirmDialog
+    6. potwierdzenie -> onProceedToPayment / cofnięcie -> onCancelReservation
+    7. wymaganie płatności -> showPaymentView; opłata -> onPay (markPaymentCompleted)
+    8. potwierdzenie rezerwacji wysyła backend do skrzynki wiadomości organizatora
 end note
 @enduml
 ```

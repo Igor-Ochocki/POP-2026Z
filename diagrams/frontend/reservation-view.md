@@ -92,31 +92,31 @@ CalendarView ..> ReservationView : "Rezerwuj" przy wydarzeniu
 CalendarView ..> ReservationView : wybór kafelka wolnego terminu
 
 note right of CalendarView
-    Widok z PU1 - brak wlasnego interfejsu
-    (zwartosc kalendarza projektuje PU1).
-    Dwie sciezki wejscia do PU2:
-    - przycisk "Rezerwuj" przy wydarzeniu,
+    Widok z PU1 - brak własnego interfejsu
+    (zawartość kalendarza projektuje PU1).
+    Dwie ścieżki wejścia do PU2:
+    - przycisk „Rezerwuj” przy wydarzeniu,
     - wybranie kafelka wolnego terminu -
     w obu przypadkach termin przekazywany
-    z gory (showReservationView).
+    z góry (showReservationView).
 end note
 
 note right of ReservationFormPanel
-    Wybor liczby uczestnikow to zwykly
+    Wybór liczby uczestników to zwykły
     input field, nie osobny widok.
 end note
 
 note right of PaymentPanel
-    Platnosc przez zewnetrzna brame -
-    po jej zakonczeniu frontend wywoluje
+    Płatność przez zewnętrzną bramę -
+    po jej zakończeniu frontend wywołuje
     markPaymentCompleted.
 end note
 
 note right of ReservationCompletedMessageDialog
-    Potwierdzenie rezerwacji wysyla backend
-    do skrzynki wiadomosci organizatora.
-    Skrzynka wiadomosci to osobny PU -
-    tu wyswietlany jest tylko komunikat.
+    Potwierdzenie rezerwacji wysyła backend
+    do skrzynki wiadomości organizatora.
+    Skrzynka wiadomości to osobny PU -
+    tu wyświetlany jest tylko komunikat.
 end note
 @enduml
 ```
