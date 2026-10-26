@@ -1,6 +1,7 @@
 <div hidden>
 
 ```
+
 @startuml reservation-presenter
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
@@ -8,125 +9,118 @@ skinparam shadowing false
 skinparam roundcorner 4
 skinparam linetype polyline
 
-title PU2 Rezerwacja czasu dla gry - presenter
+title PU2 - Game Time Reservation - Presenter
 
 class useCalendar <<Hook>> {
-    + onReserveEventClick()
-    + onSelectTimeSlot(slotId: string)
-    + onParticipantCountChange(participantCount: number)
-    + onConfirmReservation(participantCount: number)
-    + onCancelReservation()
-    + onProceedToPayment(reservationId: string)
-    + onPay()
-    + onPaymentCompletedMessageDialogConfirm()
-    + onSlotUnavailableMessageDialogConfirm()
-    - createReservation(slotId: string, participantCount: number)
-    - completePayment(reservationId: string)
-    - cancelReservation(reservationId: string)
+    +onReserveEventClick()
+    +onSelectTimeSlot(slotId: string)
+    +onParticipantCountChange(participantCount: number)
+    +onConfirmReservation()
+    +onCancelReservation()
+    +onProceedToPayment()
+    +onPay()
+    +onPayLater()
+    +onPaymentCompletedMessageDialogConfirm()
+    +onSlotUnavailableMessageDialogConfirm()
+    -createReservation()
+    -completePayment()
+    -cancelReservation()
 }
 
 interface ICalendarActions <<interface>> {
-    + onReserveEventClick()
-    + onSelectTimeSlot(slotId: string)
-    + onParticipantCountChange(participantCount: number)
-    + onConfirmReservation(participantCount: number)
-    + onCancelReservation()
-    + onProceedToPayment(reservationId: string)
-    + onPay()
-    + onPaymentCompletedMessageDialogConfirm()
-    + onSlotUnavailableMessageDialogConfirm()
+    +onReserveEventClick()
+    +onSelectTimeSlot(slotId: string)
+    +onParticipantCountChange(participantCount: number)
+    +onConfirmReservation()
+    +onCancelReservation()
+    +onProceedToPayment()
+    +onPay()
+    +onPayLater()
+    +onPaymentCompletedMessageDialogConfirm()
+    +onSlotUnavailableMessageDialogConfirm()
 }
 
 interface ICalendarWindows <<interface>> {
-    + showReservationView(slot: TimeSlotDTO)
-    + showReservationConfirmDialog(reservation: ReservationSummaryDTO)
-    + showPaymentView(reservation: ReservationSummaryDTO)
-    + showPaymentCompletedMessageDialog()
-    + showSlotUnavailableMessageDialog()
+    +showReservationView()
+    +showReservationConfirmDialog()
+    +showPaymentView()
+    +showPaymentCompletedMessageDialog()
+    +showSlotUnavailableMessageDialog()
 }
 
 class CalendarViewModel <<State>> {
-    + selectedGameId: string
-    + selectedSlot: TimeSlotDTO
-    + activeReservation: ReservationSummaryDTO
-    + isConfirmationDialogOpen: boolean
-    + isProcessing: boolean
-    + errorMessage: string
+    +selectedGameId: string
+    +selectedSlot: TimeSlotDTO [0..1]
+    +activeReservation: ReservationSummaryDTO [0..1]
+    +participantCount: number
+    +isConfirmationDialogOpen: boolean
+    +isPaymentViewOpen: boolean
+    +isProcessing: boolean
+    +errorMessage: string [0..1]
 }
 
 interface ReservationsApi <<interface>> {
-    + getAvailableSlots(gameId: string, startDate: string, endDate: string): Promise<TimeSlotDTO[*]>
-    + createReservation(slotId: string, gameId: string, participantCount: number): Promise<ReservationSummaryDTO>
-    + cancelReservation(reservationId: string): Promise<boolean>
-    + markPaymentCompleted(reservationId: string): Promise<boolean>
+    +getAvailableSlots(gameId: string, startDate: DateTime, endDate: DateTime): Promise<TimeSlotDTO[*]>
+    +createReservation(slotId: string, gameId: string, participantCount: number): Promise<ReservationSummaryDTO>
+    +cancelReservation(reservationId: string): Promise<boolean>
 }
 
-class TimeSlotDTO <<DTO>> {
-    + slotId: string
-    + gameId: string
-    + startTime: string
-    + endTime: string
-    + location: string
-    + isAvailable: boolean
-    + basePrice: number
+interface PaymentsApi <<interface>> {
+    +pay(reservationId: string): Promise<PaymentStatus>
+    +getPaymentStatus(reservationId: string): Promise<PaymentStatus>
 }
 
-class ReservationSummaryDTO <<DTO>> {
-    + reservationId: string
-    + slotId: string
-    + gameId: string
-    + organizerId: string
-    + participantCount: number
-    + totalCost: number
-    + status: string
-    + isPaid: boolean
-}
+class CalendarView <<External PU1>>
 
 useCalendar .u.|> ICalendarActions
 useCalendar -u-> ICalendarWindows
 useCalendar --> ReservationsApi : apiClient.reservations
-useCalendar *-- "1" CalendarViewModel : state
+useCalendar --> PaymentsApi : apiClient.payments
+useCalendar *-- "1" CalendarViewModel : owns state
 
-CalendarViewModel *-- "0..1" TimeSlotDTO : selectedSlot
-CalendarViewModel *-- "0..1" ReservationSummaryDTO : activeReservation
-ReservationsApi ..> TimeSlotDTO
-ReservationsApi ..> ReservationSummaryDTO
+ReservationsApi ..> TimeSlotDTO : returns
+ReservationsApi ..> ReservationSummaryDTO : returns
+PaymentsApi ..> PaymentStatus : returns
 
-note right of ICalendarActions
-    Na diagramie tylko metody PU2. Metody PU1
-    (onOpenCalendar, onShowCalendar, obsługa sesji)
-    są zdefiniowane w interfaces.md i w diagramie PU1.
+CalendarView ..> ICalendarActions : user actions
+
+note right of CalendarViewModel
+    State is owned by the Hook.
+    selectedSlot and activeReservation
+    are optional and may be null.
+    
+    View reads this state to render
+    the current reservation step.
 end note
 
 note right of ICalendarWindows
-    Okna kalendarza (showCalendarView, showSessionExpiredMessageDialog,
-    showLoginView) należą do PU1 - powrót do kalendarza
-    po cofnięciu odbywa się przez showCalendarView z diagramu PU1.
-end note
-
-note bottom of CalendarViewModel
-    Pełną definicję stanu (pola PU1: availableSlots,
-    isSessionExpired) zawiera interfaces.md.
+    Methods change which UI is visible.
+    No state parameters are required:
+    the view reads state from the Hook.
+    
+    Calendar-specific windows remain
+    the responsibility of PU1.
 end note
 
 note bottom of ReservationsApi
-    cancelReservation jest rozszerzeniem specyfikacji
-    interfaces.md - wymagane przez opcję cofnięcia
-    prośby o potwierdzenie (slot musi zostać zwolniony).
+    A reservation can be created with
+    payment status UNPAID.
+    The slot is selected before creation.
+    
+    If the user starts without a slot,
+    they must select an available slot first.
 end note
 
-note bottom of useCalendar
-    Mapowanie scenariusza PU2 (główny):
-    1. wybór wolnego terminu w kalendarzu (PU1) -> onSelectTimeSlot / onReserveEventClick
-    2. otwarcie widoku rezerwacji z terminem przekazanym z góry -> showReservationView
-    3. podanie liczby uczestników -> onParticipantCountChange
-    4. utworzenie rezerwacji (status unpaid) -> createReservation
-    5. prośba o potwierdzenie (z opcją cofnięcia) -> showReservationConfirmDialog
-    6. potwierdzenie -> onProceedToPayment / cofnięcie -> onCancelReservation
-    7. wymaganie płatności -> showPaymentView; opłata -> onPay (markPaymentCompleted)
-    8. potwierdzenie rezerwacji wysyła backend do skrzynki wiadomości organizatora
+note bottom of PaymentsApi
+    Payment is optional during reservation.
+    onPayLater keeps the reservation
+    confirmed with status UNPAID.
+    Successful payment changes status
+    to PAID.
 end note
+
 @enduml
+
 ```
 
 </div>
