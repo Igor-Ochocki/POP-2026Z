@@ -1,18 +1,17 @@
-import { useCallback, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useCallback, useMemo, useState } from 'react';
+import { useNavigate, type NavigateFunction } from 'react-router';
 import { apiClient } from '@api/apiClient';
 import type {
-  GameDefinitionDialog,
   GameDefinitionViewModel,
   GameMetadataDTO,
   GameParametersErrors,
   GameParametersForm,
   IGameDefinitionActions,
+  IGameDefinitionWindows,
 } from '@app-types/game';
 
 const CREATOR_PANEL_PATH = '/creator';
-// TODO: change to the game list route once it exists (PU53)
-const GAME_LIST_PATH = CREATOR_PANEL_PATH;
+const GAME_LIST_PATH = '/creator/games';
 
 const REQUIRED = 'Pole wymagane';
 
@@ -31,22 +30,11 @@ const initialState: GameDefinitionViewModel = {
   activeGame: null,
   parametersForm: initialForm,
   validationErrors: {},
-  isDirty: false,
   isSubmitting: false,
   dialog: null,
 };
 
-const invalidDataDialog: GameDefinitionDialog = {
-  title: 'Błąd',
-  message: 'Podane dane są błędne',
-  redirectTo: null,
-};
-
-const notAvailableDialog: GameDefinitionDialog = {
-  title: 'Informacja',
-  message: 'Ta funkcja będzie dostępna wkrótce',
-  redirectTo: null,
-};
+type SetState = React.Dispatch<React.SetStateAction<GameDefinitionViewModel>>;
 
 function parsePositiveInt(value: string): number | null {
   const trimmed = value.trim();
@@ -92,24 +80,57 @@ function toMetadata(
   };
 }
 
+function createGameDefinitionWindows(
+  setState: SetState,
+  navigate: NavigateFunction,
+): IGameDefinitionWindows {
+  return {
+    showCreatorPanelView: () => void navigate(CREATOR_PANEL_PATH),
+    showGameListView: () => void navigate(GAME_LIST_PATH),
+    showGameDefinitionView: () =>
+      setState((prev) => ({
+        ...prev,
+        activePanel: 'definition',
+        dialog: null,
+      })),
+    showGameParametersView: () =>
+      setState((prev) => ({
+        ...prev,
+        activePanel: 'parameters',
+        dialog: null,
+      })),
+    showParametersSavedMessageDialog: () =>
+      setState((prev) => ({ ...prev, dialog: 'parametersSaved' })),
+    showIncorrectDataMessageDialog: (errors) =>
+      setState((prev) => ({
+        ...prev,
+        validationErrors: errors,
+        dialog: 'incorrectData',
+      })),
+    showGameSavedMessageDialog: () =>
+      setState((prev) => ({ ...prev, dialog: 'gameSaved' })),
+    showGameSubmittedMessageDialog: () =>
+      setState((prev) => ({ ...prev, dialog: 'gameSubmitted' })),
+    showSaveErrorMessageDialog: () =>
+      setState((prev) => ({ ...prev, dialog: 'saveError' })),
+  };
+}
+
 export function useGameDefinition(): {
   state: GameDefinitionViewModel;
   actions: IGameDefinitionActions;
 } {
   const [state, setState] = useState<GameDefinitionViewModel>(initialState);
   const navigate = useNavigate();
-
-  const showDialog = useCallback((dialog: GameDefinitionDialog) => {
-    setState((prev) => ({ ...prev, dialog }));
-  }, []);
+  const windows = useMemo(
+    () => createGameDefinitionWindows(setState, navigate),
+    [navigate],
+  );
 
   const onEditParameters = useCallback(() => {
-    setState((prev) => ({
-      ...prev,
-      activePanel: 'parameters',
-      validationErrors: {},
-    }));
-  }, []);
+    setState((prev) => ({ ...prev, validationErrors: {} }));
+    windows.showGameParametersView();
+  }, [windows]);
 
   const onChangeParameter = useCallback(
     <K extends keyof GameParametersForm>(
@@ -126,25 +147,28 @@ export function useGameDefinition(): {
   );
 
   const onSaveMetadata = useCallback(() => {
-    setState((prev) => {
-      const errors = validateParameters(prev.parametersForm);
-      if (Object.keys(errors).length > 0) {
-        return { ...prev, validationErrors: errors, dialog: invalidDataDialog };
-      }
-      return {
-        ...prev,
-        activeGame: toMetadata(prev.parametersForm, prev.activeGame),
-        validationErrors: {},
-        isDirty: true,
-        dialog: {
-          title: 'Sukces',
-          message: 'Poprawnie zapisano parametry',
-          redirectTo: null,
-          returnToDefinition: true,
-        },
-      };
-    });
-  }, []);
+    const errors = validateParameters(state.parametersForm);
+    if (Object.keys(errors).length > 0) {
+      windows.showIncorrectDataMessageDialog(errors);
+      return;
+    }
+    setState((prev) => ({
+      ...prev,
+      activeGame: toMetadata(prev.parametersForm, prev.activeGame),
+      validationErrors: {},
+    }));
+    windows.showParametersSavedMessageDialog();
+  }, [state.parametersForm, windows]);
+
+  const onParametersSavedMessageDialogConfirm = useCallback(
+    () => windows.showGameDefinitionView(),
+    [windows],
+  );
+
+  const onIncorrectDataMessageDialogConfirm = useCallback(
+    () => windows.showGameParametersView(),
+    [windows],
+  );
 
   const saveGame = useCallback(
     async (asDraft: boolean) => {
@@ -158,68 +182,41 @@ export function useGameDefinition(): {
         setState((prev) => ({
           ...prev,
           activeGame: saved,
-          isDirty: false,
           isSubmitting: false,
-          dialog: asDraft
-            ? {
-                title: 'Sukces',
-                message: 'Poprawnie zapisano grę',
-                redirectTo: GAME_LIST_PATH,
-              }
-            : {
-                title: 'Sukces',
-                message: 'Poprawnie zapisano grę i wysłano do recenzenta',
-                redirectTo: CREATOR_PANEL_PATH,
-              },
         }));
+        if (asDraft) windows.showGameSavedMessageDialog();
+        else windows.showGameSubmittedMessageDialog();
       } catch {
-        setState((prev) => ({
-          ...prev,
-          isSubmitting: false,
-          dialog: {
-            title: 'Błąd',
-            message: 'Nie udało się zapisać gry. Spróbuj ponownie.',
-            redirectTo: null,
-          },
-        }));
+        setState((prev) => ({ ...prev, isSubmitting: false }));
+        windows.showSaveErrorMessageDialog();
       }
     },
-    [state.activeGame],
+    [state.activeGame, windows],
   );
 
   const onSaveDraft = useCallback(() => void saveGame(true), [saveGame]);
 
+  const onGameSavedMessageDialogConfirm = useCallback(
+    () => windows.showGameListView(),
+    [windows],
+  );
+
   const onSubmitForReview = useCallback(() => void saveGame(false), [saveGame]);
 
-  const onCancelGameCreation = useCallback(() => {
-    void navigate(CREATOR_PANEL_PATH);
-  }, [navigate]);
-
-  // TODO: open editors from PU56 / PU60 / PU51 once they are implemented
-  const onOpenScenarioEditor = useCallback(
-    () => showDialog(notAvailableDialog),
-    [showDialog],
-  );
-  const onOpenMapEditor = useCallback(
-    () => showDialog(notAvailableDialog),
-    [showDialog],
-  );
-  const onOpenActionDefinition = useCallback(
-    () => showDialog(notAvailableDialog),
-    [showDialog],
+  const onGameSubmittedMessageDialogConfirm = useCallback(
+    () => windows.showCreatorPanelView(),
+    [windows],
   );
 
-  const onCloseDialog = useCallback(() => {
-    const dialog = state.dialog;
-    if (!dialog) return;
+  const onSaveErrorMessageDialogConfirm = useCallback(
+    () => windows.showGameDefinitionView(),
+    [windows],
+  );
 
-    setState((prev) => ({
-      ...prev,
-      dialog: null,
-      activePanel: dialog.returnToDefinition ? 'definition' : prev.activePanel,
-    }));
-    if (dialog.redirectTo) void navigate(dialog.redirectTo);
-  }, [state.dialog, navigate]);
+  const onCancelGameCreation = useCallback(
+    () => windows.showCreatorPanelView(),
+    [windows],
+  );
 
   return {
     state,
@@ -227,13 +224,14 @@ export function useGameDefinition(): {
       onEditParameters,
       onChangeParameter,
       onSaveMetadata,
+      onParametersSavedMessageDialogConfirm,
+      onIncorrectDataMessageDialogConfirm,
       onSaveDraft,
+      onGameSavedMessageDialogConfirm,
       onSubmitForReview,
+      onGameSubmittedMessageDialogConfirm,
+      onSaveErrorMessageDialogConfirm,
       onCancelGameCreation,
-      onOpenScenarioEditor,
-      onOpenMapEditor,
-      onOpenActionDefinition,
-      onCloseDialog,
     },
   };
 }

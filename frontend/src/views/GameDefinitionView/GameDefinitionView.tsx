@@ -3,6 +3,7 @@ import BoltOutlinedIcon from '@mui/icons-material/BoltOutlined';
 import MapOutlinedIcon from '@mui/icons-material/MapOutlined';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
+import SensorsOutlinedIcon from '@mui/icons-material/SensorsOutlined';
 import TuneIcon from '@mui/icons-material/Tune';
 import ActionTile from '@components/ActionTile/ActionTile';
 import Badge from '@components/Badge/Badge';
@@ -11,7 +12,11 @@ import Card from '@components/Card/Card';
 import MessageDialog from '@components/MessageDialog/MessageDialog';
 import PageHeader from '@components/PageHeader/PageHeader';
 import { useGameDefinition } from '@hooks/useGameDefinition';
-import type { GameMetadataDTO } from '@app-types/game';
+import type {
+  GameDefinitionDialog,
+  GameMetadataDTO,
+  IGameDefinitionActions,
+} from '@app-types/game';
 import { GameParametersPanel } from './GameParametersPanel';
 import './GameDefinitionView.css';
 
@@ -24,11 +29,46 @@ function describeGame(game: GameMetadataDTO): string {
   ].join(' · ');
 }
 
+function getDialogs(
+  actions: IGameDefinitionActions,
+): Record<
+  GameDefinitionDialog,
+  { title: string; message: string; onConfirm: () => void }
+> {
+  return {
+    parametersSaved: {
+      title: 'Sukces',
+      message: 'Poprawnie zapisano parametry',
+      onConfirm: actions.onParametersSavedMessageDialogConfirm,
+    },
+    incorrectData: {
+      title: 'Błąd',
+      message: 'Podane dane są błędne',
+      onConfirm: actions.onIncorrectDataMessageDialogConfirm,
+    },
+    gameSaved: {
+      title: 'Sukces',
+      message: 'Poprawnie zapisano grę',
+      onConfirm: actions.onGameSavedMessageDialogConfirm,
+    },
+    gameSubmitted: {
+      title: 'Sukces',
+      message: 'Poprawnie zapisano grę i wysłano do recenzenta',
+      onConfirm: actions.onGameSubmittedMessageDialogConfirm,
+    },
+    saveError: {
+      title: 'Błąd',
+      message: 'Nie udało się zapisać gry. Spróbuj ponownie.',
+      onConfirm: actions.onSaveErrorMessageDialogConfirm,
+    },
+  };
+}
+
 export function GameDefinitionView() {
   const { state, actions } = useGameDefinition();
   const game = state.activeGame;
   const canSave = game !== null && !state.isSubmitting;
-  const soonBadge = <Badge>Wkrótce</Badge>;
+  const dialog = state.dialog ? getDialogs(actions)[state.dialog] : null;
 
   return (
     <section className='game-definition-view'>
@@ -63,26 +103,26 @@ export function GameDefinitionView() {
               }
               onClick={actions.onEditParameters}
             />
+            {/* TODO: enable once PU56, PU60, PU51 and PU50 are implemented */}
             <ActionTile
               icon={<AutoStoriesOutlinedIcon />}
               title='Edytuj scenariusz gry'
               description='Zadania i warunki zwycięstwa'
-              badge={soonBadge}
-              onClick={actions.onOpenScenarioEditor}
             />
             <ActionTile
               icon={<MapOutlinedIcon />}
               title='Edytuj mapę gry'
               description='Komnaty i rozmieszczenie elementów'
-              badge={soonBadge}
-              onClick={actions.onOpenMapEditor}
             />
             <ActionTile
               icon={<BoltOutlinedIcon />}
               title='Zdefiniuj akcję'
               description='Interakcje dostępne dla graczy'
-              badge={soonBadge}
-              onClick={actions.onOpenActionDefinition}
+            />
+            <ActionTile
+              icon={<SensorsOutlinedIcon />}
+              title='Dodaj nowy czujnik'
+              description='Czujniki wyzwalające akcje w grze'
             />
           </div>
           <footer className='game-definition-view__footer'>
@@ -111,10 +151,10 @@ export function GameDefinitionView() {
         </Card>
       )}
       <MessageDialog
-        title={state.dialog?.title ?? ''}
-        message={state.dialog?.message ?? ''}
-        open={state.dialog !== null}
-        onClosed={actions.onCloseDialog}
+        title={dialog?.title ?? ''}
+        message={dialog?.message ?? ''}
+        open={dialog !== null}
+        onClosed={() => dialog?.onConfirm()}
       />
     </section>
   );

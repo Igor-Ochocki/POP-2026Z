@@ -28,19 +28,18 @@ export type GameParametersErrors = Partial<
 
 export type GameDefinitionPanel = 'definition' | 'parameters';
 
-export interface GameDefinitionDialog {
-  title: string;
-  message: string;
-  redirectTo: string | null;
-  returnToDefinition?: boolean;
-}
+export type GameDefinitionDialog =
+  | 'parametersSaved'
+  | 'incorrectData'
+  | 'gameSaved'
+  | 'gameSubmitted'
+  | 'saveError';
 
 export interface GameDefinitionViewModel {
   activePanel: GameDefinitionPanel;
   activeGame: GameMetadataDTO | null;
   parametersForm: GameParametersForm;
   validationErrors: GameParametersErrors;
-  isDirty: boolean;
   isSubmitting: boolean;
   dialog: GameDefinitionDialog | null;
 }
@@ -52,16 +51,28 @@ export interface IGameDefinitionActions {
     value: GameParametersForm[K],
   ): void;
   onSaveMetadata(): void;
+  onParametersSavedMessageDialogConfirm(): void;
+  onIncorrectDataMessageDialogConfirm(): void;
   onSaveDraft(): void;
+  onGameSavedMessageDialogConfirm(): void;
   onSubmitForReview(): void;
+  onGameSubmittedMessageDialogConfirm(): void;
+  onSaveErrorMessageDialogConfirm(): void;
   onCancelGameCreation(): void;
-  onOpenScenarioEditor(): void;
-  onOpenMapEditor(): void;
-  onOpenActionDefinition(): void;
-  onCloseDialog(): void;
 }
 
-// TODO: replace with categories from backend once they are defined
+export interface IGameDefinitionWindows {
+  showCreatorPanelView(): void;
+  showGameListView(): void;
+  showGameDefinitionView(): void;
+  showGameParametersView(): void;
+  showParametersSavedMessageDialog(): void;
+  showIncorrectDataMessageDialog(errors: GameParametersErrors): void;
+  showGameSavedMessageDialog(): void;
+  showGameSubmittedMessageDialog(): void;
+  showSaveErrorMessageDialog(): void;
+}
+
 export const GAME_CATEGORIES = [
   'Fantasy',
   'Science fiction',
