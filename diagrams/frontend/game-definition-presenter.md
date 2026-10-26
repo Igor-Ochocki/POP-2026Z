@@ -86,6 +86,7 @@ enum GameDefinitionDialog {
 class GameParametersForm {
     + title: string
     + description: string
+    + category: GameCategory | ''
     + minPlayers: string
     + maxPlayers: string
     + durationMinutes: string
@@ -121,7 +122,6 @@ useGameDefinition *-- "1" GameDefinitionViewModel : state
 GameDefinitionViewModel *-- "1" GameParametersForm : parametersForm
 GameDefinitionViewModel *-- "0..1" GameMetadataDTO : activeGame
 GamesApi ..> GameMetadataDTO
-GameParametersForm --> GameCategory : category
 
 note right of GameCategory
     Ta sama lista ma być na backendzie.
