@@ -12,6 +12,8 @@ import type {
 
 const CREATOR_PANEL_PATH = '/creator';
 const GAME_LIST_PATH = '/creator/games';
+const SENSOR_DEFINITION_PATH = '/creator/sensors/new';
+const SCENARIO_EDITOR_PATH = '/creator/scenario';
 
 const REQUIRED = 'Pole wymagane';
 
@@ -99,6 +101,8 @@ function createGameDefinitionWindows(
         activePanel: 'parameters',
         dialog: null,
       })),
+    showSensorDefinitionView: () => void navigate(SENSOR_DEFINITION_PATH),
+    showScenarioEditorView: () => void navigate(SCENARIO_EDITOR_PATH),
     showParametersSavedMessageDialog: () =>
       setState((prev) => ({ ...prev, dialog: 'parametersSaved' })),
     showIncorrectDataMessageDialog: (errors) =>
@@ -170,6 +174,16 @@ export function useGameDefinition(): {
     [windows],
   );
 
+  const onAddSensor = useCallback(
+    () => windows.showSensorDefinitionView(),
+    [windows],
+  );
+
+  const onEditScenario = useCallback(
+    () => windows.showScenarioEditorView(),
+    [windows],
+  );
+
   const saveGame = useCallback(
     async (asDraft: boolean) => {
       const game = state.activeGame;
@@ -226,6 +240,8 @@ export function useGameDefinition(): {
       onSaveMetadata,
       onParametersSavedMessageDialogConfirm,
       onIncorrectDataMessageDialogConfirm,
+      onAddSensor,
+      onEditScenario,
       onSaveDraft,
       onGameSavedMessageDialogConfirm,
       onSubmitForReview,

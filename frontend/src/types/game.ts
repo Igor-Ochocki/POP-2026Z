@@ -53,6 +53,8 @@ export interface IGameDefinitionActions {
   onSaveMetadata(): void;
   onParametersSavedMessageDialogConfirm(): void;
   onIncorrectDataMessageDialogConfirm(): void;
+  onAddSensor(): void;
+  onEditScenario(): void;
   onSaveDraft(): void;
   onGameSavedMessageDialogConfirm(): void;
   onSubmitForReview(): void;
@@ -66,6 +68,8 @@ export interface IGameDefinitionWindows {
   showGameListView(): void;
   showGameDefinitionView(): void;
   showGameParametersView(): void;
+  showSensorDefinitionView(): void;
+  showScenarioEditorView(): void;
   showParametersSavedMessageDialog(): void;
   showIncorrectDataMessageDialog(errors: GameParametersErrors): void;
   showGameSavedMessageDialog(): void;
