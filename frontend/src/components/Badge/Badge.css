@@ -4,7 +4,8 @@
   gap: 0.25rem;
   padding: 0.125rem 0.625rem;
   border-radius: 100vw;
-  font: 600 0.75rem var(--font-family);
+  font: var(--font-subtitle);
+  font-weight: 600;
   white-space: nowrap;
 }
 

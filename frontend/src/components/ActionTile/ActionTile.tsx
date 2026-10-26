@@ -1,5 +1,6 @@
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { Link } from 'react-router';
+import TextLabel from '@components/TextLabel/TextLabel';
 import './ActionTile.css';
 
 interface ActionTileProps {
@@ -28,7 +29,9 @@ export default function ActionTile({
           {badge}
         </span>
         {description && (
-          <span className='action-tile__description'>{description}</span>
+          <span className='action-tile__description'>
+            <TextLabel>{description}</TextLabel>
+          </span>
         )}
       </span>
       <ChevronRightIcon className='action-tile__chevron' fontSize='small' />

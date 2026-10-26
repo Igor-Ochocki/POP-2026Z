@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, type NavigateFunction } from 'react-router';
 import { apiClient } from '@api/apiClient';
 import type {
@@ -126,31 +126,25 @@ export function useGameDefinition(): {
 } {
   const [state, setState] = useState<GameDefinitionViewModel>(initialState);
   const navigate = useNavigate();
-  const windows = useMemo(
-    () => createGameDefinitionWindows(setState, navigate),
-    [navigate],
-  );
+  const windows = createGameDefinitionWindows(setState, navigate);
 
-  const onEditParameters = useCallback(() => {
+  const onEditParameters = () => {
     setState((prev) => ({ ...prev, validationErrors: {} }));
     windows.showGameParametersView();
-  }, [windows]);
+  };
 
-  const onChangeParameter = useCallback(
-    <K extends keyof GameParametersForm>(
-      field: K,
-      value: GameParametersForm[K],
-    ) => {
-      setState((prev) => ({
-        ...prev,
-        parametersForm: { ...prev.parametersForm, [field]: value },
-        validationErrors: { ...prev.validationErrors, [field]: undefined },
-      }));
-    },
-    [],
-  );
+  const onChangeParameter = <K extends keyof GameParametersForm>(
+    field: K,
+    value: GameParametersForm[K],
+  ) => {
+    setState((prev) => ({
+      ...prev,
+      parametersForm: { ...prev.parametersForm, [field]: value },
+      validationErrors: { ...prev.validationErrors, [field]: undefined },
+    }));
+  };
 
-  const onSaveMetadata = useCallback(() => {
+  const onSaveMetadata = () => {
     const errors = validateParameters(state.parametersForm);
     if (Object.keys(errors).length > 0) {
       windows.showIncorrectDataMessageDialog(errors);
@@ -162,75 +156,28 @@ export function useGameDefinition(): {
       validationErrors: {},
     }));
     windows.showParametersSavedMessageDialog();
-  }, [state.parametersForm, windows]);
+  };
 
-  const onParametersSavedMessageDialogConfirm = useCallback(
-    () => windows.showGameDefinitionView(),
-    [windows],
-  );
+  const saveGame = async (asDraft: boolean) => {
+    const game = state.activeGame;
+    if (!game) return;
 
-  const onIncorrectDataMessageDialogConfirm = useCallback(
-    () => windows.showGameParametersView(),
-    [windows],
-  );
-
-  const onAddSensor = useCallback(
-    () => windows.showSensorDefinitionView(),
-    [windows],
-  );
-
-  const onEditScenario = useCallback(
-    () => windows.showScenarioEditorView(),
-    [windows],
-  );
-
-  const saveGame = useCallback(
-    async (asDraft: boolean) => {
-      const game = state.activeGame;
-      if (!game) return;
-
-      setState((prev) => ({ ...prev, isSubmitting: true }));
-      try {
-        const saved = await apiClient.games.saveGame(game, asDraft);
-        if (!asDraft) await apiClient.games.submitToReviewer(saved.gameId);
-        setState((prev) => ({
-          ...prev,
-          activeGame: saved,
-          isSubmitting: false,
-        }));
-        if (asDraft) windows.showGameSavedMessageDialog();
-        else windows.showGameSubmittedMessageDialog();
-      } catch {
-        setState((prev) => ({ ...prev, isSubmitting: false }));
-        windows.showSaveErrorMessageDialog();
-      }
-    },
-    [state.activeGame, windows],
-  );
-
-  const onSaveDraft = useCallback(() => void saveGame(true), [saveGame]);
-
-  const onGameSavedMessageDialogConfirm = useCallback(
-    () => windows.showGameListView(),
-    [windows],
-  );
-
-  const onSubmitForReview = useCallback(() => void saveGame(false), [saveGame]);
-
-  const onGameSubmittedMessageDialogConfirm = useCallback(
-    () => windows.showCreatorPanelView(),
-    [windows],
-  );
-
-  const onSaveErrorMessageDialogConfirm = useCallback(
-    () => windows.showGameDefinitionView(),
-    [windows],
-  );
-
-  const onCancelGameCreation = useCallback(
-    () => windows.showCreatorPanelView(),
-    [windows],
-  );
+    setState((prev) => ({ ...prev, isSubmitting: true }));
+    try {
+      const saved = await apiClient.games.saveGame(game, asDraft);
+      if (!asDraft) await apiClient.games.submitToReviewer(saved.gameId);
+      setState((prev) => ({
+        ...prev,
+        activeGame: saved,
+        isSubmitting: false,
+      }));
+      if (asDraft) windows.showGameSavedMessageDialog();
+      else windows.showGameSubmittedMessageDialog();
+    } catch {
+      setState((prev) => ({ ...prev, isSubmitting: false }));
+      windows.showSaveErrorMessageDialog();
+    }
+  };
 
   return {
     state,
@@ -238,16 +185,16 @@ export function useGameDefinition(): {
       onEditParameters,
       onChangeParameter,
       onSaveMetadata,
-      onParametersSavedMessageDialogConfirm,
-      onIncorrectDataMessageDialogConfirm,
-      onAddSensor,
-      onEditScenario,
-      onSaveDraft,
-      onGameSavedMessageDialogConfirm,
-      onSubmitForReview,
-      onGameSubmittedMessageDialogConfirm,
-      onSaveErrorMessageDialogConfirm,
-      onCancelGameCreation,
+      onParametersSavedMessageDialogConfirm: windows.showGameDefinitionView,
+      onIncorrectDataMessageDialogConfirm: windows.showGameParametersView,
+      onAddSensor: windows.showSensorDefinitionView,
+      onEditScenario: windows.showScenarioEditorView,
+      onSaveDraft: () => void saveGame(true),
+      onGameSavedMessageDialogConfirm: windows.showGameListView,
+      onSubmitForReview: () => void saveGame(false),
+      onGameSubmittedMessageDialogConfirm: windows.showCreatorPanelView,
+      onSaveErrorMessageDialogConfirm: windows.showGameDefinitionView,
+      onCancelGameCreation: windows.showCreatorPanelView,
     },
   };
 }

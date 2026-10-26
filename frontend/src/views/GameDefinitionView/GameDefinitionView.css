@@ -3,11 +3,6 @@
   margin: 0 auto;
 }
 
-.game-definition-view__parameters {
-  max-width: 40rem;
-  margin: 0 auto;
-}
-
 .game-definition-view__tiles {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
@@ -32,31 +27,11 @@
 
 .game-definition-view__hint {
   margin-top: -0.75rem;
-  font: var(--font-label);
   color: var(--color-text-dim);
   text-align: right;
 }
 
-.game-definition-view__category {
-  max-width: 16rem;
-}
-
-.game-definition-view__grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem 1rem;
-}
-
-.game-definition-view__form-footer {
-  display: flex;
-  justify-content: flex-end;
-}
-
 @media (max-width: 30rem) {
-  .game-definition-view__grid {
-    grid-template-columns: 1fr;
-  }
-
   .game-definition-view__hint {
     text-align: left;
   }

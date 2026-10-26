@@ -34,7 +34,7 @@ export default function SegmentedControl<T extends string | number | boolean>({
             }`}
             onClick={() => onChange(option.value)}
           >
-            {option.label}
+            <TextLabel>{option.label}</TextLabel>
           </button>
         ))}
       </div>

@@ -20,7 +20,6 @@
   border-radius: var(--radius-sm);
   background: none;
   color: var(--color-text-dim);
-  font: var(--font-label);
   cursor: pointer;
   transition:
     background-color var(--transition-fast),

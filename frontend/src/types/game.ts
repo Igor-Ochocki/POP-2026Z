@@ -1,5 +1,3 @@
-export type GameStatus = 'W edycji' | 'Oczekuje na weryfikację';
-
 export interface GameMetadataDTO {
   gameId: string;
   title: string;

@@ -59,7 +59,6 @@
 }
 
 .action-tile__description {
-  font: var(--font-label);
   color: var(--color-text-dim);
 }
 

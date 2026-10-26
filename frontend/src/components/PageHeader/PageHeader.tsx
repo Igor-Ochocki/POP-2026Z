@@ -1,5 +1,6 @@
 import './PageHeader.css';
 import TextPageTitle from '@components/TextPageTitle/TextPageTitle';
+import TextSubtitle from '@components/TextSubtitle/TextSubtitle';
 
 interface PageHeaderProps {
   title: React.ReactNode;
@@ -16,7 +17,7 @@ export default function PageHeader({
     <header className='page-header'>
       <div className='page-header__text'>
         <TextPageTitle>{title}</TextPageTitle>
-        {subtitle && <span className='page-header__subtitle'>{subtitle}</span>}
+        {subtitle && <TextSubtitle>{subtitle}</TextSubtitle>}
       </div>
       {aside && <div className='page-header__aside'>{aside}</div>}
     </header>

@@ -14,6 +14,7 @@ import {
   type GameParametersForm,
   type IGameDefinitionActions,
 } from '@app-types/game';
+import './GameParametersPanel.css';
 
 interface GameParametersPanelProps {
   form: GameParametersForm;
@@ -27,7 +28,7 @@ export function GameParametersPanel({
   actions,
 }: GameParametersPanelProps) {
   return (
-    <div className='game-definition-view__parameters'>
+    <div className='game-parameters-panel'>
       <Card>
         <PageHeader
           title='Podstawowe parametry gry'
@@ -54,7 +55,7 @@ export function GameParametersPanel({
                 actions.onChangeParameter('description', e.target.value),
             }}
           />
-          <div className='game-definition-view__category'>
+          <div className='game-parameters-panel__category'>
             <DropdownField
               label='Kategoria'
               options={[...GAME_CATEGORIES]}
@@ -67,7 +68,7 @@ export function GameParametersPanel({
           </div>
         </FormSection>
         <FormSection title='Rozgrywka'>
-          <div className='game-definition-view__grid'>
+          <div className='game-parameters-panel__grid'>
             <InputField
               label='Minimalna liczba graczy'
               errorText={errors.minPlayers}
@@ -114,7 +115,7 @@ export function GameParametersPanel({
             />
           </div>
         </FormSection>
-        <footer className='game-definition-view__form-footer'>
+        <footer className='game-parameters-panel__footer'>
           <Button onClick={actions.onSaveMetadata}>
             <CheckIcon fontSize='small' /> Zapisz
           </Button>

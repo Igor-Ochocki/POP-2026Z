@@ -13,16 +13,8 @@
   gap: 0.125rem;
 }
 
-.form-section__title {
-  margin: 0;
-  font: var(--font-emph);
+.form-section__header .text-subheading {
   color: var(--color-primary);
-}
-
-.form-section__description {
-  margin: 0;
-  font: var(--font-label);
-  color: var(--color-text-dim);
 }
 
 .form-section__content {

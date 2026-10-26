@@ -11,6 +11,7 @@ import Button from '@components/Button/Button';
 import Card from '@components/Card/Card';
 import MessageDialog from '@components/MessageDialog/MessageDialog';
 import PageHeader from '@components/PageHeader/PageHeader';
+import TextLabel from '@components/TextLabel/TextLabel';
 import { useGameDefinition } from '@hooks/useGameDefinition';
 import type {
   GameDefinitionDialog,
@@ -144,9 +145,11 @@ export function GameDefinitionView() {
             </div>
           </footer>
           {!game && (
-            <span className='game-definition-view__hint'>
-              Uzupełnij podstawowe parametry, aby zapisać grę.
-            </span>
+            <div className='game-definition-view__hint'>
+              <TextLabel>
+                Uzupełnij podstawowe parametry, aby zapisać grę.
+              </TextLabel>
+            </div>
           )}
         </Card>
       )}
