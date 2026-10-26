@@ -1,3 +1,6 @@
+<div hidden>
+
+```
 @startuml
 title PU51 Zdefiniowanie akcji - prezenter
 
@@ -116,3 +119,6 @@ ActionDto ..> EffectKind
 
 
 @enduml
+```
+</div>
+![](rendered/action-definition-presenter.svg)
