@@ -9,6 +9,7 @@ import SegmentedControl from '@components/SegmentedControl/SegmentedControl';
 import TextAreaField from '@components/TextAreaField/TextAreaField';
 import {
   GAME_CATEGORIES,
+  type GameCategory,
   type GameParametersErrors,
   type GameParametersForm,
   type IGameDefinitionActions,
@@ -56,11 +57,11 @@ export function GameParametersPanel({
           <div className='game-definition-view__category'>
             <DropdownField
               label='Kategoria'
-              options={GAME_CATEGORIES}
+              options={[...GAME_CATEGORIES]}
               value={form.category}
               errorText={errors.category}
               onOptionSelected={(option) =>
-                actions.onChangeParameter('category', option)
+                actions.onChangeParameter('category', option as GameCategory)
               }
             />
           </div>

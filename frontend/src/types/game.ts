@@ -15,7 +15,7 @@ export interface GameMetadataDTO {
 export interface GameParametersForm {
   title: string;
   description: string;
-  category: string;
+  category: GameCategory | '';
   minPlayers: string;
   maxPlayers: string;
   durationMinutes: string;
@@ -80,4 +80,6 @@ export const GAME_CATEGORIES = [
   'Kryminalna',
   'Horror',
   'Przygodowa',
-];
+] as const;
+
+export type GameCategory = (typeof GAME_CATEGORIES)[number];
