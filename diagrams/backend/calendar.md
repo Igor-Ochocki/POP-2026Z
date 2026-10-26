@@ -13,21 +13,21 @@ skinparam linetype polyline
 title PU1 Wyświetlanie kalendarza - backend
 
 interface CalendarApi <<interface>>\n<< /api/v1/reservations >> {
-    + <<GET /slots >>\n\tquery_available_slots(game_id: str, start_date: str, end_date: str): list[TimeSlotSchema]
+    + <<GET /slots >>\n\tquery_available_slots(start_date: datetime, end_date: datetime): list[TimeSlotSchema]
 }
 
 class CalendarController <<Controller>> {
     - calendar_service: ICalendarService
-    + query_available_slots(game_id: str, start_date: str, end_date: str): list[TimeSlotSchema]
+    + query_available_slots(start_date: datetime, end_date: datetime): list[TimeSlotSchema]
 }
 
 interface ICalendarService <<interface>> {
-    + query_available_slots(game_id: str, start_date: str, end_date: str): list[TimeSlotSchema]
+    + query_available_slots(start_date: datetime, end_date: datetime): list[TimeSlotSchema]
 }
 
 class CalendarService {
     - db_session: Session
-    + query_available_slots(game_id: str, start_date: str, end_date: str): list[TimeSlotSchema]
+    + query_available_slots(start_date: datetime, end_date: datetime): list[TimeSlotSchema]
 }
 
 package "Schemas" {
@@ -94,15 +94,23 @@ Reservation "*" --> "1" TimeSlot : slot_id
 
 note bottom of CalendarService
     Mapowanie scenariusza PU1 (główny):
-    1. organizator wybiera grę (PU53) i zakres dat -> query_available_slots
-    2. backend zwraca wolne i zajęte sloty (is_available) dla wybranej gry
+    1. organizator otwiera kalendarz i wybiera zakres dat -> query_available_slots
+    2. backend zwraca wolne i zajęte sloty (is_available) w podanym zakresie
     3. dostępność wynika z aktywnych rezerwacji (Reservation.status w Unpaid/Confirmed)
+    4. gra wybierana jest dopiero w PU2 (rezerwacja gry) -
+       endpoint nie filtruje po game_id
+end note
+
+note right of CalendarApi
+    Kontrakt uzgodniony w review PR #73:
+    bez game_id (gra znana dopiero w PU2),
+    daty jako datetime.
 end note
 
 note right of Game
-    Lista gier i ich typów: PU53 (GamesApi).
-    Typ gry definiowany w PU49 - PU1
-    filtruje sloty wyłącznie po game_id.
+    Sloty należą do gier (typ gry z PU49).
+    Kalendarz pokazuje sloty wszystkich gier -
+    wybór gry następuje dopiero w PU2.
 end note
 
 note bottom of Reservation
