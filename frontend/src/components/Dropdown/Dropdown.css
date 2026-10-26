@@ -28,3 +28,7 @@
   place-items: center;
   margin: -4px 0 -4px -2px;
 }
+
+.dropdown--error {
+  border-color: var(--color-error);
+}
