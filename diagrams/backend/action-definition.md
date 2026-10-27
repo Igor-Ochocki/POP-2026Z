@@ -15,29 +15,29 @@ title PU51 Zdefiniowanie akcji - backend
 
 interface ActionsApi <<interface>>\n<< /api/v1/actions >> {
     + <<POST / >>\n\tcreate_action(metadata: ActionCreateSchema): bool
-    + <<GET /action_types>>\n\tget_action_types(): ActionType
-+ <<GET /outcome_types>>\n\tget_outcome_types(): ActionOutcomeType
+    + <<GET /action_types>>\n\tget_action_types(): list[str]
++ <<GET /effect_kind>>\n\tget_effect_kind(): list[str]
 }
 
 class ActionsController <<Controller>> {
     - actions_service: IActionsService
 + create_action(metadata: ActionCreateSchema): bool
-    + get_action_types(): ActionType
-+ get_outcome_types(): ActionOutcomeType
+    + get_action_types(): list[str]
++ get_effect_kind(): list[str]
 }
 
 interface IActionsService <<interface>> {
 + create_action(dto: ActionCreateSchema): bool
-    + get_action_types(): ActionType
-+ get_outcome_types(): ActionOutcomeType
+    + get_action_types(): list[str]
++ get_effect_kind(): list[str]
 
 }
 
 class ActionsService {
     - db_session: Session
 + create_action(dto: ActionCreateSchema): bool
-    + get_action_types(): ActionType
-+ get_outcome_types(): ActionOutcomeType
+    + get_action_types(): list[str]
++ get_effect_kind(): list[str]
 }
 
 package "Schemas" {
@@ -59,22 +59,28 @@ package "Models (Db)" as models {
         + game_id: str
 + name: str
 + action_type: ActionType
-+ outcome_type: ActionOutcomeType
++ outcome_type: EffectKind
 + outcome_value: str
     }
 }
 
 package "Enums"{
     enum ActionType {
-      MiniGame
-Fight
-Trade
+      MINI_GAME
+MOVEMENT
+ATTACK
+USE_ITEM
+DIALOGUE
+CUSTOM
     }
     
-    enum ActionOutcomeType {
-FriendlyPlayerInteraction
-ViolentPlayerInteraction
-NoPlayerInteraction
+    enum EffectKind {
+CHANGE_STAT
+ADD_ITEM
+REMOVE_ITEM
+CHANGE_LOCATION
+SET_FLAG
+START_MINI_GAME
     }
 }
 
@@ -90,7 +96,6 @@ ActionsController --> IActionsService
 
 
 Game "1" --> "*" Action : assigned_actions
-
 
 ```
 
