@@ -1,15 +1,15 @@
 @startuml
-interface IGamesService <<interface>> {
+interface AuthoredGamesApi <<interface>>\n<< /api/v1/authored >> {
+    + <<GET /games >>\n\tget_games(tags: string[*], limit: number, offset: number): Promise<GameMetadataDTO[*]>
+    + <<GET /tags >>\n/get_tags(): Promise<string[*]>
+}
+
+class AuthoredGamesApiController <<Controller>> implements AuthoredGamesApi {
     +getGames(tags: string[*], limit: number, offset: number): Promise<GameMetadataDTO[*]>
     +getGameTags(): Promise<string[*]>
 }
 
-class GamesApiController <<Controller>> {
-    +getGames(tags: string[*], limit: number, offset: number): Promise<GameMetadataDTO[*]>
-    +getGameTags(): Promise<string[*]>
-}
-
-class GamesService implements IGamesService {
+class AuthoredGamesService implements IAuthoredGamesService {
     +getGames(tags: string[*], limit: number, offset: number): Promise<GameMetadataDTO[*]>
     +getGameTags(): Promise<string[*]>
 }
@@ -37,6 +37,11 @@ package "Models (Db)" as models {
     }
 }
 
+interface IAuthoredGamesService <<interface>> {
+    +getGames(tags: string[*], limit: number, offset: number): Promise<GameMetadataDTO[*]>
+    +getGameTags(): Promise<string[*]>
+}
+
 package "Enums"{
     enum GameStatus {
         Draft
@@ -56,15 +61,17 @@ package "Schemas" {
     }
 }
 
-GamesApiController --> IGamesService
+AuthoredGamesApiController --> IAuthoredGamesService
 User -> Game
 Game --> GameStatus
-GamesApiController -> GameMetadataDTO
-IGamesService -> GameMetadataDTO
-GamesService -> GameMetadataDTO
-GamesService --> IAuthService
-GamesService --> User
+AuthoredGamesApiController -> GameMetadataDTO
+IAuthoredGamesService -> GameMetadataDTO
+AuthoredGamesService -> GameMetadataDTO
+AuthoredGamesService --> IAuthService
+AuthoredGamesService --> User
 AuthService --> User
-GamesService --> Game
+AuthoredGamesService --> Game
 
 @enduml
+
+![Lista gier autora](./rendered/authors-game-list.svg)
