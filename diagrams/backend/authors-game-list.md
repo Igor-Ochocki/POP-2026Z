@@ -1,16 +1,17 @@
+```plantuml
 @startuml
 interface AuthoredGamesApi <<interface>>\n<< /api/v1/authored >> {
-    + <<GET /games >>\n\tget_games(tags: string[*], limit: number, offset: number): Promise<GameMetadataDTO[*]>
-    + <<GET /tags >>\n/get_tags(): Promise<string[*]>
+    + <<GET /games >>\n\tget_games(tags: string[*], limit: number, offset: number): Promise<GameResponseSchema[*]>
+    + <<GET /tags >>\n\tget_tags(): Promise<string[*]>
 }
 
 class AuthoredGamesApiController <<Controller>> implements AuthoredGamesApi {
-    +getGames(tags: string[*], limit: number, offset: number): Promise<GameMetadataDTO[*]>
+    +getGames(tags: string[*], limit: number, offset: number): Promise<GameResponseSchema[*]>
     +getGameTags(): Promise<string[*]>
 }
 
 class AuthoredGamesService implements IAuthoredGamesService {
-    +getGames(tags: string[*], limit: number, offset: number): Promise<GameMetadataDTO[*]>
+    +getGames(tags: string[*], limit: number, offset: number): Promise<GameResponseSchema[*]>
     +getGameTags(): Promise<string[*]>
 }
 
@@ -24,12 +25,17 @@ class AuthService implements IAuthService {
 
 
 package "Models (Db)" as models {
-    class Game <<Base>> {
-        + id: str
+
+    class Game <<BaseModel>> {
+        + game_id: str
         + title: str
         + description: str
+        + min_players: int
+        + max_players: int
+        + duration_minutes: int
+        + requires_invitation: bool
         + tags: list[str]
-        + status: GameStatus
+        + status: str
     }
     
     class User <<Base>> {
@@ -52,10 +58,14 @@ package "Enums"{
 }
 
 package "Schemas" {
-    class GameMetadataDTO <<BaseModel>> {
+    class GameResponseSchema <<BaseModel>> {
         + game_id: str
         + title: str
         + description: str
+        + min_players: int
+        + max_players: int
+        + duration_minutes: int
+        + requires_invitation: bool
         + tags: list[str]
         + status: str
     }
@@ -64,14 +74,15 @@ package "Schemas" {
 AuthoredGamesApiController --> IAuthoredGamesService
 User -> Game
 Game --> GameStatus
-AuthoredGamesApiController -> GameMetadataDTO
-IAuthoredGamesService -> GameMetadataDTO
-AuthoredGamesService -> GameMetadataDTO
+AuthoredGamesApiController -> GameResponseSchema
+IAuthoredGamesService -> GameResponseSchema
+AuthoredGamesService -> GameResponseSchema
 AuthoredGamesService --> IAuthService
 AuthoredGamesService --> User
 AuthService --> User
 AuthoredGamesService --> Game
 
 @enduml
+```
 
-![Lista gier autora](./rendered/authors-game-list.svg)
+![](./rendered/authors-game-list.svg)
