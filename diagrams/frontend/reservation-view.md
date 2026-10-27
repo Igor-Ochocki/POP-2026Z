@@ -2,11 +2,14 @@
 
 ```
 
+
 @startuml reservation-view
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
 skinparam shadowing false
 skinparam roundcorner 4
+skinparam nodesep 26
+skinparam ranksep 34
 skinparam linetype polyline
 
 title PU2 - Game Time Reservation - View
@@ -93,28 +96,32 @@ PaymentCompletedMessageDialog ..> ICalendarActions : dispatches actions
 SlotUnavailableMessageDialog ..> ICalendarActions : dispatches actions
 
 note right of ReservationView
-    One reservation view for the whole flow.
-    UI elements render from Hook state.
-    
-    No show() parameters are needed.
+    One view for the reservation flow.
+    State changes trigger re-rendering.
+    No show() parameters are required.
 end note
 
 note right of CalendarView
     PU1 owns the calendar.
     
     Entry paths:
-    - Reserve button: no initial slot
-    - Calendar slot: selected slot supplied
-      to the reservation Hook as initial state
+    - Reserve button: no selected slot
+    - Calendar slot: selected slot passed
+      to the reservation Hook
 end note
 
 note bottom of PaymentPanel
-    The organizer can pay now or later.
-    Choosing pay later leaves payment
-    status as UNPAID.
+    Pay now:
+    The Hook calls the backend payment endpoint
+    after the payment flow succeeds.
+
+    Pay later:
+    Keep the reservation unpaid.
+    Do not call the payment endpoint.
 end note
 
 @enduml
+
 ```
 
 </div>
