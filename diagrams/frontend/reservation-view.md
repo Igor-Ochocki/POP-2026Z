@@ -84,10 +84,10 @@ CalendarView ..> ReservationView : opens from reserve button
 CalendarView ..> ReservationView : opens from calendar slot
 
 ReservationView *-- ReservationFormPanel : contains
-ReservationView -- ReservationConfirmDialog : displays
+ReservationView --> ReservationConfirmDialog : displays
 ReservationView -- PaymentPanel : displays
-ReservationView -- PaymentCompletedMessageDialog : displays
-ReservationView -- SlotUnavailableMessageDialog : displays
+ReservationView --> PaymentCompletedMessageDialog : displays
+ReservationView --> SlotUnavailableMessageDialog : displays
 
 ReservationFormPanel ..> ICalendarActions : dispatches actions
 ReservationConfirmDialog ..> ICalendarActions : dispatches actions
