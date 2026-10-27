@@ -2,11 +2,14 @@
 
 ```
 
+
 @startuml reservation-presenter
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
 skinparam shadowing false
 skinparam roundcorner 4
+skinparam nodesep 26
+skinparam ranksep 34
 skinparam linetype polyline
 
 title PU2 - Game Time Reservation - Presenter
@@ -23,8 +26,8 @@ class useCalendar <<Hook>> {
     +onPaymentCompletedMessageDialogConfirm()
     +onSlotUnavailableMessageDialogConfirm()
     -createReservation()
-    -completePayment()
     -cancelReservation()
+    -markPaymentCompleted()
 }
 
 interface ICalendarActions <<interface>> {
@@ -49,74 +52,104 @@ interface ICalendarWindows <<interface>> {
 }
 
 class CalendarViewModel <<State>> {
-    +selectedGameId: string
-    +selectedSlot: TimeSlotDTO [0..1]
-    +activeReservation: ReservationSummaryDTO [0..1]
+    +selectedGameId: string | null
+    +selectedSlot: TimeSlotDTO | null
+    +activeReservation: ReservationSummarySchema | null
     +participantCount: number
     +isConfirmationDialogOpen: boolean
     +isPaymentViewOpen: boolean
     +isProcessing: boolean
-    +errorMessage: string [0..1]
+    +errorMessage: string | null
 }
 
-interface ReservationsApi <<interface>> {
-    +getAvailableSlots(gameId: string, startDate: DateTime, endDate: DateTime): Promise<TimeSlotDTO[*]>
-    +createReservation(slotId: string, gameId: string, participantCount: number): Promise<ReservationSummaryDTO>
-    +cancelReservation(reservationId: string): Promise<boolean>
+interface CalendarApi <<interface>> {
+    +create_reservation(user_id: str, dto: ReservationCreateSchema): ReservationSummarySchema
+    +cancel_reservation(user_id: str, reservation_id: str): bool
+    +mark_payment_completed(user_id: str, reservation_id: str): ReservationSummarySchema
 }
 
-interface PaymentsApi <<interface>> {
-    +pay(reservationId: string): Promise<PaymentStatus>
-    +getPaymentStatus(reservationId: string): Promise<PaymentStatus>
+class CalendarApiClient <<API Client>> {
+    +create_reservation(user_id: str, dto: ReservationCreateSchema): ReservationSummarySchema
+    +cancel_reservation(user_id: str, reservation_id: str): bool
+    +mark_payment_completed(user_id: str, reservation_id: str): ReservationSummarySchema
 }
 
-class CalendarView <<External PU1>>
+class ReservationCreateSchema <<Backend DTO>> {
+    +slot_id: str
+    +game_id: str
+    +participant_count: int
+}
+
+class ReservationSummarySchema <<Backend DTO>> {
+    +reservation_id: str
+    +slot_id: str
+    +game_id: str
+    +organizer_id: str
+    +participant_count: int
+    +total_cost: float
+    +status: str
+    +is_paid: bool
+}
+
+class TimeSlotDTO <<PU1 DTO reference>>
+
+enum ReservationStatus {
+    Unpaid
+    Confirmed
+    Cancelled
+}
+
+enum PaymentStatus {
+    Pending
+    Completed
+    Failed
+}
 
 useCalendar .u.|> ICalendarActions
 useCalendar -u-> ICalendarWindows
-useCalendar --> ReservationsApi : apiClient.reservations
-useCalendar --> PaymentsApi : apiClient.payments
+useCalendar --> CalendarApi : reservations client
+CalendarApiClient .u.|> CalendarApi
+CalendarApiClient ..> ReservationCreateSchema : request
+CalendarApiClient ..> ReservationSummarySchema : response
+
 useCalendar *-- "1" CalendarViewModel : owns state
 
-ReservationsApi ..> TimeSlotDTO : returns
-ReservationsApi ..> ReservationSummaryDTO : returns
-PaymentsApi ..> PaymentStatus : returns
+useCalendar ..> TimeSlotDTO : receives selected slot
+CalendarViewModel ..> TimeSlotDTO : stores selected slot
+CalendarViewModel ..> ReservationSummarySchema : stores active reservation
+ReservationSummarySchema ..> ReservationStatus
+ReservationSummarySchema ..> PaymentStatus
 
-CalendarView ..> ICalendarActions : user actions
+note right of CalendarApi
+    Backend endpoints:
+    POST   /api/v1/reservations/
+    DELETE /api/v1/reservations/{reservation_id}
+    POST   /api/v1/reservations/{reservation_id}/payment
 
-note right of CalendarViewModel
-    State is owned by the Hook.
-    selectedSlot and activeReservation
-    are optional and may be null.
-    
-    View reads this state to render
-    the current reservation step.
+    user_id is obtained from the
+    authenticated session on the backend.
 end note
 
-note right of ICalendarWindows
-    Methods change which UI is visible.
-    No state parameters are required:
-    the view reads state from the Hook.
-    
-    Calendar-specific windows remain
-    the responsibility of PU1.
+note bottom of useCalendar
+    Reservation flow:
+    1. Open reservation view.
+    2. Create reservation using selected slot.
+    3. Display confirmation dialog.
+    4. Confirm or cancel reservation.
+    5. Pay now or choose pay later.
+    6. Display payment result.
 end note
 
-note bottom of ReservationsApi
-    A reservation can be created with
-    payment status UNPAID.
-    The slot is selected before creation.
-    
-    If the user starts without a slot,
-    they must select an available slot first.
+note bottom of ReservationSummarySchema
+    The schema is defined by the backend.
+    It is referenced here, not redefined
+    as a new frontend-specific DTO.
 end note
 
-note bottom of PaymentsApi
-    Payment is optional during reservation.
-    onPayLater keeps the reservation
-    confirmed with status UNPAID.
-    Successful payment changes status
-    to PAID.
+note right of TimeSlotDTO
+    Defined by PU1 or a shared contract.
+    selectedSlot may be null when
+    the view is opened without a slot.
 end note
 
 @enduml
