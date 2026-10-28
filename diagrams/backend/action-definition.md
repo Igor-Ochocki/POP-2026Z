@@ -14,20 +14,21 @@ skinparam linetype polyline
 title PU51 Zdefiniowanie akcji - backend
 
 interface ActionsApi <<interface>>\n<< /api/v1/actions >> {
-    + <<POST / >>\n\tcreate_action(metadata: ActionCreateSchema): bool
+    + <<POST / >>\n\tcreate_action(metadata: ActionCreateSchema): ActionSchema
+    + <<GET /{id}>>\n\tget_action(action_id:str): ActionSchema
     + <<GET /action_types>>\n\tget_action_types(): list[str]
 + <<GET /effect_kind>>\n\tget_effect_kind(): list[str]
 }
 
 class ActionsController <<Controller>> {
     - actions_service: IActionsService
-+ create_action(metadata: ActionCreateSchema): bool
++ create_action(metadata: ActionCreateSchema): ActionSchema
     + get_action_types(): list[str]
 + get_effect_kind(): list[str]
 }
 
 interface IActionsService <<interface>> {
-+ create_action(dto: ActionCreateSchema): bool
++ create_action(dto: ActionCreateSchema): ActionSchema
     + get_action_types(): list[str]
 + get_effect_kind(): list[str]
 
@@ -35,7 +36,7 @@ interface IActionsService <<interface>> {
 
 class ActionsService {
     - db_session: Session
-+ create_action(dto: ActionCreateSchema): bool
++ create_action(dto: ActionCreateSchema): ActionSchema
     + get_action_types(): list[str]
 + get_effect_kind(): list[str]
 }
@@ -48,6 +49,14 @@ package "Schemas" {
 + outcome_type: str
 + outcome_value: str
     }
+    class ActionSchema <<BaseModel>>{
+    + action_id: str
+    + game_id: str
+    + name: str
+    + action_type: str
+    + outcome_type: str
+    + outcome_value: str
+    }
 }
 
 package "Models (Db)" as models {
@@ -56,6 +65,7 @@ package "Models (Db)" as models {
     }
     
     class Action <<Base>> {
+    + action_id: str
         + game_id: str
 + name: str
 + action_type: ActionType
