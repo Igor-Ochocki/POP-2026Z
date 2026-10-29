@@ -83,9 +83,9 @@ CalendarWindows --> ReservationView : displays
 CalendarView ..> ReservationView : opens from reserve button
 CalendarView ..> ReservationView : opens from calendar slot
 
-ReservationView *-- ReservationFormPanel : contains
+ReservationView --> ReservationFormPanel : displays
 ReservationView --> ReservationConfirmDialog : displays
-ReservationView -- PaymentPanel : displays
+ReservationView --> PaymentPanel : displays
 ReservationView --> PaymentCompletedMessageDialog : displays
 ReservationView --> SlotUnavailableMessageDialog : displays
 
