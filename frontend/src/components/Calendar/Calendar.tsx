@@ -27,7 +27,7 @@ function getDayCellClass({ isOther, isToday }: DayCellInfo): string {
 export default function Calendar({
   events,
   onEventDetails,
-  onDateClick, // to samo tu
+  onDateClick,
 }: CalendarProps) {
   return (
     <div className='calendar'>

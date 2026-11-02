@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import type { CalendarViewModel, ICalendarActions } from '@app-types/calendar';
-import { mockEvents } from '@views/CalendarView/mocks';
+import { mockEvents } from '@api/mocks/mocks';
 
 export function useCalendar(): {
   state: CalendarViewModel;
