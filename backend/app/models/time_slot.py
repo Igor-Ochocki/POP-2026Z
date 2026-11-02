@@ -2,7 +2,7 @@ from datetime import datetime
 from uuid import uuid4
 
 from sqlalchemy import DateTime, Float, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
 
@@ -28,3 +28,5 @@ class TimeSlot(Base):
     location: Mapped[str] = mapped_column(String(200))
     base_price: Mapped[float] = mapped_column(Float)
     is_available: Mapped[bool] = mapped_column(default=True)
+
+    reservations: Mapped[list["Reservation"]] = relationship(back_populates="slot")  # noqa: F821

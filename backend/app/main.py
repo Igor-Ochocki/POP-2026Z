@@ -8,11 +8,17 @@ from fastapi.responses import JSONResponse
 from app.api.v1.router import api_router
 from app.core.config import get_settings
 from app.db.database import create_tables
-from app.services.calendar_service import SlotNotFoundError, SlotUnavailableError
+from app.services.calendar_service import (
+    ReservationAlreadyPaidError,
+    ReservationNotCancellableError,
+    ReservationNotFoundError,
+    SlotNotFoundError,
+    SlotUnavailableError,
+)
 
 
 def register_domain_error_handlers(application: FastAPI) -> None:
-    """Translate service-layer domain errors into HTTP responses (404/409)."""
+    """Translate service-layer domain errors into HTTP responses."""
 
     def entity_not_found(_: Request, exc: Exception) -> JSONResponse:
         return JSONResponse(status_code=404, content={"detail": str(exc)})
@@ -21,7 +27,10 @@ def register_domain_error_handlers(application: FastAPI) -> None:
         return JSONResponse(status_code=409, content={"detail": str(exc)})
 
     application.add_exception_handler(SlotNotFoundError, entity_not_found)
+    application.add_exception_handler(ReservationNotFoundError, entity_not_found)
     application.add_exception_handler(SlotUnavailableError, conflict)
+    application.add_exception_handler(ReservationNotCancellableError, conflict)
+    application.add_exception_handler(ReservationAlreadyPaidError, conflict)
 
 
 @asynccontextmanager
