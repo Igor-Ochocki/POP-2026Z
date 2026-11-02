@@ -11,6 +11,7 @@ skinparam linetype polyline
 title PU49 Zdefiniowanie gry - presenter
 
 class useGameDefinition <<Hook>> {
+    + onCreateGame()
     + onEditParameters()
     + onChangeParameter(field: string, value: string | boolean)
     + onSaveMetadata()
@@ -25,10 +26,13 @@ class useGameDefinition <<Hook>> {
     + onSaveErrorMessageDialogConfirm()
     + onCancelGameCreation()
     - validateParameters(form: GameParametersForm): GameParametersErrors
+    - toCreatePayload(game: GameMetadataDTO): GameCreatePayload
+    - fromResponsePayload(data: GameResponsePayload): GameMetadataDTO
     - saveGame(asDraft: boolean)
 }
 
 interface IGameDefinitionActions <<interface>> {
+    + onCreateGame()
     + onEditParameters()
     + onChangeParameter(field: string, value: string | boolean)
     + onSaveMetadata()
@@ -45,37 +49,69 @@ interface IGameDefinitionActions <<interface>> {
 }
 
 interface IGameDefinitionWindows <<interface>> {
-    + showCreatorPanelView()
-    + showGameListView()
     + showGameDefinitionView()
     + showGameParametersView()
-    + showSensorDefinitionView()
-    + showScenarioEditorView()
     + showParametersSavedMessageDialog()
-    + showIncorrectDataMessageDialog(errors: GameParametersErrors)
+    + showIncorrectDataMessageDialog()
     + showGameSavedMessageDialog()
     + showGameSubmittedMessageDialog()
     + showSaveErrorMessageDialog()
 }
 
-interface GamesApi <<interface>> {
-    + saveGame(metadata: GameMetadataDTO, asDraft: boolean): Promise<GameMetadataDTO>
+interface ICreatorPanelActions <<interface>> {
+    + onOpenCreatorPanel()
+}
+
+class useCreatorPanel <<Hook>> {
+    + onOpenCreatorPanel()
+}
+
+interface IGameListActions <<interface>> {
+    + onOpenGameList()
+}
+
+interface IScenarioEditorActions <<interface>> {
+    + onOpenScenarioEditor(gameId: string)
+}
+
+interface ISensorDefinitionActions <<interface>> {
+    + onOpenSensorDefinition(gameId: string)
+}
+
+interface IGamesApi <<interface>> {
+    + saveGame(metadata: GameCreatePayload, asDraft: boolean): Promise<GameResponsePayload>
     + submitToReviewer(gameId: string): Promise<boolean>
 }
 
-class GameDefinitionViewModel <<State>> {
-    + activePanel: GameDefinitionPanel
-    + validationErrors: GameParametersErrors
-    + isSubmitting: boolean
-    + dialog: GameDefinitionDialog | null
+class GameCreatePayload {
+    + title: string
+    + description: string
+    + min_players: number
+    + max_players: number
+    + duration_minutes: number
+    + requires_invitation: boolean
+    + tags: string[*]
 }
 
-enum GameDefinitionPanel {
+class GameResponsePayload {
+    + game_id: string
+    + status: string
+}
+
+class GameDefinitionViewModel <<State>> {
+    + activePanelType: GameDefinitionPanelTypes
+    + activeGame: GameMetadataDTO | null
+    + validationErrors: GameParametersErrors
+    + isSubmitting: boolean
+    + dialogType: GameDefinitionDialogTypes | null
+}
+
+enum GameDefinitionPanelTypes {
     definition
     parameters
 }
 
-enum GameDefinitionDialog {
+enum GameDefinitionDialogTypes {
     parametersSaved
     incorrectData
     gameSaved
@@ -95,37 +131,40 @@ class GameParametersForm {
 
 enum GameCategory {
     Fantasy
-    Science fiction
+    Science Fiction
     Historyczna
     Kryminalna
     Horror
     Przygodowa
 }
 
-class GameMetadataDTO <<DTO>> {
-    + gameId: string
-    + title: string
-    + description: string
-    + minPlayers: number
-    + maxPlayers: number
-    + durationMinutes: number
-    + requiresInvitation: boolean
-    + tags: string[*]
-    + status: string
-}
-
 useGameDefinition .u.|> IGameDefinitionActions
 useGameDefinition -u-> IGameDefinitionWindows
-useGameDefinition --> GamesApi : apiClient.games
+useCreatorPanel .u.|> ICreatorPanelActions
+useGameDefinition --> ICreatorPanelActions
+useGameDefinition --> IGameListActions
+useGameDefinition --> IScenarioEditorActions
+useGameDefinition --> ISensorDefinitionActions
+useGameDefinition --> IGamesApi : apiClient.games
 useGameDefinition *-- "1" GameDefinitionViewModel : state
 
 GameDefinitionViewModel *-- "1" GameParametersForm : parametersForm
-GameDefinitionViewModel *-- "0..1" GameMetadataDTO : activeGame
-GamesApi ..> GameMetadataDTO
+GameResponsePayload -u-|> GameCreatePayload
+IGamesApi ..> GameCreatePayload
+IGamesApi ..> GameResponsePayload
+
+note right of GameDefinitionViewModel
+    GameMetadataDTO: interfaces.md.
+end note
 
 note right of GameCategory
-    Ta sama lista ma być na backendzie.
-    Kategoria trafia do tags[0] w GameMetadataDTO.
+    Ta sama lista co na backendzie.
+    Kategoria trafia do tags[0].
+end note
+
+note bottom of IGamesApi
+    Payloady odpowiadają GameCreateSchema
+    i GameResponseSchema z backendu.
 end note
 @enduml
 ```
