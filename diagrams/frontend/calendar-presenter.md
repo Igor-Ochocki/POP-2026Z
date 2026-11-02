@@ -11,27 +11,18 @@ onSessionExpiredMessageDialogConfirm()
 
 useCalendar .|> ICalendarActions
 
-useCalendar --> IEventsApi
+useCalendar --> ICalendarApi
 useCalendar -u-> ICalendarWindows
 
-interface IEventsApi <<interface>> {
-getEvents() :CalendarEvent[]
+interface ICalendarApi <<interface>> {
+getEvents(month :Date) :CalendarEventDTO[]
 }
 
 interface ICalendarWindows <<interface>> {
-showCalendarView(events :CalendarEvent[])
+showCalendarView(events :CalendarEventDTO[])
 showSessionExpiredMessageDialog()
 showLoginView()
 }
-
-class CalendarEvent <<DTO>> {
-id :string
-title :string
-date :string
-time :string
-}
-
-IEventsApi ..> CalendarEvent
 @enduml
 
 ![](rendered/calendar-presenter.svg)

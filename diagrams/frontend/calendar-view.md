@@ -1,6 +1,7 @@
 @startuml
 class CalendarView {
-show(events :CalendarEvent[])
+show()
+onMonthChange(month :Date)
 }
 
 class MessageDialog {
@@ -17,29 +18,29 @@ show()
 
 interface ICalendarActions <<interface>> {
 onShowCalendar()
+onMonthChange(month :Date)
 onSessionExpiredMessageDialogConfirm()
 }
 
 ICalendarActions <-u- CalendarView
 ICalendarActions <-u- SessionExpiredMessageDialog
 
-CalendarView --> CalendarEvent
+CalendarView --> CalendarEventDTO
 
-class CalendarEvent <<DTO>> {
+class CalendarEventDTO <<DTO>> {
 id :string
 title :string
-date :string
-time :string
+datetime :Date
 }
 
 interface ICalendarWindows <<interface>> {
-showCalendarView(events :CalendarEvent[])
+showCalendarView()
 showSessionExpiredMessageDialog()
 showLoginView()
 }
 
 class CalendarWindows {
-showCalendarView(events :CalendarEvent[])
+showCalendarView()
 showSessionExpiredMessageDialog()
 showLoginView()
 }
