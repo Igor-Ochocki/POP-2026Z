@@ -31,6 +31,7 @@ enum ActionType {
   USE_ITEM
   DIALOGUE
   CUSTOM
+  MINI_GAME
 }
 
 enum EffectKind {
@@ -39,20 +40,19 @@ enum EffectKind {
   REMOVE_ITEM
   CHANGE_LOCATION
   SET_FLAG
+  START_MINI_GAME
 }
 
-enum ActionDefinitionPanel {
+enum ActionDefinitionPanelTypes {
   gameDefinition
   actionForm
 }
 
-enum ActionDefinitionDialog {
+enum ActionDefinitionDialogTypes {
   incompleteData
   actionSaved
   saveError
 }
-
-
 
 class useActionDefinition <<Hook>> {
   +onDefineAction()
@@ -72,10 +72,10 @@ interface ActionsApi <<interface>> {
 
 class ActionDefinitionViewModel <<State>> {
   +gameId: string
-  +activePanel: ActionDefinitionPanel
+  +activePanelType: ActionDefinitionPanelTypes
   +validationErrors: ActionFormErrors
   +isSubmitting: boolean
-  +dialog: ActionDefinitionDialog | null
+  +dialogType: ActionDefinitionDialogTypes | null
 }
 
 class ActionForm {
@@ -86,10 +86,10 @@ class ActionForm {
 }
 
 class ActionFormErrors {
-  +name?: string
-  +type?: string
-  +effectKind?: string
-  +effectValue?: string
+  +name: string | null
+  +type: string | null
+  +effectKind: string | null
+  +effectValue: string | null
 }
 
 class ActionDto <<DTO>> {
@@ -107,16 +107,8 @@ useActionDefinition --> ActionsApi : apiClient.actions
 useActionDefinition *-- "1" ActionDefinitionViewModel : state
 
 ActionDefinitionViewModel *-- "1" ActionForm : form
-ActionDefinitionViewModel *-- "1" ActionFormErrors
-ActionDefinitionViewModel ..> ActionDefinitionPanel
-ActionDefinitionViewModel ..> ActionDefinitionDialog
 
-ActionForm ..> ActionType
-ActionForm ..> EffectKind
 ActionsApi ..> ActionDto
-ActionDto ..> ActionType
-ActionDto ..> EffectKind
-
 
 @enduml
 ```
