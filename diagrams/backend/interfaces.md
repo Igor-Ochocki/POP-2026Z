@@ -73,14 +73,10 @@ package "Data Transfer Schemas (Pydantic Models)" {
         + victory_conditions: list[str]
     }
 
-    class TimeSlotSchema <<BaseModel>> {
-        + slot_id: str
-        + game_id: str
-        + start_time: datetime
-        + end_time: datetime
-        + location: str
-        + is_available: bool
-        + base_price: float
+    class CalendarEventSchema <<BaseModel>> {
+        + id: str
+        + title: str
+        + datetime: datetime
     }
 
     class ReservationCreateSchema <<BaseModel>> {
@@ -122,7 +118,7 @@ package "Services (Application Business Logic)" {
 
     class CalendarService {
         - db_session: Session
-        + query_available_slots(game_id: str, start_date: datetime, end_date: datetime): list[TimeSlotSchema]
+        + get_events(month: date): list[CalendarEventSchema]
         + create_reservation(user_id: str, dto: ReservationCreateSchema): ReservationSummarySchema
         + mark_payment_completed(reservation_id: str): bool
     }
@@ -134,7 +130,7 @@ ActionsService ..> ActionCreateSchema : consumes
 ScenariosService ..> ScenarioDetailSchema : produces
 ScenarioDetailSchema *-- TaskSchema
 ScenariosService ..> TaskCreateSchema : consumes
-CalendarService ..> TimeSlotSchema : produces
+CalendarService ..> CalendarEventSchema : produces
 CalendarService ..> ReservationCreateSchema : consumes
 CalendarService ..> ReservationSummarySchema : produces
 

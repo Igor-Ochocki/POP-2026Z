@@ -12,33 +12,29 @@ skinparam linetype polyline
 
 title PU1 Wyświetlanie kalendarza - backend
 
-interface CalendarApi <<interface>>\n<< /api/v1/reservations >> {
-    + <<GET /slots >>\n\tquery_available_slots(): list[TimeSlotSchema]
+interface CalendarApi <<interface>>\n<< /api/v1/calendar >> {
+    + <<GET /events?month >>\n\tget_events(month: date): list[CalendarEventSchema]
 }
 
 class CalendarController <<Controller>> {
     - calendar_service: ICalendarService
-    + query_available_slots(): list[TimeSlotSchema]
+    + get_events(month: date): list[CalendarEventSchema]
 }
 
 interface ICalendarService <<interface>> {
-    + query_available_slots(): list[TimeSlotSchema]
+    + get_events(month: date): list[CalendarEventSchema]
 }
 
 class CalendarService {
     - db_session: Session
-    + query_available_slots(): list[TimeSlotSchema]
+    + get_events(month: date): list[CalendarEventSchema]
 }
 
 package "Schemas" {
-    class TimeSlotSchema <<BaseModel>> {
-        + slot_id: str
-        + game_id: str
+    class CalendarEventSchema <<BaseModel>> {
+        + id: str
         + title: str
-        + start_time: datetime
-        + location: str
-        + is_available: bool
-        + base_price: float
+        + datetime: datetime
     }
 }
 
@@ -46,24 +42,17 @@ package "Models (Db)" as models {
     class Game <<Base>> {
         + id: str
         + title: str
+        + duration_minutes: int
         + status: GameStatus
     }
 
     class TimeSlot <<Base>> {
         + id: str
         + game_id: str
-        + title: str
         + start_time: datetime
         + location: str
         + base_price: float
         + is_available: bool
-    }
-
-    class Reservation <<Base>> {
-        + id: str
-        + slot_id: str
-        + status: ReservationStatus
-        + is_paid: bool
     }
 }
 
@@ -74,49 +63,37 @@ package "Enums" {
         Rejected
         Approved
     }
-
-    enum ReservationStatus {
-        Unpaid
-        Confirmed
-        Cancelled
-    }
 }
 
 CalendarController .up.|> CalendarApi
 CalendarController --> ICalendarService
 
 CalendarService .up.|> ICalendarService
-CalendarService ..> TimeSlotSchema : produces
+CalendarService ..> CalendarEventSchema : produces
 CalendarService -right-> TimeSlot
 
 TimeSlot "*" --> "1" Game : game_id
-Reservation "*" --> "1" TimeSlot : slot_id
 
 note bottom of CalendarService
     Mapowanie scenariusza PU1 (główny):
-    1. organizator otwiera kalendarz -> query_available_slots
-    2. backend zwraca wolne i zajęte sloty (is_available)
-    3. dostępność wynika z aktywnych rezerwacji (Reservation.status w Unpaid/Confirmed)
-    4. gra wybierana jest dopiero w PU2 (rezerwacja gry) -
-       endpoint nie filtruje po game_id
+    1. organizator otwiera kalendarz -> get_events(month)
+    2. backend zwraca wolne i zajęte terminy z wybranego miesiąca,
+       posortowane po dacie
+    3. TimeSlot -> CalendarEventSchema:
+       id = TimeSlot.id, title = Game.title, datetime = TimeSlot.start_time
 end note
 
 note right of CalendarApi
-    Kontrakt uzgodniony z frontendem PU1 (PR #62, CalendarEventDTO:
-    id, title, datetime): endpoint bez parametrów, zwraca wszystkie
-    sloty; title = nazwa gry (denormalizacja dla kalendarza);
-    czas końcowy = start_time + durationMinutes gry (PU49).
+    Kontrakt zgodny z frontendem PU1:
+    ICalendarApi.getEvents(month: Date): CalendarEventDTO[]
+    (CalendarEventDTO: id, title, datetime).
+    month = dowolny dzień miesiąca (YYYY-MM-DD),
+    brak lub zły format -> 422.
 end note
 
 note right of Game
-    Sloty należą do gier (typ gry z PU49).
-    Kalendarz pokazuje sloty wszystkich gier -
-    wybór gry następuje dopiero w PU2.
-end note
-
-note bottom of Reservation
-    Model z PU2 - slot jest zajęty,
-    gdy ma aktywną rezerwację.
+    Czas trwania wydarzenia wynika z
+    Game.duration_minutes (PU49).
 end note
 @enduml
 ```

@@ -11,7 +11,8 @@ from app.models.actions import Action
 from app.models.game import Game
 from app.models.scenario import Scenario
 from app.models.task import Task
+from app.models.time_slot import TimeSlot
 
 __all__: list[str] = [
-    "Action", "Game", "Scenario", "Task"
+    "Action", "Game", "Scenario", "Task", "TimeSlot"
 ]
