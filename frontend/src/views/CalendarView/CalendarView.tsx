@@ -11,13 +11,15 @@ export function CalendarView() {
     <main className='calendar-page'>
       <header className='calendar-page__header'>
         <h1>Kalendarz wydarzeń</h1>
-        <Button
-          className='calendar-page__back'
-          aria-label='Powrót'
-          onClick={actions.onBack}
-        >
-          <ChevronLeftIcon fontSize='large' />
-        </Button>
+        <div className='calendar-page__back'>
+          <Button
+            variant='secondary'
+            aria-label='Powrót'
+            onClick={actions.onBack}
+          >
+            <ChevronLeftIcon fontSize='large' />
+          </Button>
+        </div>
       </header>
 
       <Calendar

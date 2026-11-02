@@ -1,11 +1,14 @@
 .calendar-page {
-  --calendar-max-width: 800px;
+  --calendar-max-width: 900px;
 
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
   padding: 32px 16px;
+  min-height: 100vh;
+  color: var(--color-text);
+  background: var(--color-bg);
 }
 
 .calendar-page__header {
@@ -27,8 +30,6 @@
   justify-self: end;
   display: flex;
   align-items: center;
-  padding: 6px 10px;
-  background: transparent;
 }
 
 .calendar-page__back svg {
