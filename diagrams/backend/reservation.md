@@ -110,7 +110,6 @@ package "Models (Db)" as models {
         + id: str
         + game_id: str
         + start_time: datetime
-        + end_time: datetime
         + location: str
         + base_price: float
         + is_available: bool
@@ -155,6 +154,12 @@ CalendarService ..> ReservationSummarySchema : produces
 Reservation "*" --> "1" TimeSlot : slot_id
 User "1" --> "*" Reservation : reservations
 User "1" --> "*" Message : inbox
+
+note right of TimeSlot
+    Wspólny kontrakt z frontendem (CalendarEventDTO:
+    id, title, datetime) - jeden datetime, końcowy
+    czas trwania wyliczany z Game.durationMinutes (PU49).
+end note
 
 note bottom of CalendarService
     Mapowanie scenariusza PU2 (główny):
