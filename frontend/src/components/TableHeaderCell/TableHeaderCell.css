@@ -1,0 +1,6 @@
+.table-header-cell {
+  border-bottom: 2px solid var(--color-border);
+  font: var(--font-emph);
+  text-align: center;
+  padding: 0.25rem 0.5rem;
+}

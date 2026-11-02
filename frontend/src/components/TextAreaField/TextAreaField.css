@@ -1,0 +1,8 @@
+.text-area-field {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.text-area-field__error-text {
+  color: var(--color-error);
+}

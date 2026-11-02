@@ -1,0 +1,13 @@
+.creator-panel-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+.creator-panel-view__tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1rem;
+}

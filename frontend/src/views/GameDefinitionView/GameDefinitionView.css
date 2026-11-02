@@ -1,0 +1,38 @@
+.game-definition-view {
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+.game-definition-view__tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: 0.75rem;
+}
+
+.game-definition-view__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--color-surface-lighter);
+}
+
+.game-definition-view__save {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.game-definition-view__hint {
+  margin-top: -0.75rem;
+  color: var(--color-text-dim);
+  text-align: right;
+}
+
+@media (max-width: 30rem) {
+  .game-definition-view__hint {
+    text-align: left;
+  }
+}

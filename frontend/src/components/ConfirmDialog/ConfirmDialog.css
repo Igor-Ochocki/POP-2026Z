@@ -1,0 +1,12 @@
+.confirm-dialog {
+  padding: 1rem;
+  background-color: var(--color-bg);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-md);
+  border: none;
+}
+
+.confirm-dialog[open] {
+  display: grid;
+  gap: 1rem;
+}

@@ -1,0 +1,8 @@
+.element-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.element-row > * {
+  flex: 1;
+}

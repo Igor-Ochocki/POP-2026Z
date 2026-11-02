@@ -1,14 +1,14 @@
 export interface HealthStatusDTO {
-  status: string
-  database: string
+  status: string;
+  database: string;
 }
 
 export interface HealthViewModel {
-  health: HealthStatusDTO | null
-  isLoading: boolean
-  errorMessage: string | null
+  health: HealthStatusDTO | null;
+  isLoading: boolean;
+  errorMessage: string | null;
 }
 
 export interface IHealthActions {
-  onRefresh(): void
+  onRefresh(): void;
 }

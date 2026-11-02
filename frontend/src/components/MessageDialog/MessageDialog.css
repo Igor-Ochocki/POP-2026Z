@@ -1,0 +1,13 @@
+.message-dialog {
+  padding: 1rem;
+  background-color: var(--color-bg);
+  border-radius: 0.75rem;
+  grid-template-rows: auto 1fr;
+  box-shadow: var(--shadow-md);
+  border: none;
+}
+
+.message-dialog[open] {
+  display: grid;
+  gap: 1rem;
+}

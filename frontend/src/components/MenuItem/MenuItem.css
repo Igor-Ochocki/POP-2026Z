@@ -1,0 +1,16 @@
+.menu-item {
+  background-color: var(--color-surface-light);
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: space-between;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+  color: var(--color-text);
+}
+
+.menu-item:hover {
+  background-color: var(--color-surface-lighter);
+}
