@@ -13,29 +13,29 @@ skinparam linetype polyline
 title PU1 Wyświetlanie kalendarza - backend
 
 interface CalendarApi <<interface>>\n<< /api/v1/reservations >> {
-    + <<GET /slots >>\n\tquery_available_slots(start_date: datetime, end_date: datetime): list[TimeSlotSchema]
+    + <<GET /slots >>\n\tquery_available_slots(): list[TimeSlotSchema]
 }
 
 class CalendarController <<Controller>> {
     - calendar_service: ICalendarService
-    + query_available_slots(start_date: datetime, end_date: datetime): list[TimeSlotSchema]
+    + query_available_slots(): list[TimeSlotSchema]
 }
 
 interface ICalendarService <<interface>> {
-    + query_available_slots(start_date: datetime, end_date: datetime): list[TimeSlotSchema]
+    + query_available_slots(): list[TimeSlotSchema]
 }
 
 class CalendarService {
     - db_session: Session
-    + query_available_slots(start_date: datetime, end_date: datetime): list[TimeSlotSchema]
+    + query_available_slots(): list[TimeSlotSchema]
 }
 
 package "Schemas" {
     class TimeSlotSchema <<BaseModel>> {
         + slot_id: str
         + game_id: str
+        + title: str
         + start_time: datetime
-        + end_time: datetime
         + location: str
         + is_available: bool
         + base_price: float
@@ -52,8 +52,8 @@ package "Models (Db)" as models {
     class TimeSlot <<Base>> {
         + id: str
         + game_id: str
+        + title: str
         + start_time: datetime
-        + end_time: datetime
         + location: str
         + base_price: float
         + is_available: bool
@@ -94,17 +94,18 @@ Reservation "*" --> "1" TimeSlot : slot_id
 
 note bottom of CalendarService
     Mapowanie scenariusza PU1 (główny):
-    1. organizator otwiera kalendarz i wybiera zakres dat -> query_available_slots
-    2. backend zwraca wolne i zajęte sloty (is_available) w podanym zakresie
+    1. organizator otwiera kalendarz -> query_available_slots
+    2. backend zwraca wolne i zajęte sloty (is_available)
     3. dostępność wynika z aktywnych rezerwacji (Reservation.status w Unpaid/Confirmed)
     4. gra wybierana jest dopiero w PU2 (rezerwacja gry) -
        endpoint nie filtruje po game_id
 end note
 
 note right of CalendarApi
-    Kontrakt uzgodniony w review PR #73:
-    bez game_id (gra znana dopiero w PU2),
-    daty jako datetime.
+    Kontrakt uzgodniony z frontendem PU1 (PR #62, CalendarEventDTO:
+    id, title, datetime): endpoint bez parametrów, zwraca wszystkie
+    sloty; title = nazwa gry (denormalizacja dla kalendarza);
+    czas końcowy = start_time + durationMinutes gry (PU49).
 end note
 
 note right of Game
