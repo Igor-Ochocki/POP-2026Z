@@ -1,11 +1,6 @@
-"""ORM models (SQLAlchemy).
+"""ORM models. Import every model here so Base.metadata registers it
+(create_tables relies on that when bootstrapping the database)."""
 
-Import every model here and list it in __all__ - create_tables() only creates
-tables for models imported in this file, e.g.:
+from app.models.time_slot import TimeSlot
 
-    from app.models.game import Game
-
-    __all__ = ["Game"]
-"""
-
-__all__: list[str] = []
+__all__ = ["TimeSlot"]
