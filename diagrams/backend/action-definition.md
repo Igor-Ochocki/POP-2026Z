@@ -23,12 +23,14 @@ interface ActionsApi <<interface>>\n<< /api/v1/actions >> {
 class ActionsController <<Controller>> {
     - actions_service: IActionsService
 + create_action(metadata: ActionCreateSchema): ActionSchema
++ get_action(action_id:str): ActionSchema
     + get_action_types(): list[str]
 + get_effect_kind(): list[str]
 }
 
 interface IActionsService <<interface>> {
 + create_action(dto: ActionCreateSchema): ActionSchema
++ get_action(action_id:str): ActionSchema
     + get_action_types(): list[str]
 + get_effect_kind(): list[str]
 
@@ -37,6 +39,7 @@ interface IActionsService <<interface>> {
 class ActionsService {
     - db_session: Session
 + create_action(dto: ActionCreateSchema): ActionSchema
++ get_action(action_id:str): ActionSchema
     + get_action_types(): list[str]
 + get_effect_kind(): list[str]
 }
