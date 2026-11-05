@@ -7,5 +7,6 @@ tables for models imported in this file, e.g.:
 
     __all__ = ["Game"]
 """
+from app.models.game import Game
 
-__all__: list[str] = []
+__all__: list[str] = ["Game"]
