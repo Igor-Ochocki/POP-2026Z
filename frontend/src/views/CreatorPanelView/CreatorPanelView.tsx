@@ -2,9 +2,12 @@ import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import ActionTile from '@components/ActionTile/ActionTile';
 import PageHeader from '@components/PageHeader/PageHeader';
+import { useGameDefinition } from '@hooks/useGameDefinition';
 import './CreatorPanelView.css';
 
 export function CreatorPanelView() {
+  const gameDefinition = useGameDefinition();
+
   return (
     <section className='creator-panel-view'>
       <PageHeader
@@ -16,8 +19,9 @@ export function CreatorPanelView() {
           icon={<AddCircleOutlinedIcon />}
           title='Utwórz nową grę'
           description='Zdefiniuj parametry, scenariusz i mapę gry'
-          to='/creator/games/new'
+          onClick={gameDefinition.actions.onCreateGame}
         />
+        {/* TODO: PU25 onOpenGameList() */}
         <ActionTile
           icon={<ListAltIcon />}
           title='Lista gier'
