@@ -17,17 +17,12 @@ class useGameDefinition <<Hook>> {
     + onSaveMetadata()
     + onParametersSavedMessageDialogConfirm()
     + onIncorrectDataMessageDialogConfirm()
-    + onAddSensor()
-    + onEditScenario()
     + onSaveDraft()
-    + onGameSavedMessageDialogConfirm()
     + onSubmitForReview()
-    + onGameSubmittedMessageDialogConfirm()
     + onSaveErrorMessageDialogConfirm()
-    + onCancelGameCreation()
     - validateParameters(form: GameParametersForm): GameParametersErrors
-    - toCreatePayload(game: GameMetadataDTO): GameCreatePayload
-    - fromResponsePayload(data: GameResponsePayload): GameMetadataDTO
+    - toCreateDTO(game: GameMetadataDTO): GameCreateDTO
+    - fromResponseDTO(data: GameResponseDTO): GameMetadataDTO
     - saveGame(asDraft: boolean)
 }
 
@@ -38,14 +33,9 @@ interface IGameDefinitionActions <<interface>> {
     + onSaveMetadata()
     + onParametersSavedMessageDialogConfirm()
     + onIncorrectDataMessageDialogConfirm()
-    + onAddSensor()
-    + onEditScenario()
     + onSaveDraft()
-    + onGameSavedMessageDialogConfirm()
     + onSubmitForReview()
-    + onGameSubmittedMessageDialogConfirm()
     + onSaveErrorMessageDialogConfirm()
-    + onCancelGameCreation()
 }
 
 interface IGameDefinitionWindows <<interface>> {
@@ -66,24 +56,12 @@ class useCreatorPanel <<Hook>> {
     + onOpenCreatorPanel()
 }
 
-interface IGameListActions <<interface>> {
-    + onOpenGameList()
-}
-
-interface IScenarioEditorActions <<interface>> {
-    + onOpenScenarioEditor(gameId: string)
-}
-
-interface ISensorDefinitionActions <<interface>> {
-    + onOpenSensorDefinition(gameId: string)
-}
-
 interface IGamesApi <<interface>> {
-    + saveGame(metadata: GameCreatePayload, asDraft: boolean): Promise<GameResponsePayload>
+    + saveGame(metadata: GameCreateDTO, asDraft: boolean): Promise<GameResponseDTO>
     + submitToReviewer(gameId: string): Promise<boolean>
 }
 
-class GameCreatePayload {
+class GameCreateDTO <<DTO>> {
     + title: string
     + description: string
     + min_players: number
@@ -93,7 +71,7 @@ class GameCreatePayload {
     + tags: string[*]
 }
 
-class GameResponsePayload {
+class GameResponseDTO <<DTO>> {
     + game_id: string
     + status: string
 }
@@ -141,17 +119,13 @@ enum GameCategory {
 useGameDefinition .u.|> IGameDefinitionActions
 useGameDefinition -u-> IGameDefinitionWindows
 useCreatorPanel .u.|> ICreatorPanelActions
-useGameDefinition --> ICreatorPanelActions
-useGameDefinition --> IGameListActions
-useGameDefinition --> IScenarioEditorActions
-useGameDefinition --> ISensorDefinitionActions
 useGameDefinition --> IGamesApi : apiClient.games
 useGameDefinition *-- "1" GameDefinitionViewModel : state
 
 GameDefinitionViewModel *-- "1" GameParametersForm : parametersForm
-GameResponsePayload -u-|> GameCreatePayload
-IGamesApi ..> GameCreatePayload
-IGamesApi ..> GameResponsePayload
+GameResponseDTO -u-|> GameCreateDTO
+IGamesApi ..> GameCreateDTO
+IGamesApi ..> GameResponseDTO
 
 note right of GameDefinitionViewModel
     GameMetadataDTO: interfaces.md.
@@ -163,7 +137,7 @@ note right of GameCategory
 end note
 
 note bottom of IGamesApi
-    Payloady odpowiadają GameCreateSchema
+    DTO odpowiadają GameCreateSchema
     i GameResponseSchema z backendu.
 end note
 @enduml

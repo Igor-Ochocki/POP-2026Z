@@ -56,28 +56,38 @@ interface IGameDefinitionActions <<interface>> {
     + onSaveMetadata()
     + onParametersSavedMessageDialogConfirm()
     + onIncorrectDataMessageDialogConfirm()
-    + onAddSensor()
-    + onEditScenario()
     + onSaveDraft()
-    + onGameSavedMessageDialogConfirm()
     + onSubmitForReview()
-    + onGameSubmittedMessageDialogConfirm()
     + onSaveErrorMessageDialogConfirm()
-    + onCancelGameCreation()
+}
+
+interface ICreatorPanelActions <<interface>> {
+    + onOpenCreatorPanel()
 }
 
 interface IGameListActions <<interface>> {
     + onOpenGameList()
 }
 
+interface IScenarioEditorActions <<interface>> {
+    + onOpenScenarioEditor(gameId: string)
+}
+
+interface ISensorDefinitionActions <<interface>> {
+    + onOpenSensorDefinition(gameId: string)
+}
+
 CreatorPanelView --> IGameDefinitionActions
 CreatorPanelView --> IGameListActions
 GameDefinitionView --> IGameDefinitionActions
+GameDefinitionView --> ICreatorPanelActions
+GameDefinitionView --> IScenarioEditorActions
+GameDefinitionView --> ISensorDefinitionActions
 GameParametersPanel --> IGameDefinitionActions
 ParametersSavedMessageDialog --> IGameDefinitionActions
 IncorrectDataMessageDialog --> IGameDefinitionActions
-GameSavedMessageDialog --> IGameDefinitionActions
-GameSubmittedMessageDialog --> IGameDefinitionActions
+GameSavedMessageDialog --> IGameListActions
+GameSubmittedMessageDialog --> ICreatorPanelActions
 SaveErrorMessageDialog --> IGameDefinitionActions
 
 interface IGameDefinitionWindows <<interface>> {
@@ -111,9 +121,9 @@ GameDefinitionWindows --> GameSubmittedMessageDialog
 GameDefinitionWindows --> SaveErrorMessageDialog
 
 note bottom of IGameListActions
-    Akcja prezentera z PU25.
-    Przejścia do PU25, PU50 i PU56 idą
-    przez prezentery tych widoków.
+    Przejścia do innych przypadków użycia widok woła
+    bezpośrednio na ich prezenterach, z pominięciem
+    useGameDefinition. Akcje z PU25, PU50 i PU56.
 end note
 
 note right of GameDefinitionView
