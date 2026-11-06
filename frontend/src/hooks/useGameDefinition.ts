@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { useNavigate, type NavigateFunction } from 'react-router';
+import { useLocation, useNavigate, type NavigateFunction } from 'react-router';
 import { apiClient } from '@api/apiClient';
 import type {
   GameDefinitionViewModel,
+  GameCategory,
   GameMetadataDTO,
   GameParametersErrors,
   GameParametersForm,
@@ -13,7 +14,6 @@ import type {
 const CREATOR_PANEL_PATH = '/creator';
 const GAME_LIST_PATH = '/creator/games';
 const SENSOR_DEFINITION_PATH = '/creator/sensors/new';
-const SCENARIO_EDITOR_PATH = '/creator/scenario';
 
 const REQUIRED = 'Pole wymagane';
 
@@ -83,6 +83,7 @@ function toMetadata(
 function createGameDefinitionWindows(
   setState: SetState,
   navigate: NavigateFunction,
+  currentPath: string,
 ): IGameDefinitionWindows {
   return {
     showCreatorPanelView: () => void navigate(CREATOR_PANEL_PATH),
@@ -100,7 +101,15 @@ function createGameDefinitionWindows(
         dialog: null,
       })),
     showSensorDefinitionView: () => void navigate(SENSOR_DEFINITION_PATH),
-    showScenarioEditorView: () => void navigate(SCENARIO_EDITOR_PATH),
+    showScenarioEditorView: async (game) => {
+      await navigate(currentPath, {
+        replace: true,
+        state: { activeGame: game },
+      });
+      await navigate(`/creator/games/${game.gameId}/scenario`, {
+        state: { activeGame: game },
+      });
+    },
     showParametersSavedMessageDialog: () =>
       setState((prev) => ({ ...prev, dialog: 'parametersSaved' })),
     showIncorrectDataMessageDialog: (errors) =>
@@ -115,6 +124,8 @@ function createGameDefinitionWindows(
       setState((prev) => ({ ...prev, dialog: 'gameSubmitted' })),
     showSaveErrorMessageDialog: () =>
       setState((prev) => ({ ...prev, dialog: 'saveError' })),
+    showSubmitErrorMessageDialog: () =>
+      setState((prev) => ({ ...prev, dialog: 'submitError' })),
   };
 }
 
@@ -122,9 +133,34 @@ export function useGameDefinition(): {
   state: GameDefinitionViewModel;
   actions: IGameDefinitionActions;
 } {
-  const [state, setState] = useState<GameDefinitionViewModel>(initialState);
   const navigate = useNavigate();
-  const windows = createGameDefinitionWindows(setState, navigate);
+  const location = useLocation();
+  const restoredGame = (
+    location.state as { activeGame?: GameMetadataDTO } | null
+  )?.activeGame;
+  const [state, setState] = useState<GameDefinitionViewModel>(() =>
+    restoredGame
+      ? {
+          ...initialState,
+          activeGame: restoredGame,
+          parametersForm: {
+            ...initialForm,
+            title: restoredGame.title,
+            description: restoredGame.description,
+            category: (restoredGame.tags[0] as GameCategory | undefined) ?? '',
+            minPlayers: String(restoredGame.minPlayers),
+            maxPlayers: String(restoredGame.maxPlayers),
+            durationMinutes: String(restoredGame.durationMinutes),
+            requiresInvitation: restoredGame.requiresInvitation,
+          },
+        }
+      : initialState,
+  );
+  const windows = createGameDefinitionWindows(
+    setState,
+    navigate,
+    location.pathname,
+  );
 
   const onEditParameters = () => {
     setState((prev) => ({ ...prev, validationErrors: {} }));
@@ -158,22 +194,35 @@ export function useGameDefinition(): {
 
   const saveGame = async (asDraft: boolean) => {
     const game = state.activeGame;
-    if (!game) return;
+    if (!game || state.isSubmitting || (asDraft && game.gameId)) return;
 
     setState((prev) => ({ ...prev, isSubmitting: true }));
+    let saved = game;
+    if (!game.gameId) {
+      try {
+        saved = await apiClient.games.saveGame(game, asDraft);
+        setState((prev) => ({ ...prev, activeGame: saved }));
+      } catch {
+        setState((prev) => ({ ...prev, isSubmitting: false }));
+        windows.showSaveErrorMessageDialog();
+        return;
+      }
+    }
+
+    if (asDraft) {
+      setState((prev) => ({ ...prev, isSubmitting: false }));
+      windows.showGameSavedMessageDialog();
+      return;
+    }
+
     try {
-      const saved = await apiClient.games.saveGame(game, asDraft);
-      if (!asDraft) await apiClient.games.submitToReviewer(saved.gameId);
-      setState((prev) => ({
-        ...prev,
-        activeGame: saved,
-        isSubmitting: false,
-      }));
-      if (asDraft) windows.showGameSavedMessageDialog();
-      else windows.showGameSubmittedMessageDialog();
+      const submitted = await apiClient.games.submitToReviewer(saved.gameId);
+      if (!submitted) throw new Error('Game submission was rejected.');
+      setState((prev) => ({ ...prev, isSubmitting: false }));
+      windows.showGameSubmittedMessageDialog();
     } catch {
       setState((prev) => ({ ...prev, isSubmitting: false }));
-      windows.showSaveErrorMessageDialog();
+      windows.showSubmitErrorMessageDialog();
     }
   };
 
@@ -188,7 +237,7 @@ export function useGameDefinition(): {
       onAddSensor: windows.showSensorDefinitionView,
       onEditScenario: windows.showScenarioEditorView,
       onSaveDraft: () => void saveGame(true),
-      onGameSavedMessageDialogConfirm: windows.showGameListView,
+      onGameSavedMessageDialogConfirm: windows.showGameDefinitionView,
       onSubmitForReview: () => void saveGame(false),
       onGameSubmittedMessageDialogConfirm: windows.showCreatorPanelView,
       onSaveErrorMessageDialogConfirm: windows.showGameDefinitionView,
