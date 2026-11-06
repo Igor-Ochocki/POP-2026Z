@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { useNavigate, type NavigateFunction } from 'react-router';
+import { useLocation, useNavigate, type NavigateFunction } from 'react-router';
 import { apiClient } from '@api/apiClient';
 import type {
   GameDefinitionViewModel,
+  GameCategory,
   GameMetadataDTO,
   GameParametersErrors,
   GameParametersForm,
@@ -13,7 +14,6 @@ import type {
 const CREATOR_PANEL_PATH = '/creator';
 const GAME_LIST_PATH = '/creator/games';
 const SENSOR_DEFINITION_PATH = '/creator/sensors/new';
-const SCENARIO_EDITOR_PATH = '/creator/scenario';
 
 const REQUIRED = 'Pole wymagane';
 
@@ -100,7 +100,10 @@ function createGameDefinitionWindows(
         dialog: null,
       })),
     showSensorDefinitionView: () => void navigate(SENSOR_DEFINITION_PATH),
-    showScenarioEditorView: () => void navigate(SCENARIO_EDITOR_PATH),
+    showScenarioEditorView: (game) =>
+      void navigate(`/creator/games/${game.gameId}/scenario`, {
+        state: { activeGame: game },
+      }),
     showParametersSavedMessageDialog: () =>
       setState((prev) => ({ ...prev, dialog: 'parametersSaved' })),
     showIncorrectDataMessageDialog: (errors) =>
@@ -122,8 +125,29 @@ export function useGameDefinition(): {
   state: GameDefinitionViewModel;
   actions: IGameDefinitionActions;
 } {
-  const [state, setState] = useState<GameDefinitionViewModel>(initialState);
   const navigate = useNavigate();
+  const location = useLocation();
+  const restoredGame = (
+    location.state as { activeGame?: GameMetadataDTO } | null
+  )?.activeGame;
+  const [state, setState] = useState<GameDefinitionViewModel>(() =>
+    restoredGame
+      ? {
+          ...initialState,
+          activeGame: restoredGame,
+          parametersForm: {
+            ...initialForm,
+            title: restoredGame.title,
+            description: restoredGame.description,
+            category: (restoredGame.tags[0] as GameCategory | undefined) ?? '',
+            minPlayers: String(restoredGame.minPlayers),
+            maxPlayers: String(restoredGame.maxPlayers),
+            durationMinutes: String(restoredGame.durationMinutes),
+            requiresInvitation: restoredGame.requiresInvitation,
+          },
+        }
+      : initialState,
+  );
   const windows = createGameDefinitionWindows(setState, navigate);
 
   const onEditParameters = () => {

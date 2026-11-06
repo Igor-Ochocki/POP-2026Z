@@ -108,7 +108,14 @@ export function GameDefinitionView() {
             <ActionTile
               icon={<AutoStoriesOutlinedIcon />}
               title='Edytuj scenariusz gry'
-              description='Zadania i warunki zwycięstwa'
+              description={
+                game?.gameId
+                  ? 'Zadania i warunki zwycięstwa'
+                  : 'Zapisz grę, aby otworzyć jej scenariusz'
+              }
+              onClick={
+                game?.gameId ? () => actions.onEditScenario(game) : undefined
+              }
             />
             <ActionTile
               icon={<MapOutlinedIcon />}

@@ -10,6 +10,25 @@ export interface GameMetadataDTO {
   status: string;
 }
 
+export interface TaskDTO {
+  taskId: string;
+  title: string;
+  narrative: string;
+  interactionType: string;
+  interactionTargetId: string;
+  requiredPlayerLevel: number;
+  timeLimitMinutes: number;
+  rewardType: string;
+  rewardValue: string;
+}
+
+export interface ScenarioDetailDTO {
+  scenarioId: string;
+  gameId: string;
+  tasks: TaskDTO[];
+  victoryConditions: string[];
+}
+
 export interface GameParametersForm {
   title: string;
   description: string;
@@ -52,7 +71,7 @@ export interface IGameDefinitionActions {
   onParametersSavedMessageDialogConfirm(): void;
   onIncorrectDataMessageDialogConfirm(): void;
   onAddSensor(): void;
-  onEditScenario(): void;
+  onEditScenario(game: GameMetadataDTO): void;
   onSaveDraft(): void;
   onGameSavedMessageDialogConfirm(): void;
   onSubmitForReview(): void;
@@ -67,12 +86,30 @@ export interface IGameDefinitionWindows {
   showGameDefinitionView(): void;
   showGameParametersView(): void;
   showSensorDefinitionView(): void;
-  showScenarioEditorView(): void;
+  showScenarioEditorView(game: GameMetadataDTO): void;
   showParametersSavedMessageDialog(): void;
   showIncorrectDataMessageDialog(errors: GameParametersErrors): void;
   showGameSavedMessageDialog(): void;
   showGameSubmittedMessageDialog(): void;
   showSaveErrorMessageDialog(): void;
+}
+
+export interface ScenarioEditorViewModel {
+  activeGame: GameMetadataDTO | null;
+  scenario: ScenarioDetailDTO | null;
+  isLoading: boolean;
+  errorMessage: string | null;
+}
+
+export interface IScenarioEditorActions {
+  onOpenScenarioEditor(gameId: string): void;
+  onAddTask(): void;
+  onAddVictoryCondition(): void;
+  onCloseScenarioEditor(): void;
+}
+
+export interface IScenarioEditorWindows {
+  showGameDefinitionView(activeGame: GameMetadataDTO | null): void;
 }
 
 export const GAME_CATEGORIES = [
