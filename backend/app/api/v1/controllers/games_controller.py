@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -28,9 +28,10 @@ def get_games_service(db: Annotated[Session, Depends(get_db)]) -> IGamesService:
 def get_game(
     id: str,
     service: Annotated[IGamesService, Depends(get_games_service)],
+    user_id: str = Query(alias="userId"),
 ) -> GameResponseSchema:
     try:
-        return service.get(id)
+        return service.get(user_id, id)
     except GameNotFoundError:
         raise HTTPException(status_code=404, detail=f"Game {id} not found")
 
@@ -39,9 +40,10 @@ def get_game(
 def save_game(
     dto: GameCreateSchema,
     service: Annotated[IGamesService, Depends(get_games_service)],
+    user_id: str = Query(alias="userId"),
     as_draft: bool = True,
 ) -> GameResponseSchema:
-    return service.save_game(dto, as_draft)
+    return service.save_game(user_id, dto, as_draft)
 
 
 @router.put("/{id}", response_model=GameResponseSchema)
@@ -49,8 +51,9 @@ def update_game(
     id: str,
     dto: GameCreateSchema,
     service: Annotated[IGamesService, Depends(get_games_service)],
+    user_id: str = Query(alias="userId"),
 ) -> GameResponseSchema:
     try:
-        return service.update(id, dto)
+        return service.update(user_id, id, dto)
     except GameNotFoundError:
         raise HTTPException(status_code=404, detail=f"Game {id} not found")

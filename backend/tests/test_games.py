@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 from app.services.games_service import GameNotFoundError, GamesService
 from app.schemas.game import GameCreateSchema
 
+TEST_USER_ID = "user-123"
+
 
 def make_dto(
     title: str = "Test Game",
@@ -27,9 +29,9 @@ def make_dto(
 
 def test_games_service_get_found(db_session: Session) -> None:
     service = GamesService(db_session)
-    created = service.save_game(make_dto(), as_draft=True)
+    created = service.save_game(TEST_USER_ID, make_dto(), as_draft=True)
 
-    result = service.get(created.game_id)
+    result = service.get(TEST_USER_ID, created.game_id)
 
     assert result.game_id == created.game_id
     assert result.title == "Test Game"
@@ -39,8 +41,19 @@ def test_games_service_get_not_found(db_session: Session) -> None:
     service = GamesService(db_session)
 
     try:
-        service.get("non-existent-id")
+        service.get(TEST_USER_ID, "non-existent-id")
         assert False, "Expected GameNotFoundError"
+    except GameNotFoundError:
+        pass
+
+
+def test_games_service_get_wrong_user(db_session: Session) -> None:
+    service = GamesService(db_session)
+    created = service.save_game(TEST_USER_ID, make_dto(), as_draft=True)
+
+    try:
+        service.get("other-user", created.game_id)
+        assert False, "Expected GameNotFoundError for wrong user"
     except GameNotFoundError:
         pass
 
@@ -48,7 +61,7 @@ def test_games_service_get_not_found(db_session: Session) -> None:
 def test_games_service_create_ok(db_session: Session) -> None:
     service = GamesService(db_session)
 
-    result = service.save_game(make_dto(), as_draft=True)
+    result = service.save_game(TEST_USER_ID, make_dto(), as_draft=True)
 
     assert result.title == "Test Game"
     assert result.status == "Draft"
@@ -65,9 +78,9 @@ def test_games_service_create_validation_err(db_session: Session) -> None:
 
 def test_games_service_edit_ok(db_session: Session) -> None:
     service = GamesService(db_session)
-    created = service.save_game(make_dto(title="Original"), as_draft=True)
+    created = service.save_game(TEST_USER_ID, make_dto(title="Original"), as_draft=True)
 
-    result = service.update(created.game_id, make_dto(title="Updated"))
+    result = service.update(TEST_USER_ID, created.game_id, make_dto(title="Updated"))
 
     assert result.title == "Updated"
     assert result.game_id == created.game_id
@@ -85,15 +98,26 @@ def test_games_service_edit_not_found(db_session: Session) -> None:
     service = GamesService(db_session)
 
     try:
-        service.update("non-existent-id", make_dto())
+        service.update(TEST_USER_ID, "non-existent-id", make_dto())
         assert False, "Expected GameNotFoundError"
+    except GameNotFoundError:
+        pass
+
+
+def test_games_service_edit_wrong_user(db_session: Session) -> None:
+    service = GamesService(db_session)
+    created = service.save_game(TEST_USER_ID, make_dto(), as_draft=True)
+
+    try:
+        service.update("other-user", created.game_id, make_dto())
+        assert False, "Expected GameNotFoundError for wrong user"
     except GameNotFoundError:
         pass
 
 
 def test_games_endpoint_create_ok(client: TestClient) -> None:
     response = client.post(
-        "/api/v1/games/",
+        "/api/v1/games/?userId=user-123",
         json={
             "title": "Test Game",
             "description": "desc",
@@ -112,13 +136,13 @@ def test_games_endpoint_create_ok(client: TestClient) -> None:
 
 
 def test_games_endpoint_get_not_found(client: TestClient) -> None:
-    response = client.get("/api/v1/games/non-existent-id")
+    response = client.get("/api/v1/games/non-existent-id?userId=user-123")
     assert response.status_code == 404
 
 
 def test_games_endpoint_create_validation_err(client: TestClient) -> None:
     response = client.post(
-        "/api/v1/games/",
+        "/api/v1/games/?userId=user-123",
         json={
             "title": "",
             "description": "desc",
@@ -134,7 +158,7 @@ def test_games_endpoint_create_validation_err(client: TestClient) -> None:
 
 def test_games_endpoint_edit_ok(client: TestClient) -> None:
     create_resp = client.post(
-        "/api/v1/games/",
+        "/api/v1/games/?userId=user-123",
         json={
             "title": "Original",
             "description": "desc",
@@ -148,7 +172,7 @@ def test_games_endpoint_edit_ok(client: TestClient) -> None:
     game_id = create_resp.json()["game_id"]
 
     response = client.put(
-        f"/api/v1/games/{game_id}",
+        f"/api/v1/games/{game_id}?userId=user-123",
         json={
             "title": "Updated",
             "description": "new desc",
@@ -168,7 +192,37 @@ def test_games_endpoint_edit_ok(client: TestClient) -> None:
 
 def test_games_endpoint_edit_not_found(client: TestClient) -> None:
     response = client.put(
-        "/api/v1/games/non-existent-id",
+        "/api/v1/games/non-existent-id?userId=user-123",
+        json={
+            "title": "Updated",
+            "description": "desc",
+            "min_players": 2,
+            "max_players": 4,
+            "duration_minutes": 60,
+            "requires_invitation": False,
+            "tags": [],
+        },
+    )
+    assert response.status_code == 404
+
+
+def test_games_endpoint_edit_wrong_user(client: TestClient) -> None:
+    create_resp = client.post(
+        "/api/v1/games/?userId=user-123",
+        json={
+            "title": "Original",
+            "description": "desc",
+            "min_players": 2,
+            "max_players": 4,
+            "duration_minutes": 60,
+            "requires_invitation": False,
+            "tags": [],
+        },
+    )
+    game_id = create_resp.json()["game_id"]
+
+    response = client.put(
+        f"/api/v1/games/{game_id}?userId=other-user",
         json={
             "title": "Updated",
             "description": "desc",

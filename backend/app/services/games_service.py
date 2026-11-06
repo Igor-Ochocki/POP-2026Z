@@ -11,16 +11,16 @@ class GameNotFoundError(Exception):
 
 class IGamesService(ABC):
     @abstractmethod
-    def save_game(self, dto: GameCreateSchema, as_draft: bool) -> GameResponseSchema: ...
+    def save_game(self, user_id: str, dto: GameCreateSchema, as_draft: bool) -> GameResponseSchema: ...
 
     @abstractmethod
-    def submit_to_reviewer(self, game_id: str) -> bool: ...
+    def submit_to_reviewer(self, user_id: str, game_id: str) -> bool: ...
 
     @abstractmethod
-    def get(self, id: str) -> GameResponseSchema: ...
+    def get(self, user_id: str, id: str) -> GameResponseSchema: ...
 
     @abstractmethod
-    def update(self, id: str, dto: GameCreateSchema) -> GameResponseSchema: ...
+    def update(self, user_id: str, id: str, dto: GameCreateSchema) -> GameResponseSchema: ...
 
 
 class GamesService(IGamesService):
@@ -41,14 +41,17 @@ class GamesService(IGamesService):
             status=game.status.value,
         )
 
-    def get(self, id: str) -> GameResponseSchema:
+    def get(self, user_id: str, id: str) -> GameResponseSchema:
         game = self.db_session.get(Game, id)
         if game is None:
             raise GameNotFoundError(f"Game {id} not found")
+        if game.author_id != user_id:
+            raise GameNotFoundError(f"Game {id} not found")
         return self._map_to_response(game)
 
-    def save_game(self, dto: GameCreateSchema, as_draft: bool) -> GameResponseSchema:
+    def save_game(self, user_id: str, dto: GameCreateSchema, as_draft: bool) -> GameResponseSchema:
         game = Game(
+            author_id=user_id,
             title=dto.title,
             description=dto.description,
             min_players=dto.min_players,
@@ -65,9 +68,11 @@ class GamesService(IGamesService):
 
         return self._map_to_response(game)
 
-    def submit_to_reviewer(self, game_id: str) -> bool:
+    def submit_to_reviewer(self, user_id: str, game_id: str) -> bool:
         game = self.db_session.get(Game, game_id)
         if game is None:
+            raise GameNotFoundError(f"Game {game_id} not found")
+        if game.author_id != user_id:
             raise GameNotFoundError(f"Game {game_id} not found")
 
         if game.status in (GameStatus.Submitted, GameStatus.Approved, GameStatus.Rejected):
@@ -78,9 +83,11 @@ class GamesService(IGamesService):
 
         return True
 
-    def update(self, id: str, dto: GameCreateSchema) -> GameResponseSchema:
+    def update(self, user_id: str, id: str, dto: GameCreateSchema) -> GameResponseSchema:
         game = self.db_session.get(Game, id)
         if game is None:
+            raise GameNotFoundError(f"Game {id} not found")
+        if game.author_id != user_id:
             raise GameNotFoundError(f"Game {id} not found")
 
         if game.status == GameStatus.Approved:

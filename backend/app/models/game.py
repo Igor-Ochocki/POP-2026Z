@@ -17,7 +17,8 @@ class GameStatus(str, PyEnum):
 class Game(Base):
     __tablename__ = "games"
 
-    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    author_id: Mapped[str] = mapped_column(String(36), nullable=False) # Jak będą użytkownicy to zmiana na FK do User
     title: Mapped[str] = mapped_column(String)
     description: Mapped[str] = mapped_column(String)
     min_players: Mapped[int] = mapped_column(Integer)
