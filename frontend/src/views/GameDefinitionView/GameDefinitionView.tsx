@@ -14,7 +14,7 @@ import PageHeader from '@components/PageHeader/PageHeader';
 import TextLabel from '@components/TextLabel/TextLabel';
 import { useGameDefinition } from '@hooks/useGameDefinition';
 import type {
-  GameDefinitionDialogTypes,
+  GameDefinitionDialog,
   GameMetadataDTO,
   IGameDefinitionActions,
 } from '@app-types/game';
@@ -33,7 +33,7 @@ function describeGame(game: GameMetadataDTO): string {
 function getDialogs(
   actions: IGameDefinitionActions,
 ): Record<
-  GameDefinitionDialogTypes,
+  GameDefinitionDialog,
   { title: string; message: string; onConfirm: () => void }
 > {
   return {
@@ -69,13 +69,11 @@ export function GameDefinitionView() {
   const { state, actions } = useGameDefinition();
   const game = state.activeGame;
   const canSave = game !== null && !state.isSubmitting;
-  const dialog = state.dialogType
-    ? getDialogs(actions)[state.dialogType]
-    : null;
+  const dialog = state.dialog ? getDialogs(actions)[state.dialog] : null;
 
   return (
     <section className='game-definition-view'>
-      {state.activePanelType === 'parameters' ? (
+      {state.activePanel === 'parameters' ? (
         <GameParametersPanel
           form={state.parametersForm}
           errors={state.validationErrors}
