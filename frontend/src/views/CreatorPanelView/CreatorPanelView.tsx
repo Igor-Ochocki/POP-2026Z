@@ -3,10 +3,12 @@ import ListAltIcon from '@mui/icons-material/ListAlt';
 import ActionTile from '@components/ActionTile/ActionTile';
 import PageHeader from '@components/PageHeader/PageHeader';
 import { useGameDefinition } from '@hooks/useGameDefinition';
+import { useGameList } from '@hooks/useGameList';
 import './CreatorPanelView.css';
 
 export function CreatorPanelView() {
   const gameDefinition = useGameDefinition();
+  const gameList = useGameList();
 
   return (
     <section className='creator-panel-view'>
@@ -21,12 +23,11 @@ export function CreatorPanelView() {
           description='Zdefiniuj parametry, scenariusz i mapę gry'
           onClick={gameDefinition.actions.onCreateGame}
         />
-        {/* TODO: PU25 onOpenGameList() */}
         <ActionTile
           icon={<ListAltIcon />}
           title='Lista gier'
           description='Przeglądaj swoje gry i ich statusy'
-          to='/creator/games'
+          onClick={gameList.actions.onOpenGameList}
         />
       </div>
     </section>

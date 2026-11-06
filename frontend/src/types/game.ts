@@ -10,7 +10,7 @@ export interface GameMetadataDTO {
   status: string;
 }
 
-export interface GameCreatePayload {
+export interface GameCreateDTO {
   title: string;
   description: string;
   min_players: number;
@@ -20,7 +20,7 @@ export interface GameCreatePayload {
   tags: string[];
 }
 
-export interface GameResponsePayload extends GameCreatePayload {
+export interface GameResponseDTO extends GameCreateDTO {
   game_id: string;
   status: string;
 }
@@ -67,14 +67,9 @@ export interface IGameDefinitionActions {
   onSaveMetadata(): void;
   onParametersSavedMessageDialogConfirm(): void;
   onIncorrectDataMessageDialogConfirm(): void;
-  onAddSensor(): void;
-  onEditScenario(): void;
   onSaveDraft(): void;
-  onGameSavedMessageDialogConfirm(): void;
   onSubmitForReview(): void;
-  onGameSubmittedMessageDialogConfirm(): void;
   onSaveErrorMessageDialogConfirm(): void;
-  onCancelGameCreation(): void;
 }
 
 export interface IGameDefinitionWindows {

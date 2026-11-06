@@ -1,22 +1,18 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { apiClient } from '@api/apiClient';
-import { useCreatorPanel } from '@hooks/useCreatorPanel';
 import type {
-  GameCreatePayload,
+  GameCreateDTO,
   GameDefinitionViewModel,
   GameMetadataDTO,
   GameParametersErrors,
   GameParametersForm,
-  GameResponsePayload,
+  GameResponseDTO,
   IGameDefinitionActions,
   IGameDefinitionWindows,
 } from '@app-types/game';
 
 const GAME_DEFINITION_PATH = '/creator/games/new';
-const GAME_LIST_PATH = '/creator/games';
-const SENSOR_DEFINITION_PATH = '/creator/sensors/new';
-const SCENARIO_EDITOR_PATH = '/creator/scenario';
 
 const REQUIRED = 'Pole wymagane';
 
@@ -83,7 +79,7 @@ function toMetadata(
   };
 }
 
-function toCreatePayload(game: GameMetadataDTO): GameCreatePayload {
+function toCreateDTO(game: GameMetadataDTO): GameCreateDTO {
   return {
     title: game.title,
     description: game.description,
@@ -95,7 +91,7 @@ function toCreatePayload(game: GameMetadataDTO): GameCreatePayload {
   };
 }
 
-function fromResponsePayload(data: GameResponsePayload): GameMetadataDTO {
+function fromResponseDTO(data: GameResponseDTO): GameMetadataDTO {
   return {
     gameId: data.game_id,
     title: data.title,
@@ -144,7 +140,6 @@ export function useGameDefinition(): {
 } {
   const [state, setState] = useState<GameDefinitionViewModel>(initialState);
   const navigate = useNavigate();
-  const creatorPanel = useCreatorPanel();
   const windows = createGameDefinitionWindows(setState);
 
   const onEditParameters = () => {
@@ -184,8 +179,8 @@ export function useGameDefinition(): {
 
     setState((prev) => ({ ...prev, isSubmitting: true }));
     try {
-      const saved = fromResponsePayload(
-        await apiClient.games.saveGame(toCreatePayload(game), asDraft),
+      const saved = fromResponseDTO(
+        await apiClient.games.saveGame(toCreateDTO(game), asDraft),
       );
       if (!asDraft) await apiClient.games.submitToReviewer(saved.gameId);
       setState((prev) => ({
@@ -210,18 +205,9 @@ export function useGameDefinition(): {
       onSaveMetadata,
       onParametersSavedMessageDialogConfirm: windows.showGameDefinitionView,
       onIncorrectDataMessageDialogConfirm: windows.showGameParametersView,
-      // TODO: PU50 onOpenSensorDefinition(gameId)
-      onAddSensor: () => void navigate(SENSOR_DEFINITION_PATH),
-      // TODO: PU56 onOpenScenarioEditor(gameId)
-      onEditScenario: () => void navigate(SCENARIO_EDITOR_PATH),
       onSaveDraft: () => void saveGame(true),
-      // TODO: PU25 onOpenGameList()
-      onGameSavedMessageDialogConfirm: () => void navigate(GAME_LIST_PATH),
       onSubmitForReview: () => void saveGame(false),
-      onGameSubmittedMessageDialogConfirm:
-        creatorPanel.actions.onOpenCreatorPanel,
       onSaveErrorMessageDialogConfirm: windows.showGameDefinitionView,
-      onCancelGameCreation: creatorPanel.actions.onOpenCreatorPanel,
     },
   };
 }

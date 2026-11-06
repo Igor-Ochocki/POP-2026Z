@@ -1,12 +1,12 @@
 import type { AxiosInstance } from 'axios';
-import type { GameCreatePayload, GameResponsePayload } from '@app-types/game';
+import type { GameCreateDTO, GameResponseDTO } from '@app-types/game';
 
 export const createGamesApi = (http: AxiosInstance) => ({
   saveGame: async (
-    metadata: GameCreatePayload,
+    metadata: GameCreateDTO,
     asDraft: boolean,
-  ): Promise<GameResponsePayload> => {
-    const { data } = await http.post<GameResponsePayload>('/games', metadata, {
+  ): Promise<GameResponseDTO> => {
+    const { data } = await http.post<GameResponseDTO>('/games', metadata, {
       params: { as_draft: asDraft },
     });
     return data;

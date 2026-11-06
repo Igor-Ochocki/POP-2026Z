@@ -12,12 +12,16 @@ import Card from '@components/Card/Card';
 import MessageDialog from '@components/MessageDialog/MessageDialog';
 import PageHeader from '@components/PageHeader/PageHeader';
 import TextLabel from '@components/TextLabel/TextLabel';
+import { useCreatorPanel } from '@hooks/useCreatorPanel';
 import { useGameDefinition } from '@hooks/useGameDefinition';
+import { useGameList } from '@hooks/useGameList';
+import type { ICreatorPanelActions } from '@app-types/creatorPanel';
 import type {
   GameDefinitionDialogTypes,
   GameMetadataDTO,
   IGameDefinitionActions,
 } from '@app-types/game';
+import type { IGameListActions } from '@app-types/gameList';
 import { GameParametersPanel } from './GameParametersPanel';
 import './GameDefinitionView.css';
 
@@ -32,6 +36,8 @@ function describeGame(game: GameMetadataDTO): string {
 
 function getDialogs(
   actions: IGameDefinitionActions,
+  creatorPanelActions: ICreatorPanelActions,
+  gameListActions: IGameListActions,
 ): Record<
   GameDefinitionDialogTypes,
   { title: string; message: string; onConfirm: () => void }
@@ -50,12 +56,12 @@ function getDialogs(
     gameSaved: {
       title: 'Sukces',
       message: 'Poprawnie zapisano grę',
-      onConfirm: actions.onGameSavedMessageDialogConfirm,
+      onConfirm: gameListActions.onOpenGameList,
     },
     gameSubmitted: {
       title: 'Sukces',
       message: 'Poprawnie zapisano grę i wysłano do recenzenta',
-      onConfirm: actions.onGameSubmittedMessageDialogConfirm,
+      onConfirm: creatorPanelActions.onOpenCreatorPanel,
     },
     saveError: {
       title: 'Błąd',
@@ -67,10 +73,14 @@ function getDialogs(
 
 export function GameDefinitionView() {
   const { state, actions } = useGameDefinition();
+  const creatorPanel = useCreatorPanel();
+  const gameList = useGameList();
   const game = state.activeGame;
   const canSave = game !== null && !state.isSubmitting;
   const dialog = state.dialogType
-    ? getDialogs(actions)[state.dialogType]
+    ? getDialogs(actions, creatorPanel.actions, gameList.actions)[
+        state.dialogType
+      ]
     : null;
 
   return (
@@ -106,12 +116,13 @@ export function GameDefinitionView() {
               }
               onClick={actions.onEditParameters}
             />
-            {/* TODO: enable once PU56, PU60, PU51 and PU50 are implemented */}
+            {/* TODO: PU56 onOpenScenarioEditor(gameId) */}
             <ActionTile
               icon={<AutoStoriesOutlinedIcon />}
               title='Edytuj scenariusz gry'
               description='Zadania i warunki zwycięstwa'
             />
+            {/* TODO: enable once PU60 and PU51 are implemented */}
             <ActionTile
               icon={<MapOutlinedIcon />}
               title='Edytuj mapę gry'
@@ -122,6 +133,7 @@ export function GameDefinitionView() {
               title='Zdefiniuj akcję'
               description='Interakcje dostępne dla graczy'
             />
+            {/* TODO: PU50 onOpenSensorDefinition(gameId) */}
             <ActionTile
               icon={<SensorsOutlinedIcon />}
               title='Dodaj nowy czujnik'
@@ -129,7 +141,10 @@ export function GameDefinitionView() {
             />
           </div>
           <footer className='game-definition-view__footer'>
-            <Button variant='secondary' onClick={actions.onCancelGameCreation}>
+            <Button
+              variant='secondary'
+              onClick={creatorPanel.actions.onOpenCreatorPanel}
+            >
               Anuluj
             </Button>
             <div className='game-definition-view__save'>
