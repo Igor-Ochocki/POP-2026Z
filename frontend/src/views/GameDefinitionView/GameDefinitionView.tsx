@@ -62,6 +62,11 @@ function getDialogs(
       message: 'Nie udało się zapisać gry. Spróbuj ponownie.',
       onConfirm: actions.onSaveErrorMessageDialogConfirm,
     },
+    submitError: {
+      title: 'Błąd',
+      message: 'Nie udało się wysłać gry do recenzenta. Spróbuj ponownie.',
+      onConfirm: actions.onSaveErrorMessageDialogConfirm,
+    },
   };
 }
 
@@ -69,6 +74,7 @@ export function GameDefinitionView() {
   const { state, actions } = useGameDefinition();
   const game = state.activeGame;
   const canCreateGame = game !== null && !game.gameId && !state.isSubmitting;
+  const canSubmitGame = game !== null && !state.isSubmitting;
   const dialog = state.dialog ? getDialogs(actions)[state.dialog] : null;
 
   return (
@@ -102,7 +108,7 @@ export function GameDefinitionView() {
                   <Badge variant='primary'>Wymagane</Badge>
                 )
               }
-              onClick={actions.onEditParameters}
+              onClick={game?.gameId ? undefined : actions.onEditParameters}
             />
             {/* TODO: enable once PU56, PU60, PU51 and PU50 are implemented */}
             <ActionTile
@@ -146,18 +152,23 @@ export function GameDefinitionView() {
                 <SaveOutlinedIcon fontSize='small' /> Zapisz
               </Button>
               <Button
-                disabled={!canCreateGame}
+                disabled={!canSubmitGame}
                 onClick={actions.onSubmitForReview}
               >
                 <SendOutlinedIcon fontSize='small' />
-                {state.isSubmitting ? 'Zapisywanie...' : 'Zapisz i wyślij'}
+                {state.isSubmitting
+                  ? 'Zapisywanie...'
+                  : game?.gameId
+                    ? 'Wyślij do recenzenta'
+                    : 'Zapisz i wyślij'}
               </Button>
             </div>
           </footer>
           {game?.gameId && (
             <div className='game-definition-view__hint'>
               <TextLabel>
-                Edycja zapisanej gry nie jest jeszcze dostępna.
+                Edycja podstawowych parametrów zapisanej gry nie jest jeszcze
+                dostępna.
               </TextLabel>
             </div>
           )}

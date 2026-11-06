@@ -124,6 +124,8 @@ function createGameDefinitionWindows(
       setState((prev) => ({ ...prev, dialog: 'gameSubmitted' })),
     showSaveErrorMessageDialog: () =>
       setState((prev) => ({ ...prev, dialog: 'saveError' })),
+    showSubmitErrorMessageDialog: () =>
+      setState((prev) => ({ ...prev, dialog: 'submitError' })),
   };
 }
 
@@ -192,22 +194,35 @@ export function useGameDefinition(): {
 
   const saveGame = async (asDraft: boolean) => {
     const game = state.activeGame;
-    if (!game || game.gameId) return;
+    if (!game || state.isSubmitting || (asDraft && game.gameId)) return;
 
     setState((prev) => ({ ...prev, isSubmitting: true }));
+    let saved = game;
+    if (!game.gameId) {
+      try {
+        saved = await apiClient.games.saveGame(game, asDraft);
+        setState((prev) => ({ ...prev, activeGame: saved }));
+      } catch {
+        setState((prev) => ({ ...prev, isSubmitting: false }));
+        windows.showSaveErrorMessageDialog();
+        return;
+      }
+    }
+
+    if (asDraft) {
+      setState((prev) => ({ ...prev, isSubmitting: false }));
+      windows.showGameSavedMessageDialog();
+      return;
+    }
+
     try {
-      const saved = await apiClient.games.saveGame(game, asDraft);
-      if (!asDraft) await apiClient.games.submitToReviewer(saved.gameId);
-      setState((prev) => ({
-        ...prev,
-        activeGame: saved,
-        isSubmitting: false,
-      }));
-      if (asDraft) windows.showGameSavedMessageDialog();
-      else windows.showGameSubmittedMessageDialog();
+      const submitted = await apiClient.games.submitToReviewer(saved.gameId);
+      if (!submitted) throw new Error('Game submission was rejected.');
+      setState((prev) => ({ ...prev, isSubmitting: false }));
+      windows.showGameSubmittedMessageDialog();
     } catch {
       setState((prev) => ({ ...prev, isSubmitting: false }));
-      windows.showSaveErrorMessageDialog();
+      windows.showSubmitErrorMessageDialog();
     }
   };
 

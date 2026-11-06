@@ -50,7 +50,8 @@ export type GameDefinitionDialog =
   | 'incorrectData'
   | 'gameSaved'
   | 'gameSubmitted'
-  | 'saveError';
+  | 'saveError'
+  | 'submitError';
 
 export interface GameDefinitionViewModel {
   activePanel: GameDefinitionPanel;
@@ -92,6 +93,7 @@ export interface IGameDefinitionWindows {
   showGameSavedMessageDialog(): void;
   showGameSubmittedMessageDialog(): void;
   showSaveErrorMessageDialog(): void;
+  showSubmitErrorMessageDialog(): void;
 }
 
 export interface ScenarioEditorViewModel {
