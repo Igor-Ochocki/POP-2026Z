@@ -11,10 +11,16 @@ from app.services.games_service import GameNotFoundError, GamesService, IGamesSe
 
 class GamesApi(ABC):
     @abstractmethod
+    def get_game(self, user_id: str, game_id: str) -> GameResponseSchema: ...
+
+    @abstractmethod
     def save_game(self, metadata: GameCreateSchema, as_draft: bool) -> GameResponseSchema: ...
 
     @abstractmethod
-    def submit_to_reviewer(self, game_id: str) -> bool: ...
+    def edit_game(self, user_id: str, metadata: GameCreateSchema, as_draft: bool) -> GameResponseSchema: ...
+
+    @abstractmethod
+    def submit_to_reviewer(self, user_id: str, game_id: str) -> bool: ...
 
 
 router = APIRouter(prefix="/games", tags=["games"])
@@ -31,7 +37,7 @@ def get_game(
     user_id: str = Query(alias="userId"),
 ) -> GameResponseSchema:
     try:
-        return service.get(user_id, id)
+        return service.get_game(user_id, id)
     except GameNotFoundError:
         raise HTTPException(status_code=404, detail=f"Game {id} not found")
 
@@ -47,13 +53,25 @@ def save_game(
 
 
 @router.put("/{id}", response_model=GameResponseSchema)
-def update_game(
+def edit_game(
     id: str,
     dto: GameCreateSchema,
     service: Annotated[IGamesService, Depends(get_games_service)],
     user_id: str = Query(alias="userId"),
 ) -> GameResponseSchema:
     try:
-        return service.update(user_id, id, dto)
+        return service.edit_game(user_id, id, dto)
+    except GameNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Game {id} not found")
+
+
+@router.post("/{id}/submit", response_model=bool)
+def submit_to_reviewer(
+    id: str,
+    service: Annotated[IGamesService, Depends(get_games_service)],
+    user_id: str = Query(alias="userId"),
+) -> bool:
+    try:
+        return service.submit_to_reviewer(user_id, id)
     except GameNotFoundError:
         raise HTTPException(status_code=404, detail=f"Game {id} not found")

@@ -27,32 +27,32 @@ def make_dto(
     )
 
 
-def test_games_service_get_found(db_session: Session) -> None:
+def test_games_service_get_game_found(db_session: Session) -> None:
     service = GamesService(db_session)
     created = service.save_game(TEST_USER_ID, make_dto(), as_draft=True)
 
-    result = service.get(TEST_USER_ID, created.game_id)
+    result = service.get_game(TEST_USER_ID, created.game_id)
 
     assert result.game_id == created.game_id
     assert result.title == "Test Game"
 
 
-def test_games_service_get_not_found(db_session: Session) -> None:
+def test_games_service_get_game_not_found(db_session: Session) -> None:
     service = GamesService(db_session)
 
     try:
-        service.get(TEST_USER_ID, "non-existent-id")
+        service.get_game(TEST_USER_ID, "non-existent-id")
         assert False, "Expected GameNotFoundError"
     except GameNotFoundError:
         pass
 
 
-def test_games_service_get_wrong_user(db_session: Session) -> None:
+def test_games_service_get_game_wrong_user(db_session: Session) -> None:
     service = GamesService(db_session)
     created = service.save_game(TEST_USER_ID, make_dto(), as_draft=True)
 
     try:
-        service.get("other-user", created.game_id)
+        service.get_game("other-user", created.game_id)
         assert False, "Expected GameNotFoundError for wrong user"
     except GameNotFoundError:
         pass
@@ -76,17 +76,17 @@ def test_games_service_create_validation_err(db_session: Session) -> None:
         pass
 
 
-def test_games_service_edit_ok(db_session: Session) -> None:
+def test_games_service_edit_game_ok(db_session: Session) -> None:
     service = GamesService(db_session)
     created = service.save_game(TEST_USER_ID, make_dto(title="Original"), as_draft=True)
 
-    result = service.update(TEST_USER_ID, created.game_id, make_dto(title="Updated"))
+    result = service.edit_game(TEST_USER_ID, created.game_id, make_dto(title="Updated"))
 
     assert result.title == "Updated"
     assert result.game_id == created.game_id
 
 
-def test_games_service_edit_validation_err(db_session: Session) -> None:
+def test_games_service_edit_game_validation_err(db_session: Session) -> None:
     try:
         make_dto(min_players=10, max_players=2)
         assert False, "Expected validation error"
@@ -94,25 +94,82 @@ def test_games_service_edit_validation_err(db_session: Session) -> None:
         pass
 
 
-def test_games_service_edit_not_found(db_session: Session) -> None:
+def test_games_service_edit_game_not_found(db_session: Session) -> None:
     service = GamesService(db_session)
 
     try:
-        service.update(TEST_USER_ID, "non-existent-id", make_dto())
+        service.edit_game(TEST_USER_ID, "non-existent-id", make_dto())
         assert False, "Expected GameNotFoundError"
     except GameNotFoundError:
         pass
 
 
-def test_games_service_edit_wrong_user(db_session: Session) -> None:
+def test_games_service_edit_game_wrong_user(db_session: Session) -> None:
     service = GamesService(db_session)
     created = service.save_game(TEST_USER_ID, make_dto(), as_draft=True)
 
     try:
-        service.update("other-user", created.game_id, make_dto())
+        service.edit_game("other-user", created.game_id, make_dto())
         assert False, "Expected GameNotFoundError for wrong user"
     except GameNotFoundError:
         pass
+
+
+def test_games_service_submit_to_reviewer_ok(db_session: Session) -> None:
+    service = GamesService(db_session)
+    created = service.save_game(TEST_USER_ID, make_dto(), as_draft=True)
+
+    result = service.submit_to_reviewer(TEST_USER_ID, created.game_id)
+
+    assert result is True
+
+
+def test_games_service_submit_to_reviewer_not_found(db_session: Session) -> None:
+    service = GamesService(db_session)
+
+    try:
+        service.submit_to_reviewer(TEST_USER_ID, "non-existent-id")
+        assert False, "Expected GameNotFoundError"
+    except GameNotFoundError:
+        pass
+
+
+def test_games_service_submit_to_reviewer_wrong_user(db_session: Session) -> None:
+    service = GamesService(db_session)
+    created = service.save_game(TEST_USER_ID, make_dto(), as_draft=True)
+
+    try:
+        service.submit_to_reviewer("other-user", created.game_id)
+        assert False, "Expected GameNotFoundError for wrong user"
+    except GameNotFoundError:
+        pass
+
+
+def test_games_endpoint_get_game_ok(client: TestClient) -> None:
+    create_resp = client.post(
+        "/api/v1/games/?userId=user-123",
+        json={
+            "title": "Test Game",
+            "description": "desc",
+            "min_players": 2,
+            "max_players": 4,
+            "duration_minutes": 60,
+            "requires_invitation": False,
+            "tags": [],
+        },
+    )
+    game_id = create_resp.json()["game_id"]
+
+    response = client.get(f"/api/v1/games/{game_id}?userId=user-123")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["title"] == "Test Game"
+
+
+def test_games_endpoint_get_not_found(client: TestClient) -> None:
+    response = client.get("/api/v1/games/non-existent-id?userId=user-123")
+    assert response.status_code == 404
 
 
 def test_games_endpoint_create_ok(client: TestClient) -> None:
@@ -135,11 +192,6 @@ def test_games_endpoint_create_ok(client: TestClient) -> None:
     assert data["status"] == "Draft"
 
 
-def test_games_endpoint_get_not_found(client: TestClient) -> None:
-    response = client.get("/api/v1/games/non-existent-id?userId=user-123")
-    assert response.status_code == 404
-
-
 def test_games_endpoint_create_validation_err(client: TestClient) -> None:
     response = client.post(
         "/api/v1/games/?userId=user-123",
@@ -156,7 +208,7 @@ def test_games_endpoint_create_validation_err(client: TestClient) -> None:
     assert response.status_code in (400, 422)
 
 
-def test_games_endpoint_edit_ok(client: TestClient) -> None:
+def test_games_endpoint_edit_game_ok(client: TestClient) -> None:
     create_resp = client.post(
         "/api/v1/games/?userId=user-123",
         json={
@@ -233,4 +285,49 @@ def test_games_endpoint_edit_wrong_user(client: TestClient) -> None:
             "tags": [],
         },
     )
+    assert response.status_code == 404
+
+
+def test_games_endpoint_submit_to_reviewer_ok(client: TestClient) -> None:
+    create_resp = client.post(
+        "/api/v1/games/?userId=user-123",
+        json={
+            "title": "Test Game",
+            "description": "desc",
+            "min_players": 2,
+            "max_players": 4,
+            "duration_minutes": 60,
+            "requires_invitation": False,
+            "tags": [],
+        },
+    )
+    game_id = create_resp.json()["game_id"]
+
+    response = client.post(f"/api/v1/games/{game_id}/submit?userId=user-123")
+
+    assert response.status_code == 200
+    assert response.json() is True
+
+
+def test_games_endpoint_submit_to_reviewer_not_found(client: TestClient) -> None:
+    response = client.post("/api/v1/games/non-existent-id/submit?userId=user-123")
+    assert response.status_code == 404
+
+
+def test_games_endpoint_submit_to_reviewer_wrong_user(client: TestClient) -> None:
+    create_resp = client.post(
+        "/api/v1/games/?userId=user-123",
+        json={
+            "title": "Test Game",
+            "description": "desc",
+            "min_players": 2,
+            "max_players": 4,
+            "duration_minutes": 60,
+            "requires_invitation": False,
+            "tags": [],
+        },
+    )
+    game_id = create_resp.json()["game_id"]
+
+    response = client.post(f"/api/v1/games/{game_id}/submit?userId=other-user")
     assert response.status_code == 404

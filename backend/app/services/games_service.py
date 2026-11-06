@@ -17,10 +17,10 @@ class IGamesService(ABC):
     def submit_to_reviewer(self, user_id: str, game_id: str) -> bool: ...
 
     @abstractmethod
-    def get(self, user_id: str, id: str) -> GameResponseSchema: ...
+    def get_game(self, user_id: str, game_id: str) -> GameResponseSchema: ...
 
     @abstractmethod
-    def update(self, user_id: str, id: str, dto: GameCreateSchema) -> GameResponseSchema: ...
+    def edit_game(self, user_id: str, game_id: str, dto: GameCreateSchema) -> GameResponseSchema: ...
 
 
 class GamesService(IGamesService):
@@ -41,12 +41,12 @@ class GamesService(IGamesService):
             status=game.status.value,
         )
 
-    def get(self, user_id: str, id: str) -> GameResponseSchema:
-        game = self.db_session.get(Game, id)
+    def get_game(self, user_id: str, game_id: str) -> GameResponseSchema:
+        game = self.db_session.get(Game, game_id)
         if game is None:
-            raise GameNotFoundError(f"Game {id} not found")
+            raise GameNotFoundError(f"Game {game_id} not found")
         if game.author_id != user_id:
-            raise GameNotFoundError(f"Game {id} not found")
+            raise GameNotFoundError(f"Game {game_id} not found")
         return self._map_to_response(game)
 
     def save_game(self, user_id: str, dto: GameCreateSchema, as_draft: bool) -> GameResponseSchema:
@@ -83,15 +83,15 @@ class GamesService(IGamesService):
 
         return True
 
-    def update(self, user_id: str, id: str, dto: GameCreateSchema) -> GameResponseSchema:
-        game = self.db_session.get(Game, id)
+    def edit_game(self, user_id: str, game_id: str, dto: GameCreateSchema) -> GameResponseSchema:
+        game = self.db_session.get(Game, game_id)
         if game is None:
-            raise GameNotFoundError(f"Game {id} not found")
+            raise GameNotFoundError(f"Game {game_id} not found")
         if game.author_id != user_id:
-            raise GameNotFoundError(f"Game {id} not found")
+            raise GameNotFoundError(f"Game {game_id} not found")
 
         if game.status == GameStatus.Approved:
-            raise ValueError(f"Game {id} is already approved and cannot be modified")
+            raise ValueError(f"Game {game_id} is already approved and cannot be modified")
 
         game.title = dto.title
         game.description = dto.description
