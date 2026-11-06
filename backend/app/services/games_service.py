@@ -20,7 +20,7 @@ class IGamesService(ABC):
     def get_game(self, user_id: str, game_id: str) -> GameResponseSchema: ...
 
     @abstractmethod
-    def edit_game(self, user_id: str, game_id: str, dto: GameCreateSchema) -> GameResponseSchema: ...
+    def edit_game(self, user_id: str, game_id: str, dto: GameCreateSchema, as_draft: bool) -> GameResponseSchema: ...
 
 
 class GamesService(IGamesService):
@@ -83,7 +83,7 @@ class GamesService(IGamesService):
 
         return True
 
-    def edit_game(self, user_id: str, game_id: str, dto: GameCreateSchema) -> GameResponseSchema:
+    def edit_game(self, user_id: str, game_id: str, dto: GameCreateSchema, as_draft: bool) -> GameResponseSchema:
         game = self.db_session.get(Game, game_id)
         if game is None:
             raise GameNotFoundError(f"Game {game_id} not found")
@@ -100,6 +100,7 @@ class GamesService(IGamesService):
         game.duration_minutes = dto.duration_minutes
         game.requires_invitation = dto.requires_invitation
         game.tags = dto.tags
+        game.status = GameStatus.Draft if as_draft else GameStatus.Submitted
 
         self.db_session.commit()
         self.db_session.refresh(game)

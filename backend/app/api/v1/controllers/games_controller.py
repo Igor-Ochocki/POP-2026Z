@@ -58,9 +58,10 @@ def edit_game(
     dto: GameCreateSchema,
     service: Annotated[IGamesService, Depends(get_games_service)],
     user_id: str = Query(alias="userId"),
+    as_draft: bool = True,
 ) -> GameResponseSchema:
     try:
-        return service.edit_game(user_id, id, dto)
+        return service.edit_game(user_id, id, dto, as_draft)
     except GameNotFoundError:
         raise HTTPException(status_code=404, detail=f"Game {id} not found")
 
