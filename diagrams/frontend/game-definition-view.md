@@ -13,14 +13,11 @@ title PU49 Zdefiniowanie gry - widok
 class CreatorPanelView {
     + show()
     + onCreateGameClick()
+    + onGameListClick()
 }
 
-class GameListView
-class SensorDefinitionView
-class ScenarioEditorView
-
 class GameDefinitionView {
-    + show(game: GameMetadataDTO | null, isSubmitting: boolean)
+    + show()
     + onEditParametersClick()
     + onAddSensorClick()
     + onEditScenarioClick()
@@ -30,7 +27,7 @@ class GameDefinitionView {
 }
 
 class GameParametersPanel {
-    + show(form: GameParametersForm, errors: GameParametersErrors)
+    + show()
     + onFieldChange(field: string, value: string | boolean)
     + onSaveClick()
 }
@@ -53,52 +50,65 @@ GameSubmittedMessageDialog -u-|> MessageDialog
 SaveErrorMessageDialog -u-|> MessageDialog
 
 interface IGameDefinitionActions <<interface>> {
+    + onCreateGame()
     + onEditParameters()
     + onChangeParameter(field: string, value: string | boolean)
     + onSaveMetadata()
     + onParametersSavedMessageDialogConfirm()
     + onIncorrectDataMessageDialogConfirm()
-    + onAddSensor()
-    + onEditScenario()
     + onSaveDraft()
-    + onGameSavedMessageDialogConfirm()
     + onSubmitForReview()
-    + onGameSubmittedMessageDialogConfirm()
     + onSaveErrorMessageDialogConfirm()
-    + onCancelGameCreation()
 }
 
+interface ICreatorPanelActions <<interface>> {
+    + onOpenCreatorPanel()
+}
+
+interface IGameListActions <<interface>> {
+    + onOpenGameList()
+}
+
+interface IScenarioEditorActions <<interface>> {
+    + onOpenScenarioEditor(gameId: string)
+}
+
+interface ISensorDefinitionActions <<interface>> {
+    + onOpenSensorDefinition(gameId: string)
+}
+
+class GameDefinitionViewModel <<State>>
+
+CreatorPanelView --> IGameDefinitionActions
+CreatorPanelView --> IGameListActions
 GameDefinitionView --> IGameDefinitionActions
+GameDefinitionView --> ICreatorPanelActions
+GameDefinitionView --> IScenarioEditorActions
+GameDefinitionView --> ISensorDefinitionActions
+GameDefinitionView --> GameDefinitionViewModel
 GameParametersPanel --> IGameDefinitionActions
+GameParametersPanel --> GameDefinitionViewModel
 ParametersSavedMessageDialog --> IGameDefinitionActions
 IncorrectDataMessageDialog --> IGameDefinitionActions
-GameSavedMessageDialog --> IGameDefinitionActions
-GameSubmittedMessageDialog --> IGameDefinitionActions
+GameSavedMessageDialog --> IGameListActions
+GameSubmittedMessageDialog --> ICreatorPanelActions
 SaveErrorMessageDialog --> IGameDefinitionActions
 
 interface IGameDefinitionWindows <<interface>> {
-    + showCreatorPanelView()
-    + showGameListView()
     + showGameDefinitionView()
     + showGameParametersView()
-    + showSensorDefinitionView()
-    + showScenarioEditorView()
     + showParametersSavedMessageDialog()
-    + showIncorrectDataMessageDialog(errors: GameParametersErrors)
+    + showIncorrectDataMessageDialog()
     + showGameSavedMessageDialog()
     + showGameSubmittedMessageDialog()
     + showSaveErrorMessageDialog()
 }
 
 class GameDefinitionWindows {
-    + showCreatorPanelView()
-    + showGameListView()
     + showGameDefinitionView()
     + showGameParametersView()
-    + showSensorDefinitionView()
-    + showScenarioEditorView()
     + showParametersSavedMessageDialog()
-    + showIncorrectDataMessageDialog(errors: GameParametersErrors)
+    + showIncorrectDataMessageDialog()
     + showGameSavedMessageDialog()
     + showGameSubmittedMessageDialog()
     + showSaveErrorMessageDialog()
@@ -106,24 +116,18 @@ class GameDefinitionWindows {
 
 GameDefinitionWindows .u.|> IGameDefinitionWindows
 
-GameDefinitionWindows --> CreatorPanelView
-GameDefinitionWindows --> GameListView
 GameDefinitionWindows --> GameDefinitionView
 GameDefinitionWindows --> GameParametersPanel
-GameDefinitionWindows --> SensorDefinitionView
-GameDefinitionWindows --> ScenarioEditorView
 GameDefinitionWindows --> ParametersSavedMessageDialog
 GameDefinitionWindows --> IncorrectDataMessageDialog
 GameDefinitionWindows --> GameSavedMessageDialog
 GameDefinitionWindows --> GameSubmittedMessageDialog
 GameDefinitionWindows --> SaveErrorMessageDialog
 
-CreatorPanelView ..> GameDefinitionView : "Utwórz nową grę"
-
-note bottom of GameListView
-    Widok z PU53, do czasu jego
-    implementacji trasa /creator/games
-    nie istnieje.
+note bottom of IGameListActions
+    Przejścia do innych przypadków użycia widok woła
+    bezpośrednio na ich prezenterach, z pominięciem
+    useGameDefinition. Akcje z PU25, PU50 i PU56.
 end note
 
 note right of GameDefinitionView
@@ -131,11 +135,6 @@ note right of GameDefinitionView
     i "Edytuj scenariusz gry" (scenariusz C, PU56)
     oraz "Edytuj mapę gry" (PU60) i "Zdefiniuj akcję" (PU51)
     są nieaktywne do czasu implementacji tych przypadków użycia.
-end note
-
-note bottom of SensorDefinitionView
-    Widoki z PU50 i PU56. Po ich zakończeniu
-    system wraca do GameDefinitionView.
 end note
 @enduml
 ```
