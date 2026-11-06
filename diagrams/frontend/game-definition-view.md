@@ -77,13 +77,17 @@ interface ISensorDefinitionActions <<interface>> {
     + onOpenSensorDefinition(gameId: string)
 }
 
+class GameDefinitionViewModel <<State>>
+
 CreatorPanelView --> IGameDefinitionActions
 CreatorPanelView --> IGameListActions
 GameDefinitionView --> IGameDefinitionActions
 GameDefinitionView --> ICreatorPanelActions
 GameDefinitionView --> IScenarioEditorActions
 GameDefinitionView --> ISensorDefinitionActions
+GameDefinitionView --> GameDefinitionViewModel
 GameParametersPanel --> IGameDefinitionActions
+GameParametersPanel --> GameDefinitionViewModel
 ParametersSavedMessageDialog --> IGameDefinitionActions
 IncorrectDataMessageDialog --> IGameDefinitionActions
 GameSavedMessageDialog --> IGameListActions
