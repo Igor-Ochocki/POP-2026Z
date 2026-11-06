@@ -10,6 +10,21 @@ export interface GameMetadataDTO {
   status: string;
 }
 
+export interface GameCreateDTO {
+  title: string;
+  description: string;
+  min_players: number;
+  max_players: number;
+  duration_minutes: number;
+  requires_invitation: boolean;
+  tags: string[];
+}
+
+export interface GameResponseDTO extends GameCreateDTO {
+  game_id: string;
+  status: string;
+}
+
 export interface GameParametersForm {
   title: string;
   description: string;
@@ -24,9 +39,9 @@ export type GameParametersErrors = Partial<
   Record<keyof GameParametersForm, string>
 >;
 
-export type GameDefinitionPanel = 'definition' | 'parameters';
+export type GameDefinitionPanelTypes = 'definition' | 'parameters';
 
-export type GameDefinitionDialog =
+export type GameDefinitionDialogTypes =
   | 'parametersSaved'
   | 'incorrectData'
   | 'gameSaved'
@@ -34,15 +49,16 @@ export type GameDefinitionDialog =
   | 'saveError';
 
 export interface GameDefinitionViewModel {
-  activePanel: GameDefinitionPanel;
+  activePanelType: GameDefinitionPanelTypes;
   activeGame: GameMetadataDTO | null;
   parametersForm: GameParametersForm;
   validationErrors: GameParametersErrors;
   isSubmitting: boolean;
-  dialog: GameDefinitionDialog | null;
+  dialogType: GameDefinitionDialogTypes | null;
 }
 
 export interface IGameDefinitionActions {
+  onCreateGame(): void;
   onEditParameters(): void;
   onChangeParameter<K extends keyof GameParametersForm>(
     field: K,
@@ -51,25 +67,16 @@ export interface IGameDefinitionActions {
   onSaveMetadata(): void;
   onParametersSavedMessageDialogConfirm(): void;
   onIncorrectDataMessageDialogConfirm(): void;
-  onAddSensor(): void;
-  onEditScenario(): void;
   onSaveDraft(): void;
-  onGameSavedMessageDialogConfirm(): void;
   onSubmitForReview(): void;
-  onGameSubmittedMessageDialogConfirm(): void;
   onSaveErrorMessageDialogConfirm(): void;
-  onCancelGameCreation(): void;
 }
 
 export interface IGameDefinitionWindows {
-  showCreatorPanelView(): void;
-  showGameListView(): void;
   showGameDefinitionView(): void;
   showGameParametersView(): void;
-  showSensorDefinitionView(): void;
-  showScenarioEditorView(): void;
   showParametersSavedMessageDialog(): void;
-  showIncorrectDataMessageDialog(errors: GameParametersErrors): void;
+  showIncorrectDataMessageDialog(): void;
   showGameSavedMessageDialog(): void;
   showGameSubmittedMessageDialog(): void;
   showSaveErrorMessageDialog(): void;
@@ -77,7 +84,7 @@ export interface IGameDefinitionWindows {
 
 export const GAME_CATEGORIES = [
   'Fantasy',
-  'Science fiction',
+  'Science Fiction',
   'Historyczna',
   'Kryminalna',
   'Horror',
