@@ -31,7 +31,7 @@ def test_games_service_get_game_found(db_session: Session) -> None:
     service = GamesService(db_session)
     created = service.save_game(TEST_USER_ID, make_dto(), as_draft=True)
 
-    result = service.get_game(TEST_USER_ID, created.game_id)
+    result = service.get_game(created.game_id, TEST_USER_ID)
 
     assert result.game_id == created.game_id
     assert result.title == "Test Game"
@@ -41,7 +41,7 @@ def test_games_service_get_game_not_found(db_session: Session) -> None:
     service = GamesService(db_session)
 
     try:
-        service.get_game(TEST_USER_ID, "non-existent-id")
+        service.get_game("non-existent-id", TEST_USER_ID)
         assert False, "Expected GameNotFoundError"
     except GameNotFoundError:
         pass
@@ -52,7 +52,7 @@ def test_games_service_get_game_wrong_user(db_session: Session) -> None:
     created = service.save_game(TEST_USER_ID, make_dto(), as_draft=True)
 
     try:
-        service.get_game("other-user", created.game_id)
+        service.get_game(created.game_id, "other-user")
         assert False, "Expected GameNotFoundError for wrong user"
     except GameNotFoundError:
         pass
@@ -80,7 +80,7 @@ def test_games_service_edit_game_ok(db_session: Session) -> None:
     service = GamesService(db_session)
     created = service.save_game(TEST_USER_ID, make_dto(title="Original"), as_draft=True)
 
-    result = service.edit_game(TEST_USER_ID, created.game_id, make_dto(title="Updated"), as_draft=True)
+    result = service.edit_game(created.game_id, TEST_USER_ID, make_dto(title="Updated"), as_draft=True)
 
     assert result.title == "Updated"
     assert result.game_id == created.game_id
@@ -91,7 +91,7 @@ def test_games_service_edit_game_as_submitted(db_session: Session) -> None:
     service = GamesService(db_session)
     created = service.save_game(TEST_USER_ID, make_dto(title="Original"), as_draft=True)
 
-    result = service.edit_game(TEST_USER_ID, created.game_id, make_dto(title="Updated"), as_draft=False)
+    result = service.edit_game(created.game_id, TEST_USER_ID, make_dto(title="Updated"), as_draft=False)
 
     assert result.title == "Updated"
     assert result.status == "Submitted"
@@ -109,7 +109,7 @@ def test_games_service_edit_game_not_found(db_session: Session) -> None:
     service = GamesService(db_session)
 
     try:
-        service.edit_game(TEST_USER_ID, "non-existent-id", make_dto(), as_draft=True)
+        service.edit_game("non-existent-id", TEST_USER_ID, make_dto(), as_draft=True)
         assert False, "Expected GameNotFoundError"
     except GameNotFoundError:
         pass
@@ -120,7 +120,7 @@ def test_games_service_edit_game_wrong_user(db_session: Session) -> None:
     created = service.save_game(TEST_USER_ID, make_dto(), as_draft=True)
 
     try:
-        service.edit_game("other-user", created.game_id, make_dto(), as_draft=True)
+        service.edit_game(created.game_id, "other-user", make_dto(), as_draft=True)
         assert False, "Expected GameNotFoundError for wrong user"
     except GameNotFoundError:
         pass
@@ -130,7 +130,7 @@ def test_games_service_submit_to_reviewer_ok(db_session: Session) -> None:
     service = GamesService(db_session)
     created = service.save_game(TEST_USER_ID, make_dto(), as_draft=True)
 
-    result = service.submit_to_reviewer(TEST_USER_ID, created.game_id)
+    result = service.submit_to_reviewer(created.game_id, TEST_USER_ID)
 
     assert result is True
 
@@ -139,7 +139,7 @@ def test_games_service_submit_to_reviewer_not_found(db_session: Session) -> None
     service = GamesService(db_session)
 
     try:
-        service.submit_to_reviewer(TEST_USER_ID, "non-existent-id")
+        service.submit_to_reviewer("non-existent-id", TEST_USER_ID)
         assert False, "Expected GameNotFoundError"
     except GameNotFoundError:
         pass
@@ -150,7 +150,7 @@ def test_games_service_submit_to_reviewer_wrong_user(db_session: Session) -> Non
     created = service.save_game(TEST_USER_ID, make_dto(), as_draft=True)
 
     try:
-        service.submit_to_reviewer("other-user", created.game_id)
+        service.submit_to_reviewer(created.game_id, "other-user")
         assert False, "Expected GameNotFoundError for wrong user"
     except GameNotFoundError:
         pass
