@@ -68,7 +68,7 @@ function getDialogs(
 export function GameDefinitionView() {
   const { state, actions } = useGameDefinition();
   const game = state.activeGame;
-  const canSave = game !== null && !state.isSubmitting;
+  const canCreateGame = game !== null && !game.gameId && !state.isSubmitting;
   const dialog = state.dialog ? getDialogs(actions)[state.dialog] : null;
 
   return (
@@ -140,17 +140,27 @@ export function GameDefinitionView() {
             <div className='game-definition-view__save'>
               <Button
                 variant='outline'
-                disabled={!canSave}
+                disabled={!canCreateGame}
                 onClick={actions.onSaveDraft}
               >
                 <SaveOutlinedIcon fontSize='small' /> Zapisz
               </Button>
-              <Button disabled={!canSave} onClick={actions.onSubmitForReview}>
+              <Button
+                disabled={!canCreateGame}
+                onClick={actions.onSubmitForReview}
+              >
                 <SendOutlinedIcon fontSize='small' />
                 {state.isSubmitting ? 'Zapisywanie...' : 'Zapisz i wyślij'}
               </Button>
             </div>
           </footer>
+          {game?.gameId && (
+            <div className='game-definition-view__hint'>
+              <TextLabel>
+                Edycja zapisanej gry nie jest jeszcze dostępna.
+              </TextLabel>
+            </div>
+          )}
           {!game && (
             <div className='game-definition-view__hint'>
               <TextLabel>

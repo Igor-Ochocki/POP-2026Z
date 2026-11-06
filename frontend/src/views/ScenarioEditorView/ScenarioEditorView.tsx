@@ -60,8 +60,11 @@ export function ScenarioEditorView() {
                   <h3>{task.title}</h3>
                   <p>{task.narrative}</p>
                   <TextLabel>
-                    Poziom {task.requiredPlayerLevel} · {task.timeLimitMinutes}{' '}
-                    min · {task.rewardType}: {task.rewardValue}
+                    Poziom {task.requiredPlayerLevel} ·{' '}
+                    {task.timeLimitMinutes === null
+                      ? 'Bez limitu czasu'
+                      : `${task.timeLimitMinutes} min`}{' '}
+                    · {task.rewardType}: {task.rewardValue}
                   </TextLabel>
                 </li>
               ))}

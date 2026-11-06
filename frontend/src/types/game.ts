@@ -17,7 +17,7 @@ export interface TaskDTO {
   interactionType: string;
   interactionTargetId: string;
   requiredPlayerLevel: number;
-  timeLimitMinutes: number;
+  timeLimitMinutes: number | null;
   rewardType: string;
   rewardValue: string;
 }

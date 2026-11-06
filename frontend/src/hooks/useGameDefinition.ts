@@ -83,6 +83,7 @@ function toMetadata(
 function createGameDefinitionWindows(
   setState: SetState,
   navigate: NavigateFunction,
+  currentPath: string,
 ): IGameDefinitionWindows {
   return {
     showCreatorPanelView: () => void navigate(CREATOR_PANEL_PATH),
@@ -100,10 +101,15 @@ function createGameDefinitionWindows(
         dialog: null,
       })),
     showSensorDefinitionView: () => void navigate(SENSOR_DEFINITION_PATH),
-    showScenarioEditorView: (game) =>
-      void navigate(`/creator/games/${game.gameId}/scenario`, {
+    showScenarioEditorView: async (game) => {
+      await navigate(currentPath, {
+        replace: true,
         state: { activeGame: game },
-      }),
+      });
+      await navigate(`/creator/games/${game.gameId}/scenario`, {
+        state: { activeGame: game },
+      });
+    },
     showParametersSavedMessageDialog: () =>
       setState((prev) => ({ ...prev, dialog: 'parametersSaved' })),
     showIncorrectDataMessageDialog: (errors) =>
@@ -148,7 +154,11 @@ export function useGameDefinition(): {
         }
       : initialState,
   );
-  const windows = createGameDefinitionWindows(setState, navigate);
+  const windows = createGameDefinitionWindows(
+    setState,
+    navigate,
+    location.pathname,
+  );
 
   const onEditParameters = () => {
     setState((prev) => ({ ...prev, validationErrors: {} }));
@@ -182,7 +192,7 @@ export function useGameDefinition(): {
 
   const saveGame = async (asDraft: boolean) => {
     const game = state.activeGame;
-    if (!game) return;
+    if (!game || game.gameId) return;
 
     setState((prev) => ({ ...prev, isSubmitting: true }));
     try {
@@ -212,7 +222,7 @@ export function useGameDefinition(): {
       onAddSensor: windows.showSensorDefinitionView,
       onEditScenario: windows.showScenarioEditorView,
       onSaveDraft: () => void saveGame(true),
-      onGameSavedMessageDialogConfirm: windows.showGameListView,
+      onGameSavedMessageDialogConfirm: windows.showGameDefinitionView,
       onSubmitForReview: () => void saveGame(false),
       onGameSubmittedMessageDialogConfirm: windows.showCreatorPanelView,
       onSaveErrorMessageDialogConfirm: windows.showGameDefinitionView,

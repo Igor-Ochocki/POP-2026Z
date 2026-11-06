@@ -8,7 +8,7 @@ interface TaskResponsePayload {
   interaction_type: string;
   interaction_target_id: string;
   required_player_level: number;
-  time_limit_minutes: number;
+  time_limit_minutes: number | null;
   reward_type: string;
   reward_value: string;
 }
