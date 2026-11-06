@@ -3,6 +3,7 @@
 ```
 
 
+
 @startuml reservation-view
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
@@ -17,110 +18,129 @@ title PU2 - Game Time Reservation - View
 class CalendarView <<External PU1>>
 
 class ReservationView {
-    +render()
+    + render()
 }
 
 class ReservationFormPanel {
-    +onGameChange(gameId: string)
-    +onTimeSlotChange(slotId: string)
-    +onParticipantCountChange(participantCount: number)
-    +onSubmitReservationClick()
-    +onCancelClick()
+    + onGameChange(gameId: string)
+    + onTimeSlotChange(slotId: string)
+    + onParticipantCountChange(participantCount: number)
+    + onSubmitReservationClick()
+    + onCancelClick()
 }
 
 class ReservationConfirmDialog {
-    +onConfirmClick()
-    +onCancelClick()
+    + onConfirmClick()
+    + onCancelClick()
 }
 
 class PaymentPanel {
-    +onPayClick()
-    +onPayLaterClick()
+    + onPayClick()
+    + onPayLaterClick()
 }
 
 class MessageDialog {
-    +onOkClick()
+    + show(title: string, message: string)
+    + onOkClick()
 }
 
 class PaymentCompletedMessageDialog
 class SlotUnavailableMessageDialog
+class ReservationCancelledMessageDialog
 
 PaymentCompletedMessageDialog -u-|> MessageDialog
 SlotUnavailableMessageDialog -u-|> MessageDialog
+ReservationCancelledMessageDialog -u-|> MessageDialog
 
-interface ICalendarActions <<interface>> {
-    +onReserveEventClick()
-    +onSelectTimeSlot(slotId: string)
-    +onParticipantCountChange(participantCount: number)
-    +onConfirmReservation()
-    +onCancelReservation()
-    +onProceedToPayment()
-    +onPay()
-    +onPayLater()
-    +onPaymentCompletedMessageDialogConfirm()
-    +onSlotUnavailableMessageDialogConfirm()
+interface IReservationsActions <<interface>> {
+    + onOpenReservation(slot: TimeSlotDTO | null)
+    + onChangeParticipantCount(count: number)
+    + onSubmitReservation()
+    + onConfirmReservation()
+    + onCancelReservation()
+    + onPayLater()
+    + onPaymentCompletedMessageDialogConfirm()
+    + onSlotUnavailableMessageDialogConfirm()
+    + onReservationCancelledMessageDialogConfirm()
 }
 
-interface ICalendarWindows <<interface>> {
-    +showReservationView()
-    +showReservationConfirmDialog()
-    +showPaymentView()
-    +showPaymentCompletedMessageDialog()
-    +showSlotUnavailableMessageDialog()
+interface IPaymentActions <<interface>> {
+    + onPay(reservationId: string)
 }
 
-class CalendarWindows {
-    +showReservationView()
-    +showReservationConfirmDialog()
-    +showPaymentView()
-    +showPaymentCompletedMessageDialog()
-    +showSlotUnavailableMessageDialog()
+interface IReservationsWindows <<interface>> {
+    + showReservationView()
+    + showReservationConfirmDialog()
+    + showPaymentCompletedMessageDialog()
+    + showSlotUnavailableMessageDialog()
+    + showReservationCancelledMessageDialog()
 }
 
-CalendarWindows .u.|> ICalendarWindows
-CalendarWindows --> ReservationView : displays
+class ReservationsWindows {
+    + showReservationView()
+    + showReservationConfirmDialog()
+    + showPaymentCompletedMessageDialog()
+    + showSlotUnavailableMessageDialog()
+    + showReservationCancelledMessageDialog()
+}
 
-CalendarView ..> ReservationView : opens from reserve button
-CalendarView ..> ReservationView : opens from calendar slot
+ReservationsWindows .u.|> IReservationsWindows
 
 ReservationView --> ReservationFormPanel : displays
 ReservationView --> ReservationConfirmDialog : displays
 ReservationView --> PaymentPanel : displays
 ReservationView --> PaymentCompletedMessageDialog : displays
 ReservationView --> SlotUnavailableMessageDialog : displays
+ReservationView --> ReservationCancelledMessageDialog : displays
 
-ReservationFormPanel ..> ICalendarActions : dispatches actions
-ReservationConfirmDialog ..> ICalendarActions : dispatches actions
-PaymentPanel ..> ICalendarActions : dispatches actions
-PaymentCompletedMessageDialog ..> ICalendarActions : dispatches actions
-SlotUnavailableMessageDialog ..> ICalendarActions : dispatches actions
+ReservationFormPanel ..> IReservationsActions : dispatches actions
+ReservationConfirmDialog ..> IReservationsActions : dispatches actions
+PaymentPanel ..> IReservationsActions : pay later
+PaymentPanel ..> IPaymentActions : pay now
+
+PaymentCompletedMessageDialog ..> IReservationsActions
+SlotUnavailableMessageDialog ..> IReservationsActions
+ReservationCancelledMessageDialog ..> IReservationsActions
+
+ReservationsWindows --> ReservationView
+ReservationsWindows --> ReservationFormPanel
+ReservationsWindows --> ReservationConfirmDialog
+ReservationsWindows --> PaymentCompletedMessageDialog
+ReservationsWindows --> SlotUnavailableMessageDialog
+ReservationsWindows --> ReservationCancelledMessageDialog
+
+note right of CalendarView
+    External PU1.
+
+    Does not open ReservationView directly.
+    Navigation is performed through
+    the presenter of PU1.
+end note
 
 note right of ReservationView
-    One view for the reservation flow.
+    One view for the entire reservation flow.
+
     State changes trigger re-rendering.
     No show() parameters are required.
 end note
 
-note right of CalendarView
-    PU1 owns the calendar.
-    
-    Entry paths:
-    - Reserve button: no selected slot
-    - Calendar slot: selected slot passed
-      to the reservation Hook
-end note
-
 note bottom of PaymentPanel
     Pay now:
-    The Hook calls the backend payment endpoint
-    after the payment flow succeeds.
+    Calls IPaymentActions.onPay().
+    Payment flow is handled by usePayment.
 
     Pay later:
-    Keep the reservation unpaid.
-    Do not call the payment endpoint.
+    Calls IReservationsActions.onPayLater().
+    Reservation remains Unpaid.
+end note
+
+note bottom of IReservationsActions
+    Only reservation-related actions.
+    Payment processing is not implemented here.
 end note
 
 @enduml
+
 
 ```
 
