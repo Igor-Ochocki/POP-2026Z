@@ -16,7 +16,7 @@ export type INewTaskActions = {
   onTimeLimitMinutesChanged: (timeLimitMinutes: number) => void;
 };
 
-export type INewTaskViewmodel = {
+export type NewTaskViewmodel = {
   title: string;
   narrative: string;
   rewardType: string;
@@ -24,6 +24,10 @@ export type INewTaskViewmodel = {
   requiredPlayerLevel: number;
   interactionType: string;
   timeLimitMinutes: number | null;
+  confirmOpen: boolean;
+  successOpen: boolean;
+  errorConflictOpen: boolean;
+  errorIncorrectDataOpen: boolean;
 };
 
 export type INewTaskWindows = {
@@ -32,4 +36,5 @@ export type INewTaskWindows = {
   showConflictMessageDialog: () => void;
   showIncorrectDataMessageDialog: () => void;
   showNewTaskSuccessMessageDialog: () => void;
+  hideDialogs: () => void;
 };

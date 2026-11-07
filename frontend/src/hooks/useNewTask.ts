@@ -1,23 +1,59 @@
 import { apiClient } from '@api/apiClient';
 import type {
   INewTaskActions,
-  INewTaskViewmodel,
+  NewTaskViewmodel,
   INewTaskWindows,
 } from '@app-types/new-task';
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useNavigate, useParams, type NavigateFunction } from 'react-router';
 
-export function useNewTask({
-  showNewTaskView,
-  showCancelNewTaskConfirmationDialog,
-  showConflictMessageDialog,
-  showIncorrectDataMessageDialog,
-  showNewTaskSuccessMessageDialog,
-}: INewTaskWindows): {
-  state: INewTaskViewmodel;
+function baseURL(gameId: string) {
+  return `/creator/games/${gameId}/scenario`;
+}
+
+function newTaskURL(gameId: string) {
+  return baseURL(gameId) + '/new-task';
+}
+
+function createNewTaskWindows(
+  setViewmodel: React.Dispatch<React.SetStateAction<NewTaskViewmodel>>,
+  navigate: NavigateFunction,
+  gameId: string,
+): INewTaskWindows {
+  return {
+    showNewTaskView: () => navigate(newTaskURL(gameId)),
+    showCancelNewTaskConfirmationDialog: () => {
+      setViewmodel((vm) => ({ ...vm, confirmOpen: true }));
+    },
+    showConflictMessageDialog: () => {
+      setViewmodel((vm) => ({ ...vm, errorConflictOpen: true }));
+    },
+    showIncorrectDataMessageDialog: () => {
+      setViewmodel((vm) => ({ ...vm, errorIncorrectDataOpen: true }));
+    },
+    showNewTaskSuccessMessageDialog: () => {
+      setViewmodel((vm) => ({ ...vm, successOpen: true }));
+    },
+    hideDialogs: () => {
+      setViewmodel((vm) => ({
+        ...vm,
+        successOpen: false,
+        confirmOpen: false,
+        errorConflictOpen: false,
+        errorIncorrectDataOpen: false,
+      }));
+    },
+  };
+}
+
+export function useNewTask(): {
+  state: NewTaskViewmodel;
   actions: INewTaskActions;
 } {
-  const [state, setState] = useState<INewTaskViewmodel>({
+  const { gameId } = useParams<{ gameId: string }>();
+  if (gameId === undefined) throw 'useNewTask used outside of path with gameId';
+
+  const [state, setState] = useState<NewTaskViewmodel>({
     title: '',
     narrative: '',
     rewardType: '',
@@ -25,15 +61,23 @@ export function useNewTask({
     requiredPlayerLevel: 0,
     interactionType: '',
     timeLimitMinutes: null,
+    confirmOpen: false,
+    successOpen: false,
+    errorConflictOpen: false,
+    errorIncorrectDataOpen: false,
   });
 
   const navigate = useNavigate();
-  const { gameId } = useParams<{ gameId: string }>();
-  const backURL = `/creator/games/${gameId}/scenario`;
+  const {
+    showCancelNewTaskConfirmationDialog,
+    hideDialogs,
+    showConflictMessageDialog,
+    showIncorrectDataMessageDialog,
+    showNewTaskSuccessMessageDialog,
+  } = createNewTaskWindows(setState, navigate, gameId);
 
   const actions: INewTaskActions = {
     onSubmitNewTask: async () => {
-      if (gameId === undefined) throw "shouldn't happen?";
       try {
         await apiClient.scenario.addTask(gameId, state);
         showNewTaskSuccessMessageDialog();
@@ -50,25 +94,33 @@ export function useNewTask({
     },
 
     onCancelNewTask: () => showCancelNewTaskConfirmationDialog(),
-    onCancelNewTaskConfirm: () => navigate(backURL),
-    onCancelNewTaskCancel: () => showNewTaskView(),
-    onNewTaskSuccessMessageDialogConfirm: () => navigate(backURL),
-    onIncorrectDataMessageDialogConfirm: () => showNewTaskView(),
-    onConflictMessageDialogConfirm: () => showNewTaskView(),
+    onCancelNewTaskConfirm: () => navigate(baseURL(gameId)),
+    onCancelNewTaskCancel: () => hideDialogs(),
+    onNewTaskSuccessMessageDialogConfirm: () => navigate(baseURL(gameId)),
+    onIncorrectDataMessageDialogConfirm: () => hideDialogs(),
+    onConflictMessageDialogConfirm: () => hideDialogs(),
 
-    onTitleChanged: (title) => setState({ ...state, title }),
-    onNarrativeChanged: (narrative: string) =>
-      setState({ ...state, narrative }),
-    onRewardTypeSelected: (rewardType: string) =>
-      setState({ ...state, rewardType }),
-    onRewardValueChanged: (rewardValue: string) =>
-      setState({ ...state, rewardValue }),
-    onRequiredPlayerLevelChanged: (requiredPlayerLevel: number) =>
-      setState({ ...state, requiredPlayerLevel }),
-    onInteractionTypeSelected: (interactionType: string) =>
-      setState({ ...state, interactionType }),
-    onTimeLimitMinutesChanged: (timeLimitMinutes: number) =>
-      setState({ ...state, timeLimitMinutes }),
+    onTitleChanged: (title) => {
+      setState({ ...state, title });
+    },
+    onNarrativeChanged: (narrative: string) => {
+      setState({ ...state, narrative });
+    },
+    onRewardTypeSelected: (rewardType: string) => {
+      setState({ ...state, rewardType });
+    },
+    onRewardValueChanged: (rewardValue: string) => {
+      setState({ ...state, rewardValue });
+    },
+    onRequiredPlayerLevelChanged: (requiredPlayerLevel: number) => {
+      setState({ ...state, requiredPlayerLevel });
+    },
+    onInteractionTypeSelected: (interactionType: string) => {
+      setState({ ...state, interactionType });
+    },
+    onTimeLimitMinutesChanged: (timeLimitMinutes: number) => {
+      setState({ ...state, timeLimitMinutes });
+    },
   };
 
   return { state, actions };

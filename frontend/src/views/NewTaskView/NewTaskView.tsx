@@ -9,14 +9,8 @@ import TextAreaField from '@components/TextAreaField/TextAreaField';
 import TextHeading from '@components/TextHeading/TextHeading';
 import TextSubheading from '@components/TextSubheading/TextSubheading';
 import { useNewTask } from '@hooks/useNewTask';
-import { useState } from 'react';
 
 export function NewTaskView() {
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [successOpen, setSuccessOpen] = useState(false);
-  const [errorConflictOpen, setErrorConflictOpen] = useState(false);
-  const [errorIncorrectDataOpen, setErrorIncorrectDataOpen] = useState(false);
-
   const {
     state: {
       title,
@@ -26,6 +20,10 @@ export function NewTaskView() {
       requiredPlayerLevel,
       interactionType,
       timeLimitMinutes,
+      confirmOpen,
+      successOpen,
+      errorConflictOpen,
+      errorIncorrectDataOpen,
     },
     actions: {
       onSubmitNewTask,
@@ -43,18 +41,7 @@ export function NewTaskView() {
       onInteractionTypeSelected,
       onTimeLimitMinutesChanged,
     },
-  } = useNewTask({
-    showNewTaskView: () => {
-      setConfirmOpen(false);
-      setSuccessOpen(false);
-      setErrorConflictOpen(false);
-      setErrorIncorrectDataOpen(false);
-    },
-    showCancelNewTaskConfirmationDialog: () => setConfirmOpen(true),
-    showNewTaskSuccessMessageDialog: () => setSuccessOpen(true),
-    showConflictMessageDialog: () => setErrorConflictOpen(true),
-    showIncorrectDataMessageDialog: () => setErrorIncorrectDataOpen(true),
-  });
+  } = useNewTask();
 
   return (
     <div className='new-task-view'>
