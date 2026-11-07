@@ -16,7 +16,7 @@ export type INewTaskActions = {
   onTimeLimitMinutesChanged: (timeLimitMinutes: number) => void;
 };
 
-export type NewTaskViewmodel = {
+export type NewTaskViewModel = {
   title: string;
   narrative: string;
   rewardType: string;

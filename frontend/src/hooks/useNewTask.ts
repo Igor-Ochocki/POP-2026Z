@@ -1,7 +1,7 @@
 import { apiClient } from '@api/apiClient';
 import type {
   INewTaskActions,
-  NewTaskViewmodel,
+  NewTaskViewModel,
   INewTaskWindows,
 } from '@app-types/new-task';
 import { useState } from 'react';
@@ -16,26 +16,26 @@ function newTaskURL(gameId: string) {
 }
 
 function createNewTaskWindows(
-  setViewmodel: React.Dispatch<React.SetStateAction<NewTaskViewmodel>>,
+  setViewModel: React.Dispatch<React.SetStateAction<NewTaskViewModel>>,
   navigate: NavigateFunction,
   gameId: string,
 ): INewTaskWindows {
   return {
     showNewTaskView: () => navigate(newTaskURL(gameId)),
     showCancelNewTaskConfirmationDialog: () => {
-      setViewmodel((vm) => ({ ...vm, confirmOpen: true }));
+      setViewModel((vm) => ({ ...vm, confirmOpen: true }));
     },
     showConflictMessageDialog: () => {
-      setViewmodel((vm) => ({ ...vm, errorConflictOpen: true }));
+      setViewModel((vm) => ({ ...vm, errorConflictOpen: true }));
     },
     showIncorrectDataMessageDialog: () => {
-      setViewmodel((vm) => ({ ...vm, errorIncorrectDataOpen: true }));
+      setViewModel((vm) => ({ ...vm, errorIncorrectDataOpen: true }));
     },
     showNewTaskSuccessMessageDialog: () => {
-      setViewmodel((vm) => ({ ...vm, successOpen: true }));
+      setViewModel((vm) => ({ ...vm, successOpen: true }));
     },
     hideDialogs: () => {
-      setViewmodel((vm) => ({
+      setViewModel((vm) => ({
         ...vm,
         successOpen: false,
         confirmOpen: false,
@@ -47,13 +47,13 @@ function createNewTaskWindows(
 }
 
 export function useNewTask(): {
-  state: NewTaskViewmodel;
+  state: NewTaskViewModel;
   actions: INewTaskActions;
 } {
   const { gameId } = useParams<{ gameId: string }>();
   if (gameId === undefined) throw 'useNewTask used outside of path with gameId';
 
-  const [state, setState] = useState<NewTaskViewmodel>({
+  const [state, setState] = useState<NewTaskViewModel>({
     title: '',
     narrative: '',
     rewardType: '',
