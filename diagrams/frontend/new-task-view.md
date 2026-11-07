@@ -35,13 +35,7 @@ interface INewTaskActions <<interface>> {
     onNewTaskSuccessMessageDialogConfirm()
     onIncorrectDataMessageDialogConfirm()
     onConflictMessageDialogConfirm()
-    onTitleChanged(title: string)
-    onNarrativeChanged(narrative: string)
-    onRewardTypeSelected(rewardType: string)
-    onRewardValueChanged(rewardValue: string)
-    onRequiredPlayerLevelChanged(requiredPlayerLevel: number)
-    onInteractionTypeSelected(interactionType: string)
-    onTimeLimitMinutesChanged(timeLimitMinutes: number)
+    onChangeParameter(field: string, value: string | number)
 }
 
 INewTaskActions <-u- CancelNewTaskConfirmationDialog
