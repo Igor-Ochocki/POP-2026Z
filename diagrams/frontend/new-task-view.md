@@ -27,13 +27,21 @@ IncorrectDataMessageDialog -u-|> MessageDialog
 NewTaskSuccessMessageDialog -u-|> MessageDialog
 
 interface INewTaskActions <<interface>> {
-    onSubmitNewTask(task :TaskDTO)
+    onNewTaskSelect()
+    onSubmitNewTask()
     onCancelNewTask()
     onCancelNewTaskConfirm()
     onCancelNewTaskCancel()
     onNewTaskSuccessMessageDialogConfirm()
     onIncorrectDataMessageDialogConfirm()
     onConflictMessageDialogConfirm()
+    onTitleChanged(title: string)
+    onNarrativeChanged(narrative: string)
+    onRewardTypeSelected(rewardType: string)
+    onRewardValueChanged(rewardValue: string)
+    onRequiredPlayerLevelChanged(requiredPlayerLevel: number)
+    onInteractionTypeSelected(interactionType: string)
+    onTimeLimitMinutesChanged(timeLimitMinutes: number)
 }
 
 INewTaskActions <-u- CancelNewTaskConfirmationDialog
@@ -54,6 +62,7 @@ interface INewTaskWindows <<interface>> {
     showConflictMessageDialog()
     showIncorrectDataMessageDialog()
     showNewTaskSuccessMessageDialog()
+    hideDialogs()
 }
 
 class NewTaskWindows {
@@ -62,6 +71,7 @@ class NewTaskWindows {
     showConflictMessageDialog()
     showIncorrectDataMessageDialog()
     showNewTaskSuccessMessageDialog()
+    hideDialogs()
 }
 
 NewTaskWindows .d.|> INewTaskWindows
