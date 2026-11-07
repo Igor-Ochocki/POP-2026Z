@@ -106,26 +106,8 @@ export function useNewTask(): {
     onIncorrectDataMessageDialogConfirm: () => hideDialogs(),
     onConflictMessageDialogConfirm: () => hideDialogs(),
 
-    onTitleChanged: (title) => {
-      setState({ ...state, title });
-    },
-    onNarrativeChanged: (narrative: string) => {
-      setState({ ...state, narrative });
-    },
-    onRewardTypeSelected: (rewardType: string) => {
-      setState({ ...state, rewardType });
-    },
-    onRewardValueChanged: (rewardValue: string) => {
-      setState({ ...state, rewardValue });
-    },
-    onRequiredPlayerLevelChanged: (requiredPlayerLevel: number) => {
-      setState({ ...state, requiredPlayerLevel });
-    },
-    onInteractionTypeSelected: (interactionType: string) => {
-      setState({ ...state, interactionType });
-    },
-    onTimeLimitMinutesChanged: (timeLimitMinutes: number) => {
-      setState({ ...state, timeLimitMinutes });
+    onChangeParameter: (field, value) => {
+      setState({ ...state, [field]: value });
     },
   };
 

@@ -33,13 +33,7 @@ export function NewTaskView() {
       onNewTaskSuccessMessageDialogConfirm,
       onIncorrectDataMessageDialogConfirm,
       onConflictMessageDialogConfirm,
-      onTitleChanged,
-      onNarrativeChanged,
-      onRewardTypeSelected,
-      onRewardValueChanged,
-      onRequiredPlayerLevelChanged,
-      onInteractionTypeSelected,
-      onTimeLimitMinutesChanged,
+      onChangeParameter,
     },
   } = useNewTask();
 
@@ -60,7 +54,7 @@ export function NewTaskView() {
             inputProps={{
               placeholder: 'Wprowadź tytuł...',
               value: title,
-              onChange: (e) => onTitleChanged(e.target.value),
+              onChange: (e) => onChangeParameter('title', e.target.value),
             }}
           />
           <TextAreaField
@@ -68,7 +62,7 @@ export function NewTaskView() {
             textAreaProps={{
               placeholder: 'Wprowadź treść fabularną...',
               value: narrative,
-              onChange: (e) => onNarrativeChanged(e.target.value),
+              onChange: (e) => onChangeParameter('narrative', e.target.value),
             }}
           />
         </div>
@@ -78,14 +72,16 @@ export function NewTaskView() {
             label='Typ nagrody'
             options={['punkty', 'waluta']}
             value={rewardType}
-            onOptionSelected={onRewardTypeSelected}
+            onOptionSelected={(option) => {
+              onChangeParameter('rewardType', option);
+            }}
           />
           <InputField
             label='Wartość'
             inputProps={{
               placeholder: 'Podaj wartość nagrody...',
               value: rewardValue,
-              onChange: (e) => onRewardValueChanged(e.target.value),
+              onChange: (e) => onChangeParameter('rewardValue', e.target.value),
             }}
           />
         </div>
@@ -97,21 +93,27 @@ export function NewTaskView() {
               placeholder: 'Wpisz poziom',
               type: 'number',
               value: requiredPlayerLevel,
-              onChange: (e) => onRequiredPlayerLevelChanged(+e.target.value),
+              onChange: (e) => {
+                onChangeParameter('requiredPlayerLevel', +e.target.value);
+              },
             }}
           />
           <DropdownField
             label='Typ interakcji'
             options={['z otoczeniem', 'z innym graczem']}
             value={interactionType}
-            onOptionSelected={onInteractionTypeSelected}
+            onOptionSelected={(option) => {
+              onChangeParameter('interactionType', option);
+            }}
           />
           <InputField
             label='Ograniczenie czasowe (w minutach):'
             inputProps={{
               type: 'number',
               value: timeLimitMinutes ?? undefined,
-              onChange: (e) => onTimeLimitMinutesChanged(+e.target.value),
+              onChange: (e) => {
+                onChangeParameter('timeLimitMinutes', +e.target.value);
+              },
             }}
           />
         </div>

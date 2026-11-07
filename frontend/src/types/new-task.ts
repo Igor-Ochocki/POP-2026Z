@@ -1,3 +1,13 @@
+type NewTaskForm = {
+  title: string;
+  narrative: string;
+  rewardType: string;
+  rewardValue: string;
+  requiredPlayerLevel: number;
+  interactionType: string;
+  timeLimitMinutes: number | null;
+};
+
 export type INewTaskActions = {
   onNewTaskSelect: () => void;
 
@@ -9,23 +19,13 @@ export type INewTaskActions = {
   onIncorrectDataMessageDialogConfirm: () => void;
   onConflictMessageDialogConfirm: () => void;
 
-  onTitleChanged: (title: string) => void;
-  onNarrativeChanged: (narrative: string) => void;
-  onRewardTypeSelected: (rewardType: string) => void;
-  onRewardValueChanged: (rewardValue: string) => void;
-  onRequiredPlayerLevelChanged: (requiredPlayerLevel: number) => void;
-  onInteractionTypeSelected: (interactionType: string) => void;
-  onTimeLimitMinutesChanged: (timeLimitMinutes: number) => void;
+  onChangeParameter: (
+    field: keyof NewTaskForm,
+    value: NewTaskForm[keyof NewTaskForm],
+  ) => void;
 };
 
-export type NewTaskViewModel = {
-  title: string;
-  narrative: string;
-  rewardType: string;
-  rewardValue: string;
-  requiredPlayerLevel: number;
-  interactionType: string;
-  timeLimitMinutes: number | null;
+export type NewTaskViewModel = NewTaskForm & {
   cancelNewTaskConfirmationDialogOpen: boolean;
   newTaskSuccessMessageDialogOpen: boolean;
   conflictMessageDialogOpen: boolean;
