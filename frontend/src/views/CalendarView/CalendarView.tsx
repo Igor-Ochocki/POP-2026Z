@@ -24,12 +24,10 @@ export function CalendarView() {
 
       <Calendar
         events={state.events}
-        onEventDetails={actions.onEventDetails}
-        onDateClick={actions.onDateClick}
       />
 
       <div className='calendar-page__actions'>
-        <Button variant='primary' onClick={actions.onAddEvent}>
+        <Button variant='primary'>
           Dodaj wydarzenie
         </Button>
       </div>

@@ -2,7 +2,6 @@ import FullCalendar from '@fullcalendar/react';
 import type { DayCellInfo } from '@fullcalendar/react';
 import themePlugin from '@fullcalendar/react/themes/classic';
 import dayGridPlugin from '@fullcalendar/react/daygrid';
-import interactionPlugin from '@fullcalendar/react/interaction';
 import plLocale from '@fullcalendar/react/locales/pl';
 import type { CalendarEvent } from '@app-types/calendar';
 
@@ -13,8 +12,6 @@ import './Calendar.css';
 
 interface CalendarProps {
   events: CalendarEvent[];
-  onEventDetails?: (eventId: string) => void;
-  onDateClick?: (dateStr: string) => void;
 }
 
 function getDayCellClass({ isOther, isToday }: DayCellInfo): string {
@@ -24,15 +21,11 @@ function getDayCellClass({ isOther, isToday }: DayCellInfo): string {
   return classes.join(' ');
 }
 
-export default function Calendar({
-  events,
-  onEventDetails,
-  onDateClick,
-}: CalendarProps) {
+export default function Calendar({ events }: CalendarProps) {
   return (
     <div className='calendar'>
       <FullCalendar
-        plugins={[themePlugin, dayGridPlugin, interactionPlugin]}
+        plugins={[themePlugin, dayGridPlugin]}
         initialView='dayGridMonth'
         locale={plLocale}
         firstDay={1}
@@ -47,8 +40,6 @@ export default function Calendar({
         dayHeaderClass='calendar-day-header'
         dayCellClass={getDayCellClass}
         rowEventClass='calendar-event'
-        eventClick={(info) => onEventDetails?.(info.event.id)}
-        dateClick={(info) => onDateClick?.(info.dateStr)}
       />
     </div>
   );

@@ -12,7 +12,4 @@ export interface CalendarViewModel {
 export interface ICalendarActions {
   onShowCalendar: () => void;
   onBack: () => void;
-  onEventDetails: (eventId: string) => void;
-  onDateClick: (dateStr: string) => void;
-  onAddEvent: () => void;
 }

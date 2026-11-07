@@ -20,26 +20,11 @@ export function useCalendar(): {
     navigate('/');
   }, [navigate]);
 
-  const onEventDetails = useCallback((eventId: string) => {
-    console.log('Szczegóły wydarzenia', eventId);
-  }, []);
-
-  const onDateClick = useCallback((dateStr: string) => {
-    console.log('Kliknięto dzień', dateStr);
-  }, []);
-
-  const onAddEvent = useCallback(() => {
-    console.log('Dodaj wydarzenie');
-  }, []);
-
   return {
     state,
     actions: {
       onShowCalendar,
       onBack,
-      onEventDetails,
-      onDateClick,
-      onAddEvent,
     },
   };
 }
