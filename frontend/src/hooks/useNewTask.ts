@@ -69,6 +69,7 @@ export function useNewTask(): {
 
   const navigate = useNavigate();
   const {
+    showNewTaskView,
     showCancelNewTaskConfirmationDialog,
     hideDialogs,
     showConflictMessageDialog,
@@ -77,6 +78,8 @@ export function useNewTask(): {
   } = createNewTaskWindows(setState, navigate, gameId);
 
   const actions: INewTaskActions = {
+    onNewTaskSelect: () => showNewTaskView(),
+
     onSubmitNewTask: async () => {
       try {
         await apiClient.scenario.addTask(gameId, state);

@@ -1,4 +1,6 @@
 export type INewTaskActions = {
+  onNewTaskSelect: () => void;
+
   onSubmitNewTask: () => void;
   onCancelNewTask: () => void;
   onCancelNewTaskConfirm: () => void;
