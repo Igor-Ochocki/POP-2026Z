@@ -20,10 +20,10 @@ export function NewTaskView() {
       requiredPlayerLevel,
       interactionType,
       timeLimitMinutes,
-      confirmOpen,
-      successOpen,
-      errorConflictOpen,
-      errorIncorrectDataOpen,
+      cancelNewTaskConfirmationDialogOpen,
+      newTaskSuccessMessageDialogOpen,
+      conflictMessageDialogOpen,
+      incorrectDataMessageDialogOpen,
     },
     actions: {
       onSubmitNewTask,
@@ -128,7 +128,7 @@ export function NewTaskView() {
             Czy aby na pewno anulować tworzenie zadania? Wprowadzone dane nie
             zostaną zapisane.
           `}
-          open={confirmOpen}
+          open={cancelNewTaskConfirmationDialogOpen}
           onClosed={(confirmed) => {
             if (confirmed) {
               onCancelNewTaskConfirm();
@@ -141,7 +141,7 @@ export function NewTaskView() {
           title='Sukces'
           message='Nowe zadanie zostało dodane.'
           onClosed={onNewTaskSuccessMessageDialogConfirm}
-          open={successOpen}
+          open={newTaskSuccessMessageDialogOpen}
         />
         <MessageDialog
           title='Błąd'
@@ -150,13 +150,13 @@ export function NewTaskView() {
             obiekt interakcji
           `}
           onClosed={onConflictMessageDialogConfirm}
-          open={errorConflictOpen}
+          open={conflictMessageDialogOpen}
         />
         <MessageDialog
           title='Błąd'
-          message='Coś tam nie poszło'
+          message='Podane dane zadania są błędne'
           onClosed={onIncorrectDataMessageDialogConfirm}
-          open={errorIncorrectDataOpen}
+          open={incorrectDataMessageDialogOpen}
         />
       </form>
     </div>

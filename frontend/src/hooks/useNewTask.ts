@@ -23,24 +23,27 @@ function createNewTaskWindows(
   return {
     showNewTaskView: () => navigate(newTaskURL(gameId)),
     showCancelNewTaskConfirmationDialog: () => {
-      setViewModel((vm) => ({ ...vm, confirmOpen: true }));
+      setViewModel((vm) => ({
+        ...vm,
+        cancelNewTaskConfirmationDialogOpen: true,
+      }));
     },
     showConflictMessageDialog: () => {
-      setViewModel((vm) => ({ ...vm, errorConflictOpen: true }));
+      setViewModel((vm) => ({ ...vm, conflictMessageDialogOpen: true }));
     },
     showIncorrectDataMessageDialog: () => {
-      setViewModel((vm) => ({ ...vm, errorIncorrectDataOpen: true }));
+      setViewModel((vm) => ({ ...vm, incorrectDataMessageDialogOpen: true }));
     },
     showNewTaskSuccessMessageDialog: () => {
-      setViewModel((vm) => ({ ...vm, successOpen: true }));
+      setViewModel((vm) => ({ ...vm, newTaskSuccessMessageDialogOpen: true }));
     },
     hideDialogs: () => {
       setViewModel((vm) => ({
         ...vm,
-        successOpen: false,
-        confirmOpen: false,
-        errorConflictOpen: false,
-        errorIncorrectDataOpen: false,
+        newTaskSuccessMessageDialogOpen: false,
+        cancelNewTaskConfirmationDialogOpen: false,
+        conflictMessageDialogOpen: false,
+        incorrectDataMessageDialogOpen: false,
       }));
     },
   };
@@ -61,10 +64,10 @@ export function useNewTask(): {
     requiredPlayerLevel: 0,
     interactionType: '',
     timeLimitMinutes: null,
-    confirmOpen: false,
-    successOpen: false,
-    errorConflictOpen: false,
-    errorIncorrectDataOpen: false,
+    cancelNewTaskConfirmationDialogOpen: false,
+    newTaskSuccessMessageDialogOpen: false,
+    conflictMessageDialogOpen: false,
+    incorrectDataMessageDialogOpen: false,
   });
 
   const navigate = useNavigate();

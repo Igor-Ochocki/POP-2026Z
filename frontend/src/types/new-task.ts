@@ -26,10 +26,10 @@ export type NewTaskViewModel = {
   requiredPlayerLevel: number;
   interactionType: string;
   timeLimitMinutes: number | null;
-  confirmOpen: boolean;
-  successOpen: boolean;
-  errorConflictOpen: boolean;
-  errorIncorrectDataOpen: boolean;
+  cancelNewTaskConfirmationDialogOpen: boolean;
+  newTaskSuccessMessageDialogOpen: boolean;
+  conflictMessageDialogOpen: boolean;
+  incorrectDataMessageDialogOpen: boolean;
 };
 
 export type INewTaskWindows = {
