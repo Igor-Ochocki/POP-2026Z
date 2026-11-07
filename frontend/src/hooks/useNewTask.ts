@@ -1,41 +1,11 @@
+import { apiClient } from '@api/apiClient';
+import type {
+  INewTaskActions,
+  INewTaskViewmodel,
+  INewTaskWindows,
+} from '@app-types/new-task';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-
-type INewTaskActions = {
-  onSubmitNewTask: () => void;
-  onCancelNewTask: () => void;
-  onCancelNewTaskConfirm: () => void;
-  onCancelNewTaskCancel: () => void;
-  onNewTaskSuccessMessageDialogConfirm: () => void;
-  onIncorrectDataMessageDialogConfirm: () => void;
-  onConflictMessageDialogConfirm: () => void;
-
-  onTitleChanged: (title: string) => void;
-  onNarrativeChanged: (narrative: string) => void;
-  onRewardTypeSelected: (rewardType: string) => void;
-  onRewardValueChanged: (rewardValue: string) => void;
-  onRequiredPlayerLevelChanged: (requiredPlayerLevel: number) => void;
-  onInteractionTypeSelected: (interactionType: string) => void;
-  onTimeLimitMinutesChanged: (timeLimitMinutes: number) => void;
-};
-
-type INewTaskViewmodel = {
-  title: string;
-  narrative: string;
-  rewardType: string;
-  rewardValue: string;
-  requiredPlayerLevel: number;
-  interactionType: string;
-  timeLimitMinutes: number | null;
-};
-
-type INewTaskWindows = {
-  showNewTaskView: () => void;
-  showCancelNewTaskConfirmationDialog: () => void;
-  showConflictMessageDialog: () => void;
-  showIncorrectDataMessageDialog: () => void;
-  showNewTaskSuccessMessageDialog: () => void;
-};
 
 export function useNewTask({
   showNewTaskView,
@@ -59,17 +29,30 @@ export function useNewTask({
 
   const navigate = useNavigate();
   const { gameId } = useParams<{ gameId: string }>();
+  const backURL = `/creator/games/${gameId}/scenario`;
 
   const actions: INewTaskActions = {
-    onSubmitNewTask: () => {
-      showConflictMessageDialog();
+    onSubmitNewTask: async () => {
+      if (gameId === undefined) throw "shouldn't happen?";
+      try {
+        await apiClient.scenario.addTask(gameId, state);
+        showNewTaskSuccessMessageDialog();
+      } catch (e) {
+        const status = e as number;
+        if (status === 409) {
+          showConflictMessageDialog();
+        } else if (status === 422) {
+          showIncorrectDataMessageDialog();
+        } else if (status === 404) {
+          navigate('/creator/games');
+        }
+      }
     },
 
     onCancelNewTask: () => showCancelNewTaskConfirmationDialog(),
-    onCancelNewTaskConfirm: () => navigate(`/creator/games/${gameId}/scenario`),
+    onCancelNewTaskConfirm: () => navigate(backURL),
     onCancelNewTaskCancel: () => showNewTaskView(),
-    onNewTaskSuccessMessageDialogConfirm: () =>
-      navigate(`/creator/games/${gameId}/scenario`),
+    onNewTaskSuccessMessageDialogConfirm: () => navigate(backURL),
     onIncorrectDataMessageDialogConfirm: () => showNewTaskView(),
     onConflictMessageDialogConfirm: () => showNewTaskView(),
 

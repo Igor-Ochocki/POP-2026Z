@@ -89,7 +89,7 @@ export function NewTaskView() {
           <TextSubheading level={2}>Nagroda</TextSubheading>
           <DropdownField
             label='Typ nagrody'
-            options={['foo', 'bar']}
+            options={['punkty', 'waluta']}
             value={rewardType}
             onOptionSelected={onRewardTypeSelected}
           />
@@ -115,7 +115,7 @@ export function NewTaskView() {
           />
           <DropdownField
             label='Typ interakcji'
-            options={['foo', 'bar']}
+            options={['z otoczeniem', 'z innym graczem']}
             value={interactionType}
             onOptionSelected={onInteractionTypeSelected}
           />
