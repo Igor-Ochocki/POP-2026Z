@@ -1,32 +1,48 @@
 ```
 @startuml
 class useNewTask {
-    onSubmitNewTask(task :TaskDTO)
+    onNewTaskSelect()
+    onSubmitNewTask()
     onCancelNewTask()
     onCancelNewTaskConfirm()
     onCancelNewTaskCancel()
     onNewTaskSuccessMessageDialogConfirm()
     onIncorrectDataMessageDialogConfirm()
     onConflictMessageDialogConfirm()
+    onTitleChanged(title: string)
+    onNarrativeChanged(narrative: string)
+    onRewardTypeSelected(rewardType: string)
+    onRewardValueChanged(rewardValue: string)
+    onRequiredPlayerLevelChanged(requiredPlayerLevel: number)
+    onInteractionTypeSelected(interactionType: string)
+    onTimeLimitMinutesChanged(timeLimitMinutes: number)
 }
 
 interface INewTaskActions <<interface>> {
-    onSubmitNewTask(task :TaskDTO)
+    onNewTaskSelect()
+    onSubmitNewTask()
     onCancelNewTask()
     onCancelNewTaskConfirm()
     onCancelNewTaskCancel()
     onNewTaskSuccessMessageDialogConfirm()
     onIncorrectDataMessageDialogConfirm()
     onConflictMessageDialogConfirm()
+    onTitleChanged(title: string)
+    onNarrativeChanged(narrative: string)
+    onRewardTypeSelected(rewardType: string)
+    onRewardValueChanged(rewardValue: string)
+    onRequiredPlayerLevelChanged(requiredPlayerLevel: number)
+    onInteractionTypeSelected(interactionType: string)
+    onTimeLimitMinutesChanged(timeLimitMinutes: number)
 }
 
 useNewTask .|> INewTaskActions
 
-useNewTask --> IGamesApi
+useNewTask --> IScenarioApi
 useNewTask -u-> INewTaskWindows
 
-interface IGamesApi <<interface>> {
-    addTask(gameId :string, task :TaskDTO)
+interface IScenarioApi <<interface>> {
+    addTask(gameId :string, task :TaskCreateDTO)
 }
 
 interface INewTaskWindows <<interface>> {
@@ -35,7 +51,24 @@ interface INewTaskWindows <<interface>> {
     showConflictMessageDialog()
     showIncorrectDataMessageDialog()
     showNewTaskSuccessMessageDialog()
+    hideDialogs()
 }
+
+class NewTaskViewModel {
+    title: string
+    narrative: string
+    rewardType: string
+    rewardValue: string
+    requiredPlayerLevel: number
+    interactionType: string
+    timeLimitMinutes: number | null
+    cancelNewTaskConfirmationDialogOpen: boolean
+    newTaskSuccessMessageDialogOpen: boolean
+    conflictMessageDialogOpen: boolean
+    incorrectDataMessageDialogOpen: boolean
+}
+
+useNewTask *-l- NewTaskViewModel :state
 @enduml
 ```
 
