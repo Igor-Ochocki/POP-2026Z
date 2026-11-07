@@ -1,13 +1,20 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router';
 import type { CalendarViewModel, ICalendarActions } from '@app-types/calendar';
-import { mockEvents } from '@api/mocks/mocks';
+import { calendarMockEvents } from '@api/mocks/calendarMocks';
 
 export function useCalendar(): {
   state: CalendarViewModel;
   actions: ICalendarActions;
 } {
   const navigate = useNavigate();
+  const [state] = useState<CalendarViewModel>({
+    events: calendarMockEvents,
+  });
+
+  const onShowCalendar = useCallback(() => {
+    navigate('/calendar');
+  }, [navigate]);
 
   const onBack = useCallback(() => {
     navigate('/');
@@ -26,7 +33,13 @@ export function useCalendar(): {
   }, []);
 
   return {
-    state: { events: mockEvents },
-    actions: { onBack, onEventDetails, onDateClick, onAddEvent },
+    state,
+    actions: {
+      onShowCalendar,
+      onBack,
+      onEventDetails,
+      onDateClick,
+      onAddEvent,
+    },
   };
 }

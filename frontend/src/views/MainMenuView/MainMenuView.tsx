@@ -1,14 +1,14 @@
-import { useNavigate } from 'react-router';
 import Button from '@components/Button/Button';
+import { useCalendar } from '@hooks/useCalendar';
 import './MainMenuView.css';
 
 export function MainMenuView() {
-  const navigate = useNavigate();
+  const { actions } = useCalendar();
 
   return (
     <main className='main-menu'>
       <h1>Menu główne</h1>
-      <Button onClick={() => navigate('/calendar')}>Kalendarz ›</Button>
+      <Button onClick={actions.onShowCalendar}>Kalendarz ›</Button>
     </main>
   );
 }

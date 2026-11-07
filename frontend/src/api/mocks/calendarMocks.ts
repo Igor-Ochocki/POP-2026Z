@@ -1,6 +1,6 @@
 import type { CalendarEvent } from '@app-types/calendar';
 
-export const mockEvents: CalendarEvent[] = [
+export const calendarMockEvents: CalendarEvent[] = [
   { id: '1', title: 'Wydarzenie 001', start: '2026-10-07' },
   { id: '2', title: 'Wydarzenie 002', start: '2026-10-19' },
   { id: '3', title: 'Wydarzenie 003', start: '2026-10-19' },
