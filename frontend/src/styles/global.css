@@ -10,6 +10,8 @@
   --color-primary: #0284c7;
   --color-primary-dim: #0369a1;
 
+  --color-border: #d2d2d7;
+  --color-border-strong: #000000;
   --color-success: #2b8a3e;
   --color-error: #c92a2a;
 
@@ -45,7 +47,7 @@
 
   font: var(--font-content);
   line-height: 1.5;
-  color: var(--color-text);
+  color: var(--color-text-primary);
   background: var(--color-bg);
 }
 
@@ -78,4 +80,11 @@
 
 body {
   margin: 0;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
 }

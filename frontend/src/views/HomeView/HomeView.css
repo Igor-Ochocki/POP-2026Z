@@ -25,7 +25,7 @@
   padding: 0.4rem 0.8rem;
   border: 1px solid var(--color-border);
   border-radius: 4px;
-  background: var(--color-surface);
+  background: var(--color-btn-primary);
   color: inherit;
   cursor: pointer;
 }

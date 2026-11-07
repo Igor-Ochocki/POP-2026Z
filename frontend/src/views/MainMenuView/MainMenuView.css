@@ -1,0 +1,10 @@
+.main-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 48px 16px;
+  min-height: 100vh;
+  color: var(--color-text);
+  background: var(--color-bg);
+}
