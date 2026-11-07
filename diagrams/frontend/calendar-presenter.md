@@ -1,12 +1,12 @@
 @startuml
 class useCalendar {
 onShowCalendar()
-onSessionExpiredMessageDialogConfirm()
+onBack()
 }
 
 interface ICalendarActions <<interface>> {
 onShowCalendar()
-onSessionExpiredMessageDialogConfirm()
+onBack()
 }
 
 useCalendar .|> ICalendarActions
@@ -20,8 +20,6 @@ getEvents(month :Date) :CalendarEventDTO[]
 
 interface ICalendarWindows <<interface>> {
 showCalendarView(events :CalendarEventDTO[])
-showSessionExpiredMessageDialog()
-showLoginView()
 }
 @enduml
 
