@@ -10,6 +10,7 @@ from app.db.database import Base
 
 if TYPE_CHECKING:
     from app.models.actions import Action
+    from app.models.scenario import Scenario
 
 class GameStatus(str, PyEnum):
     Draft = "Draft"
@@ -32,3 +33,6 @@ class Game(Base):
     tags: Mapped[list[str]] = mapped_column(JSON, default=list)
     status: Mapped[GameStatus] = mapped_column(Enum(GameStatus), default=GameStatus.Draft)
     actions : Mapped[list["Action"]] = relationship("Action", back_populates="game", cascade="all, delete-orphan")
+    scenario: Mapped["Scenario | None"] = relationship(
+        "Scenario", back_populates="game", cascade="all, delete-orphan", uselist=False
+    )
