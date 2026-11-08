@@ -5,7 +5,7 @@ onBack()
 }
 
 class CalendarViewModel <<State>> {
-events :CalendarEvent[]
+events :CalendarEventDTO[]
 }
 
 interface ICalendarActions <<interface>> {
@@ -24,7 +24,7 @@ getEvents(month :Date) :CalendarEventDTO[]
 }
 
 interface ICalendarWindows <<interface>> {
-showCalendarView(events :CalendarEventDTO[])
+showCalendarView()
 }
 @enduml
 
