@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { apiClient } from '@api/apiClient';
+import { env } from '@config/env';
 import type {
   GameCreateDTO,
   GameDefinitionViewModel,
@@ -179,15 +180,23 @@ export function useGameDefinition(): {
 
     setState((prev) => ({ ...prev, isSubmitting: true }));
     try {
+      // Always saved as a draft first - submitting is a separate step.
+      // A game that already has an id is updated (PUT) instead of created again.
+      const userId = env.devUserId;
       const saved = fromResponseDTO(
-        await apiClient.games.saveGame(toCreateDTO(game), asDraft),
+        game.gameId
+          ? await apiClient.games.editGame(
+              game.gameId,
+              userId,
+              toCreateDTO(game),
+              true,
+            )
+          : await apiClient.games.saveGame(userId, toCreateDTO(game), true),
       );
-      if (!asDraft) await apiClient.games.submitToReviewer(saved.gameId);
-      setState((prev) => ({
-        ...prev,
-        activeGame: saved,
-        isSubmitting: false,
-      }));
+      setState((prev) => ({ ...prev, activeGame: saved }));
+      if (!asDraft)
+        await apiClient.games.submitToReviewer(saved.gameId, userId);
+      setState((prev) => ({ ...prev, isSubmitting: false }));
       if (asDraft) windows.showGameSavedMessageDialog();
       else windows.showGameSubmittedMessageDialog();
     } catch {
