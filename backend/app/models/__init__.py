@@ -7,7 +7,6 @@ tables for models imported in this file, e.g.:
 
     __all__ = ["Game"]
 """
-
 from app.models.actions import Action
 from app.models.game import Game
 
