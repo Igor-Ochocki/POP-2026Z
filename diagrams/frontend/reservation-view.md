@@ -2,9 +2,8 @@
 
 ```
 
-
-
 @startuml reservation-view
+
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
 skinparam shadowing false
@@ -21,15 +20,8 @@ class ReservationView {
     + render()
 }
 
-class ReservationFormPanel {
-    + onGameChange(gameId: string)
-    + onTimeSlotChange(slotId: string)
-    + onParticipantCountChange(participantCount: number)
+class ReservationPanel {
     + onSubmitReservationClick()
-    + onCancelClick()
-}
-
-class ReservationConfirmDialog {
     + onConfirmClick()
     + onCancelClick()
 }
@@ -44,24 +36,14 @@ class MessageDialog {
     + onOkClick()
 }
 
-class PaymentCompletedMessageDialog
-class SlotUnavailableMessageDialog
-class ReservationCancelledMessageDialog
-
-PaymentCompletedMessageDialog -u-|> MessageDialog
-SlotUnavailableMessageDialog -u-|> MessageDialog
-ReservationCancelledMessageDialog -u-|> MessageDialog
-
 interface IReservationsActions <<interface>> {
     + onOpenReservation(slot: TimeSlotDTO | null)
-    + onChangeParticipantCount(count: number)
+    + onChangeParameter(field: string, value: unknown)
     + onSubmitReservation()
     + onConfirmReservation()
     + onCancelReservation()
     + onPayLater()
-    + onPaymentCompletedMessageDialogConfirm()
-    + onSlotUnavailableMessageDialogConfirm()
-    + onReservationCancelledMessageDialogConfirm()
+    + onMessageDialogConfirm()
 }
 
 interface IPaymentActions <<interface>> {
@@ -70,77 +52,38 @@ interface IPaymentActions <<interface>> {
 
 interface IReservationsWindows <<interface>> {
     + showReservationView()
-    + showReservationConfirmDialog()
-    + showPaymentCompletedMessageDialog()
-    + showSlotUnavailableMessageDialog()
-    + showReservationCancelledMessageDialog()
+    + showMessageDialog(title: string, message: string)
 }
 
 class ReservationsWindows {
     + showReservationView()
-    + showReservationConfirmDialog()
-    + showPaymentCompletedMessageDialog()
-    + showSlotUnavailableMessageDialog()
-    + showReservationCancelledMessageDialog()
+    + showMessageDialog(title: string, message: string)
 }
 
 ReservationsWindows .u.|> IReservationsWindows
 
-ReservationView --> ReservationFormPanel : displays
-ReservationView --> ReservationConfirmDialog : displays
+ReservationView --> ReservationPanel : displays
 ReservationView --> PaymentPanel : displays
-ReservationView --> PaymentCompletedMessageDialog : displays
-ReservationView --> SlotUnavailableMessageDialog : displays
-ReservationView --> ReservationCancelledMessageDialog : displays
+ReservationView --> MessageDialog : displays
 
-ReservationFormPanel ..> IReservationsActions : dispatches actions
-ReservationConfirmDialog ..> IReservationsActions : dispatches actions
+ReservationPanel ..> IReservationsActions : dispatches actions
 PaymentPanel ..> IReservationsActions : pay later
 PaymentPanel ..> IPaymentActions : pay now
-
-PaymentCompletedMessageDialog ..> IReservationsActions
-SlotUnavailableMessageDialog ..> IReservationsActions
-ReservationCancelledMessageDialog ..> IReservationsActions
+MessageDialog ..> IReservationsActions : confirms
 
 ReservationsWindows --> ReservationView
-ReservationsWindows --> ReservationFormPanel
-ReservationsWindows --> ReservationConfirmDialog
-ReservationsWindows --> PaymentCompletedMessageDialog
-ReservationsWindows --> SlotUnavailableMessageDialog
-ReservationsWindows --> ReservationCancelledMessageDialog
 
 note right of CalendarView
     External PU1.
-
-    Does not open ReservationView directly.
-    Navigation is performed through
-    the presenter of PU1.
-end note
-
-note right of ReservationView
-    One view for the entire reservation flow.
-
-    State changes trigger re-rendering.
-    No show() parameters are required.
+    Navigation is handled by PU1 Presenter.
 end note
 
 note bottom of PaymentPanel
-    Pay now:
-    Calls IPaymentActions.onPay().
-    Payment flow is handled by usePayment.
-
-    Pay later:
-    Calls IReservationsActions.onPayLater().
-    Reservation remains Unpaid.
-end note
-
-note bottom of IReservationsActions
-    Only reservation-related actions.
-    Payment processing is not implemented here.
+    Pay now -> IPaymentActions.onPay()
+    Pay later -> IReservationsActions.onPayLater()
 end note
 
 @enduml
-
 
 ```
 
