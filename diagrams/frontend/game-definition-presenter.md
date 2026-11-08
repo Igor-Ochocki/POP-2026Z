@@ -57,9 +57,9 @@ class useCreatorPanel <<Hook>> {
 }
 
 interface IGamesApi <<interface>> {
-    + saveGame(metadata: GameCreateDTO, asDraft: boolean): Promise<GameResponseDTO>
-    + editGame(gameId: string, metadata: GameCreateDTO, asDraft: boolean): Promise<GameResponseDTO>
-    + submitToReviewer(gameId: string): Promise<boolean>
+    + saveGame(userId: string, metadata: GameCreateDTO, asDraft: boolean): Promise<GameResponseDTO>
+    + editGame(gameId: string, userId: string, metadata: GameCreateDTO, asDraft: boolean): Promise<GameResponseDTO>
+    + submitToReviewer(gameId: string, userId: string): Promise<boolean>
 }
 
 class GameCreateDTO <<DTO>> {
@@ -140,6 +140,8 @@ end note
 note bottom of IGamesApi
     DTO odpowiadają GameCreateSchema
     i GameResponseSchema z backendu.
+    userId to parametr user_id, do czasu
+    logowania brany z ENV (VITE_DEV_USER_ID).
 end note
 @enduml
 ```
