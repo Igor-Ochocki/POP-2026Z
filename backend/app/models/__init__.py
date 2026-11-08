@@ -8,4 +8,9 @@ tables for models imported in this file, e.g.:
     __all__ = ["Game"]
 """
 
-__all__: list[str] = []
+from app.models.actions import Action
+from app.models.game import Game
+
+__all__: list[str] = [
+    "Action", "Game"
+]
