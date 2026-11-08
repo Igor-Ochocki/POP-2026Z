@@ -3,6 +3,7 @@ import { Layout } from '@components/Layout/Layout';
 import { HomeView } from '@views/HomeView/HomeView';
 import { CreatorPanelView } from '@views/CreatorPanelView/CreatorPanelView';
 import { GameDefinitionView } from '@views/GameDefinitionView/GameDefinitionView';
+import { ActionDefinitionView } from '@views/ActionDefinitionView/ActionDefinitionView';
 import { NotFoundView } from '@views/NotFoundView/NotFoundView';
 
 export const router = createBrowserRouter([
