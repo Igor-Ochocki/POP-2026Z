@@ -14,8 +14,6 @@ skinparam linetype polyline
 
 title PU2 - Game Time Reservation - View
 
-class CalendarView <<External PU1>>
-
 class ReservationView {
     + render()
 }
@@ -24,11 +22,6 @@ class ReservationPanel {
     + onSubmitReservationClick()
     + onConfirmClick()
     + onCancelClick()
-}
-
-class PaymentPanel {
-    + onPayClick()
-    + onPayLaterClick()
 }
 
 class MessageDialog {
@@ -47,7 +40,7 @@ interface IReservationsActions <<interface>> {
 }
 
 interface IPaymentActions <<interface>> {
-    + onPay(reservationId: string)
+    + onStartPayment(reservationId: string)
 }
 
 interface IReservationsWindows <<interface>> {
@@ -63,25 +56,13 @@ class ReservationsWindows {
 ReservationsWindows .u.|> IReservationsWindows
 
 ReservationView --> ReservationPanel : displays
-ReservationView --> PaymentPanel : displays
 ReservationView --> MessageDialog : displays
+ReservationView ..> IPaymentActions : starts payment
 
 ReservationPanel ..> IReservationsActions : dispatches actions
-PaymentPanel ..> IReservationsActions : pay later
-PaymentPanel ..> IPaymentActions : pay now
 MessageDialog ..> IReservationsActions : confirms
 
 ReservationsWindows --> ReservationView
-
-note right of CalendarView
-    External PU1.
-    Navigation is handled by PU1 Presenter.
-end note
-
-note bottom of PaymentPanel
-    Pay now -> IPaymentActions.onPay()
-    Pay later -> IReservationsActions.onPayLater()
-end note
 
 @enduml
 

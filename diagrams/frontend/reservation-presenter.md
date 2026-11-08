@@ -76,19 +76,6 @@ enum ReservationDialogType {
     reservationCancelled
 }
 
-class usePayment <<Hook>> {
-    + onPay(reservationId: string)
-    - redirectToPayment(url: string)
-}
-
-interface IPaymentActions <<interface>> {
-    + onPay(reservationId: string)
-}
-
-class PaymentProvider <<External System>> {
-    + paymentUrl: string
-}
-
 interface IReservationsApi <<interface>> {
     + createReservation(dto: ReservationCreateDTO): Promise<boolean>
     + cancelReservation(reservationId: string): Promise<boolean>
@@ -99,8 +86,6 @@ class ReservationCreateDTO <<DTO>> {
     + gameId: string
     + participantCount: number
 }
-
-
 
 class TimeSlotDTO <<PU1 DTO>>
 
@@ -114,22 +99,13 @@ useReservations .u.|> IReservationsActions
 useReservations -u-> IReservationsWindows
 useReservations --> IReservationsApi : reservationsApi
 useReservations *-- "1" ReservationViewModel : owns state
-useReservations ..> IPaymentActions : starts payment
-
-usePayment .u.|> IPaymentActions
-usePayment --> PaymentProvider : redirects to
 
 ReservationViewModel ..> TimeSlotDTO
 ReservationViewModel ..> ReservationSummaryDTO
 
 IReservationsApi ..> ReservationCreateDTO
 
-note bottom of usePayment
-  Requests payment URL and redirects user.
-end note
-
 @enduml
-
 
 ```
 
