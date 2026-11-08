@@ -21,8 +21,6 @@ class useGameDefinition <<Hook>> {
     + onSubmitForReview()
     + onSaveErrorMessageDialogConfirm()
     - validateParameters(form: GameParametersForm): GameParametersErrors
-    - toCreateDTO(game: GameMetadataDTO): GameCreateDTO
-    - fromResponseDTO(data: GameResponseDTO): GameMetadataDTO
     - saveGame(asDraft: boolean)
 }
 
@@ -65,15 +63,15 @@ interface IGamesApi <<interface>> {
 class GameCreateDTO <<DTO>> {
     + title: string
     + description: string
-    + min_players: number
-    + max_players: number
-    + duration_minutes: number
-    + requires_invitation: boolean
+    + minPlayers: number
+    + maxPlayers: number
+    + durationMinutes: number
+    + requiresInvitation: boolean
     + tags: string[*]
 }
 
 class GameResponseDTO <<DTO>> {
-    + game_id: string
+    + gameId: string
     + status: string
 }
 
@@ -140,6 +138,7 @@ end note
 note bottom of IGamesApi
     DTO odpowiadają GameCreateSchema
     i GameResponseSchema z backendu.
+    gamesApi mapuje camelCase <-> snake_case.
     userId to parametr user_id, do czasu
     logowania brany z ENV (VITE_DEV_USER_ID).
 end note

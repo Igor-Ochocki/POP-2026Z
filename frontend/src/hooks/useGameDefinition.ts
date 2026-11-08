@@ -3,12 +3,10 @@ import { useNavigate } from 'react-router';
 import { apiClient } from '@api/apiClient';
 import { env } from '@config/env';
 import type {
-  GameCreateDTO,
   GameDefinitionViewModel,
   GameMetadataDTO,
   GameParametersErrors,
   GameParametersForm,
-  GameResponseDTO,
   IGameDefinitionActions,
   IGameDefinitionWindows,
 } from '@app-types/game';
@@ -77,32 +75,6 @@ function toMetadata(
     requiresInvitation: form.requiresInvitation,
     tags: [form.category],
     status: previous?.status ?? 'W edycji',
-  };
-}
-
-function toCreateDTO(game: GameMetadataDTO): GameCreateDTO {
-  return {
-    title: game.title,
-    description: game.description,
-    min_players: game.minPlayers,
-    max_players: game.maxPlayers,
-    duration_minutes: game.durationMinutes,
-    requires_invitation: game.requiresInvitation,
-    tags: game.tags,
-  };
-}
-
-function fromResponseDTO(data: GameResponseDTO): GameMetadataDTO {
-  return {
-    gameId: data.game_id,
-    title: data.title,
-    description: data.description,
-    minPlayers: data.min_players,
-    maxPlayers: data.max_players,
-    durationMinutes: data.duration_minutes,
-    requiresInvitation: data.requires_invitation,
-    tags: data.tags,
-    status: data.status,
   };
 }
 
@@ -183,16 +155,9 @@ export function useGameDefinition(): {
       // Always saved as a draft first - submitting is a separate step.
       // A game that already has an id is updated (PUT) instead of created again.
       const userId = env.devUserId;
-      const saved = fromResponseDTO(
-        game.gameId
-          ? await apiClient.games.editGame(
-              game.gameId,
-              userId,
-              toCreateDTO(game),
-              true,
-            )
-          : await apiClient.games.saveGame(userId, toCreateDTO(game), true),
-      );
+      const saved = game.gameId
+        ? await apiClient.games.editGame(game.gameId, userId, game, true)
+        : await apiClient.games.saveGame(userId, game, true);
       setState((prev) => ({ ...prev, activeGame: saved }));
       if (!asDraft)
         await apiClient.games.submitToReviewer(saved.gameId, userId);

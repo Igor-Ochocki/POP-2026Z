@@ -13,15 +13,15 @@ export interface GameMetadataDTO {
 export interface GameCreateDTO {
   title: string;
   description: string;
-  min_players: number;
-  max_players: number;
-  duration_minutes: number;
-  requires_invitation: boolean;
+  minPlayers: number;
+  maxPlayers: number;
+  durationMinutes: number;
+  requiresInvitation: boolean;
   tags: string[];
 }
 
 export interface GameResponseDTO extends GameCreateDTO {
-  game_id: string;
+  gameId: string;
   status: string;
 }
 
