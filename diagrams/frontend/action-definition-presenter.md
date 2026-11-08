@@ -9,14 +9,14 @@ skinparam shadowing false
 
 interface IActionDefinitionWindows <<interface>> {
   +showGameDefinitionView()
-  +showActionFormView(form: ActionForm, errors: ActionFormErrors, isSubmitting: boolean)
+  +showActionFormView()
   +showActionSavedMessageDialog()
-  +showIncompleteActionDataMessageDialog(errors: ActionFormErrors)
+  +showIncompleteActionDataMessageDialog()
   +showActionSaveErrorMessageDialog()
 }
 
 interface IActionDefinitionActions <<interface>> {
-  +onDefineAction()
+  +onAddAction()
   +onChangeActionField(field: string, value: string)
   +onSaveAction()
   +onCancelActionDefinition()
@@ -55,14 +55,13 @@ enum ActionDefinitionDialogTypes {
 }
 
 class useActionDefinition <<Hook>> {
-  +onDefineAction()
+  +onAddAction()
   +onChangeActionField(field: string, value: string)
   +onSaveAction()
   +onCancelActionDefinition()
   +onActionSavedMessageDialogConfirm()
   +onIncompleteActionDataMessageDialogConfirm()
   +onActionSaveErrorMessageDialogConfirm()
-  -validateAction(form: ActionForm): ActionFormErrors
   -saveAction()
 }
 
@@ -70,10 +69,11 @@ interface ActionsApi <<interface>> {
   +createAction(gameId: string, action: ActionDto): Promise<ActionDto>
 }
 
+class ActionValidationError <<Error>>
+
 class ActionDefinitionViewModel <<State>> {
   +gameId: string
   +activePanelType: ActionDefinitionPanelTypes
-  +validationErrors: ActionFormErrors
   +isSubmitting: boolean
   +dialogType: ActionDefinitionDialogTypes | null
 }
@@ -83,13 +83,6 @@ class ActionForm {
   +type: ActionType | ''
   +effectKind: EffectKind | ''
   +effectValue: string
-}
-
-class ActionFormErrors {
-  +name: string | null
-  +type: string | null
-  +effectKind: string | null
-  +effectValue: string | null
 }
 
 class ActionDto <<DTO>> {
@@ -104,11 +97,12 @@ class ActionDto <<DTO>> {
 useActionDefinition --> IActionDefinitionWindows
 useActionDefinition ..|> IActionDefinitionActions
 useActionDefinition --> ActionsApi : apiClient.actions
-useActionDefinition *-- "1" ActionDefinitionViewModel : state
+useActionDefinition *-- "1" ActionDefinitionViewModel
 
 ActionDefinitionViewModel *-- "1" ActionForm : form
 
 ActionsApi ..> ActionDto
+ActionsApi ..> ActionValidationError
 
 @enduml
 ```
