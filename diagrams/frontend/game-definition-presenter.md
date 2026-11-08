@@ -21,8 +21,6 @@ class useGameDefinition <<Hook>> {
     + onSubmitForReview()
     + onSaveErrorMessageDialogConfirm()
     - validateParameters(form: GameParametersForm): GameParametersErrors
-    - toCreateDTO(game: GameMetadataDTO): GameCreateDTO
-    - fromResponseDTO(data: GameResponseDTO): GameMetadataDTO
     - saveGame(asDraft: boolean)
 }
 
@@ -57,23 +55,23 @@ class useCreatorPanel <<Hook>> {
 }
 
 interface IGamesApi <<interface>> {
-    + saveGame(metadata: GameCreateDTO, asDraft: boolean): Promise<GameResponseDTO>
-    + editGame(gameId: string, metadata: GameCreateDTO, asDraft: boolean): Promise<GameResponseDTO>
-    + submitToReviewer(gameId: string): Promise<boolean>
+    + saveGame(userId: string, metadata: GameCreateDTO, asDraft: boolean): Promise<GameResponseDTO>
+    + editGame(gameId: string, userId: string, metadata: GameCreateDTO, asDraft: boolean): Promise<GameResponseDTO>
+    + submitToReviewer(gameId: string, userId: string): Promise<boolean>
 }
 
 class GameCreateDTO <<DTO>> {
     + title: string
     + description: string
-    + min_players: number
-    + max_players: number
-    + duration_minutes: number
-    + requires_invitation: boolean
+    + minPlayers: number
+    + maxPlayers: number
+    + durationMinutes: number
+    + requiresInvitation: boolean
     + tags: string[*]
 }
 
 class GameResponseDTO <<DTO>> {
-    + game_id: string
+    + gameId: string
     + status: string
 }
 
@@ -140,6 +138,9 @@ end note
 note bottom of IGamesApi
     DTO odpowiadają GameCreateSchema
     i GameResponseSchema z backendu.
+    gamesApi mapuje camelCase <-> snake_case.
+    userId to parametr user_id, do czasu
+    logowania brany z ENV (VITE_DEV_USER_ID).
 end note
 @enduml
 ```

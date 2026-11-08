@@ -1,7 +1,22 @@
 import type { AxiosInstance } from 'axios';
-import { env } from '@config/env';
-import type { GameMetadataDTO } from '@app-types/game';
+import type { GameCreateDTO, GameResponseDTO } from '@app-types/game';
 
+export interface IGamesApi {
+  saveGame(
+    userId: string,
+    metadata: GameCreateDTO,
+    asDraft: boolean,
+  ): Promise<GameResponseDTO>;
+  editGame(
+    gameId: string,
+    userId: string,
+    metadata: GameCreateDTO,
+    asDraft: boolean,
+  ): Promise<GameResponseDTO>;
+  submitToReviewer(gameId: string, userId: string): Promise<boolean>;
+}
+
+// Backend payloads (GameCreateSchema / GameResponseSchema) - snake_case stays inside this module.
 interface GameCreatePayload {
   title: string;
   description: string;
@@ -17,7 +32,7 @@ interface GameResponsePayload extends GameCreatePayload {
   status: string;
 }
 
-const toCreatePayload = (dto: GameMetadataDTO): GameCreatePayload => ({
+const toCreatePayload = (dto: GameCreateDTO): GameCreatePayload => ({
   title: dto.title,
   description: dto.description,
   min_players: dto.minPlayers,
@@ -27,7 +42,7 @@ const toCreatePayload = (dto: GameMetadataDTO): GameCreatePayload => ({
   tags: dto.tags,
 });
 
-const fromResponsePayload = (data: GameResponsePayload): GameMetadataDTO => ({
+const fromResponsePayload = (data: GameResponsePayload): GameResponseDTO => ({
   gameId: data.game_id,
   title: data.title,
   description: data.description,
@@ -39,42 +54,31 @@ const fromResponsePayload = (data: GameResponsePayload): GameMetadataDTO => ({
   status: data.status,
 });
 
-const userParams = () => ({ user_id: env.devUserId });
-
-export const createGamesApi = (http: AxiosInstance) => ({
-  saveGame: async (
-    metadata: GameMetadataDTO,
-    asDraft: boolean,
-  ): Promise<GameMetadataDTO> => {
+export const createGamesApi = (http: AxiosInstance): IGamesApi => ({
+  saveGame: async (userId, metadata, asDraft) => {
     const { data } = await http.post<GameResponsePayload>(
       '/games',
       toCreatePayload(metadata),
-      { params: { ...userParams(), as_draft: asDraft } },
+      { params: { user_id: userId, as_draft: asDraft } },
     );
     return fromResponsePayload(data);
   },
 
-  editGame: async (
-    gameId: string,
-    metadata: GameMetadataDTO,
-    asDraft: boolean,
-  ): Promise<GameMetadataDTO> => {
+  editGame: async (gameId, userId, metadata, asDraft) => {
     const { data } = await http.put<GameResponsePayload>(
       `/games/${gameId}`,
       toCreatePayload(metadata),
-      { params: { ...userParams(), as_draft: asDraft } },
+      { params: { user_id: userId, as_draft: asDraft } },
     );
     return fromResponsePayload(data);
   },
 
-  submitToReviewer: async (gameId: string): Promise<boolean> => {
+  submitToReviewer: async (gameId, userId) => {
     const { data } = await http.post<boolean>(
       `/games/${gameId}/submit`,
       undefined,
-      { params: userParams() },
+      { params: { user_id: userId } },
     );
     return data;
   },
 });
-
-export type GamesApi = ReturnType<typeof createGamesApi>;
