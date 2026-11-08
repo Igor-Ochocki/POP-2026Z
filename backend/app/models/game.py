@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 import uuid
 
 from sqlalchemy import Boolean, Enum, Integer, JSON, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
 

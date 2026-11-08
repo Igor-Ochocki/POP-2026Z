@@ -1,7 +1,8 @@
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.services.games_service import GameNotFoundError, GamesService
+from app.core.exceptions import NotFoundError
+from app.services.games_service import GamesService
 from app.schemas.game import GameCreateSchema
 
 TEST_USER_ID = "user-123"
@@ -42,8 +43,8 @@ def test_games_service_get_game_not_found(db_session: Session) -> None:
 
     try:
         service.get_game("non-existent-id", TEST_USER_ID)
-        assert False, "Expected GameNotFoundError"
-    except GameNotFoundError:
+        assert False, "Expected NotFoundError"
+    except NotFoundError:
         pass
 
 
@@ -53,8 +54,8 @@ def test_games_service_get_game_wrong_user(db_session: Session) -> None:
 
     try:
         service.get_game(created.game_id, "other-user")
-        assert False, "Expected GameNotFoundError for wrong user"
-    except GameNotFoundError:
+        assert False, "Expected NotFoundError for wrong user"
+    except NotFoundError:
         pass
 
 
@@ -110,8 +111,8 @@ def test_games_service_edit_game_not_found(db_session: Session) -> None:
 
     try:
         service.edit_game("non-existent-id", TEST_USER_ID, make_dto(), as_draft=True)
-        assert False, "Expected GameNotFoundError"
-    except GameNotFoundError:
+        assert False, "Expected NotFoundError"
+    except NotFoundError:
         pass
 
 
@@ -121,8 +122,8 @@ def test_games_service_edit_game_wrong_user(db_session: Session) -> None:
 
     try:
         service.edit_game(created.game_id, "other-user", make_dto(), as_draft=True)
-        assert False, "Expected GameNotFoundError for wrong user"
-    except GameNotFoundError:
+        assert False, "Expected NotFoundError for wrong user"
+    except NotFoundError:
         pass
 
 
@@ -140,8 +141,8 @@ def test_games_service_submit_to_reviewer_not_found(db_session: Session) -> None
 
     try:
         service.submit_to_reviewer("non-existent-id", TEST_USER_ID)
-        assert False, "Expected GameNotFoundError"
-    except GameNotFoundError:
+        assert False, "Expected NotFoundError"
+    except NotFoundError:
         pass
 
 
@@ -151,14 +152,14 @@ def test_games_service_submit_to_reviewer_wrong_user(db_session: Session) -> Non
 
     try:
         service.submit_to_reviewer(created.game_id, "other-user")
-        assert False, "Expected GameNotFoundError for wrong user"
-    except GameNotFoundError:
+        assert False, "Expected NotFoundError for wrong user"
+    except NotFoundError:
         pass
 
 
 def test_games_endpoint_get_game_ok(client: TestClient) -> None:
     create_resp = client.post(
-        "/api/v1/games/?userId=user-123",
+        "/api/v1/games/?user_id=user-123",
         json={
             "title": "Test Game",
             "description": "desc",
@@ -171,7 +172,7 @@ def test_games_endpoint_get_game_ok(client: TestClient) -> None:
     )
     game_id = create_resp.json()["game_id"]
 
-    response = client.get(f"/api/v1/games/{game_id}?userId=user-123")
+    response = client.get(f"/api/v1/games/{game_id}?user_id=user-123")
 
     assert response.status_code == 200
     data = response.json()
@@ -179,13 +180,13 @@ def test_games_endpoint_get_game_ok(client: TestClient) -> None:
 
 
 def test_games_endpoint_get_not_found(client: TestClient) -> None:
-    response = client.get("/api/v1/games/non-existent-id?userId=user-123")
+    response = client.get("/api/v1/games/non-existent-id?user_id=user-123")
     assert response.status_code == 404
 
 
 def test_games_endpoint_create_ok(client: TestClient) -> None:
     response = client.post(
-        "/api/v1/games/?userId=user-123",
+        "/api/v1/games/?user_id=user-123",
         json={
             "title": "Test Game",
             "description": "desc",
@@ -205,7 +206,7 @@ def test_games_endpoint_create_ok(client: TestClient) -> None:
 
 def test_games_endpoint_create_validation_err(client: TestClient) -> None:
     response = client.post(
-        "/api/v1/games/?userId=user-123",
+        "/api/v1/games/?user_id=user-123",
         json={
             "title": "",
             "description": "desc",
@@ -221,7 +222,7 @@ def test_games_endpoint_create_validation_err(client: TestClient) -> None:
 
 def test_games_endpoint_edit_game_ok(client: TestClient) -> None:
     create_resp = client.post(
-        "/api/v1/games/?userId=user-123",
+        "/api/v1/games/?user_id=user-123",
         json={
             "title": "Original",
             "description": "desc",
@@ -235,7 +236,7 @@ def test_games_endpoint_edit_game_ok(client: TestClient) -> None:
     game_id = create_resp.json()["game_id"]
 
     response = client.put(
-        f"/api/v1/games/{game_id}?userId=user-123&as_draft=true",
+        f"/api/v1/games/{game_id}?user_id=user-123&as_draft=true",
         json={
             "title": "Updated",
             "description": "new desc",
@@ -256,7 +257,7 @@ def test_games_endpoint_edit_game_ok(client: TestClient) -> None:
 
 def test_games_endpoint_edit_not_found(client: TestClient) -> None:
     response = client.put(
-        "/api/v1/games/non-existent-id?userId=user-123&as_draft=true",
+        "/api/v1/games/non-existent-id?user_id=user-123&as_draft=true",
         json={
             "title": "Updated",
             "description": "desc",
@@ -272,7 +273,7 @@ def test_games_endpoint_edit_not_found(client: TestClient) -> None:
 
 def test_games_endpoint_edit_wrong_user(client: TestClient) -> None:
     create_resp = client.post(
-        "/api/v1/games/?userId=user-123",
+        "/api/v1/games/?user_id=user-123",
         json={
             "title": "Original",
             "description": "desc",
@@ -286,7 +287,7 @@ def test_games_endpoint_edit_wrong_user(client: TestClient) -> None:
     game_id = create_resp.json()["game_id"]
 
     response = client.put(
-        f"/api/v1/games/{game_id}?userId=other-user&as_draft=true",
+        f"/api/v1/games/{game_id}?user_id=other-user&as_draft=true",
         json={
             "title": "Updated",
             "description": "desc",
@@ -302,7 +303,7 @@ def test_games_endpoint_edit_wrong_user(client: TestClient) -> None:
 
 def test_games_endpoint_submit_to_reviewer_ok(client: TestClient) -> None:
     create_resp = client.post(
-        "/api/v1/games/?userId=user-123",
+        "/api/v1/games/?user_id=user-123",
         json={
             "title": "Test Game",
             "description": "desc",
@@ -315,20 +316,41 @@ def test_games_endpoint_submit_to_reviewer_ok(client: TestClient) -> None:
     )
     game_id = create_resp.json()["game_id"]
 
-    response = client.post(f"/api/v1/games/{game_id}/submit?userId=user-123")
+    response = client.post(f"/api/v1/games/{game_id}/submit?user_id=user-123")
 
     assert response.status_code == 200
     assert response.json() is True
 
 
+def test_games_endpoint_submit_to_reviewer_twice_conflict(client: TestClient) -> None:
+    create_resp = client.post(
+        "/api/v1/games/?user_id=user-123",
+        json={
+            "title": "Test Game",
+            "description": "desc",
+            "min_players": 2,
+            "max_players": 4,
+            "duration_minutes": 60,
+            "requires_invitation": False,
+            "tags": [],
+        },
+    )
+    game_id = create_resp.json()["game_id"]
+    client.post(f"/api/v1/games/{game_id}/submit?user_id=user-123")
+
+    response = client.post(f"/api/v1/games/{game_id}/submit?user_id=user-123")
+
+    assert response.status_code == 409
+
+
 def test_games_endpoint_submit_to_reviewer_not_found(client: TestClient) -> None:
-    response = client.post("/api/v1/games/non-existent-id/submit?userId=user-123")
+    response = client.post("/api/v1/games/non-existent-id/submit?user_id=user-123")
     assert response.status_code == 404
 
 
 def test_games_endpoint_submit_to_reviewer_wrong_user(client: TestClient) -> None:
     create_resp = client.post(
-        "/api/v1/games/?userId=user-123",
+        "/api/v1/games/?user_id=user-123",
         json={
             "title": "Test Game",
             "description": "desc",
@@ -341,5 +363,5 @@ def test_games_endpoint_submit_to_reviewer_wrong_user(client: TestClient) -> Non
     )
     game_id = create_resp.json()["game_id"]
 
-    response = client.post(f"/api/v1/games/{game_id}/submit?userId=other-user")
+    response = client.post(f"/api/v1/games/{game_id}/submit?user_id=other-user")
     assert response.status_code == 404

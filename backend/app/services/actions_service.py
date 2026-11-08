@@ -1,4 +1,5 @@
-from sqlalchemy import text
+from abc import ABC, abstractmethod
+
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
@@ -8,7 +9,21 @@ from app.models.enums import ActionType, EffectKind
 from app.schemas.actions import ActionCreateSchema, ActionSchema
 from app.core.exceptions import NotFoundError, ConflictError
 
-class ActionsService:
+class IActionsService(ABC):
+    @abstractmethod
+    def create_action(self, dto: ActionCreateSchema) -> ActionSchema: ...
+
+    @abstractmethod
+    def get_action(self, action_id: str) -> ActionSchema: ...
+
+    @abstractmethod
+    def get_action_types(self) -> list[str]: ...
+
+    @abstractmethod
+    def get_effect_kind(self) -> list[str]: ...
+
+
+class ActionsService(IActionsService):
 
     def __init__(self, db_session: Session) -> None:
         self.db_session = db_session

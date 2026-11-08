@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.api.v1.controllers.actions_controller import router
-from app.core.exceptions import ConflictError, NotFoundError
+from app.core.exceptions import ConflictError, NotFoundError, register_exception_handlers
 from app.db.database import create_tables, get_db
 from app.models import Action, Game
 from app.models.enums import ActionType, EffectKind
@@ -98,6 +98,7 @@ def client(session_factory):
 
     app = FastAPI()
     app.include_router(router)
+    register_exception_handlers(app)
     app.dependency_overrides[get_db] = override_get_db
     with TestClient(app) as test_client:
         yield test_client
@@ -106,10 +107,23 @@ def client(session_factory):
 @pytest.fixture()
 def game_id(session_factory):
     with session_factory() as session:
-        game = Game()
+        game = make_game()
         session.add(game)
         session.commit()
         return game.id
+
+
+def make_game(**overrides) -> Game:
+    fields = {
+        "author_id": "author-1",
+        "title": "Test Game",
+        "description": "desc",
+        "min_players": 2,
+        "max_players": 4,
+        "duration_minutes": 60,
+    }
+    fields.update(overrides)
+    return Game(**fields)
 
 
 def make_payload(**overrides) -> dict:
@@ -232,7 +246,7 @@ def test_response_schema_serializes_enums_as_plain_json_strings():
 
 
 def test_create_tables_creates_both_tables(engine):
-    assert {"game", "action"} <= set(inspect(engine).get_table_names())
+    assert {"games", "action"} <= set(inspect(engine).get_table_names())
 
 
 def test_action_table_structure(engine):
@@ -250,13 +264,13 @@ def test_action_table_structure(engine):
     assert [
         (fk["constrained_columns"], fk["referred_table"], fk["referred_columns"])
         for fk in inspector.get_foreign_keys("action")
-    ] == [(["game_id"], "game", ["id"])]
+    ] == [(["game_id"], "games", ["id"])]
     assert any(index["column_names"] == ["game_id"] for index in inspector.get_indexes("action"))
 
 
 def test_models_generate_unique_uuid_primary_keys(session_factory):
     with session_factory() as session:
-        games = [Game(), Game()]
+        games = [make_game(), make_game()]
         session.add_all(games)
         session.flush()
         actions = [make_action(game_id=game.id) for game in games]
@@ -304,7 +318,7 @@ def test_orm_refuses_to_save_an_unknown_enum_string(session_factory, game_id):
 
 def test_relationship_works_in_both_directions(session_factory):
     with session_factory() as session:
-        game = Game()
+        game = make_game()
         action = make_action(game=game)
 
         assert action in game.actions  
@@ -326,7 +340,7 @@ def test_database_rejects_an_action_for_a_missing_game(session_factory):
 
 def test_deleting_a_game_deletes_only_its_own_actions(session_factory):
     with session_factory() as session:
-        doomed, survivor = Game(), Game()
+        doomed, survivor = make_game(), make_game()
         session.add_all([doomed, survivor])
         session.add_all([make_action(game=doomed), make_action(game=survivor)])
         session.commit()

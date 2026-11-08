@@ -1,4 +1,5 @@
 import { apiClient } from '@api/apiClient';
+import { ApiError } from '@api/apiError';
 import type {
   INewTaskActions,
   NewTaskViewModel,
@@ -85,10 +86,18 @@ export function useNewTask(): {
 
     onSubmitNewTask: async () => {
       try {
-        await apiClient.scenario.addTask(gameId, state);
+        await apiClient.scenario.addTask(gameId, {
+          title: state.title,
+          narrative: state.narrative,
+          interactionType: state.interactionType,
+          requiredPlayerLevel: state.requiredPlayerLevel,
+          timeLimitMinutes: state.timeLimitMinutes,
+          rewardType: state.rewardType,
+          rewardValue: state.rewardValue,
+        });
         showNewTaskSuccessMessageDialog();
       } catch (e) {
-        const status = e as number;
+        const status = e instanceof ApiError ? e.status : null;
         if (status === 409) {
           showConflictMessageDialog();
         } else if (status === 422) {
