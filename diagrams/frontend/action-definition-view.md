@@ -9,9 +9,9 @@ skinparam shadowing false
 
 interface IActionDefinitionWindows <<interface>> {
   +showGameDefinitionView()
-  +showActionFormView(form: ActionForm, errors: ActionFormErrors, isSubmitting: boolean)
+  +showActionFormView()
   +showActionSavedMessageDialog()
-  +showIncompleteActionDataMessageDialog(errors: ActionFormErrors)
+  +showIncompleteActionDataMessageDialog()
   +showActionSaveErrorMessageDialog()
 }
 
@@ -50,7 +50,7 @@ class ActionFormView {
 }
 
 interface IActionDefinitionActions <<interface>> {
-  +onDefineAction()
+  +onAddAction()
   +onChangeActionField(field: string, value: string)
   +onSaveAction()
   +onCancelActionDefinition()
