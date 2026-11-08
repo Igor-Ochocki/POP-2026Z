@@ -1,4 +1,5 @@
 import type { AxiosInstance } from 'axios';
+import { env } from '@config/env';
 import type { GameMetadataDTO } from '@app-types/game';
 
 interface GameCreatePayload {
@@ -38,6 +39,8 @@ const fromResponsePayload = (data: GameResponsePayload): GameMetadataDTO => ({
   status: data.status,
 });
 
+const userParams = () => ({ user_id: env.devUserId });
+
 export const createGamesApi = (http: AxiosInstance) => ({
   saveGame: async (
     metadata: GameMetadataDTO,
@@ -46,13 +49,30 @@ export const createGamesApi = (http: AxiosInstance) => ({
     const { data } = await http.post<GameResponsePayload>(
       '/games',
       toCreatePayload(metadata),
-      { params: { as_draft: asDraft } },
+      { params: { ...userParams(), as_draft: asDraft } },
+    );
+    return fromResponsePayload(data);
+  },
+
+  editGame: async (
+    gameId: string,
+    metadata: GameMetadataDTO,
+    asDraft: boolean,
+  ): Promise<GameMetadataDTO> => {
+    const { data } = await http.put<GameResponsePayload>(
+      `/games/${gameId}`,
+      toCreatePayload(metadata),
+      { params: { ...userParams(), as_draft: asDraft } },
     );
     return fromResponsePayload(data);
   },
 
   submitToReviewer: async (gameId: string): Promise<boolean> => {
-    const { data } = await http.post<boolean>(`/games/${gameId}/submit`);
+    const { data } = await http.post<boolean>(
+      `/games/${gameId}/submit`,
+      undefined,
+      { params: userParams() },
+    );
     return data;
   },
 });

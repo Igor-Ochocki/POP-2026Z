@@ -3,12 +3,11 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 
 from app.api.v1.router import api_router
 from app.core.config import get_settings
+from app.core.exceptions import register_exception_handlers
 from app.db.database import create_tables
-from app.services.games_service import GameNotFoundError
 
 
 @asynccontextmanager
@@ -29,10 +28,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     application.include_router(api_router)
-
-    @application.exception_handler(GameNotFoundError)
-    async def game_not_found_handler(_, exc: GameNotFoundError):
-        return JSONResponse(status_code=404, content={"detail": str(exc)})
+    register_exception_handlers(application)
 
     return application
 

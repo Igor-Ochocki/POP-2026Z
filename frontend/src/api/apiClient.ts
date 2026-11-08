@@ -1,7 +1,7 @@
 import { httpClient } from '@api/httpClient';
 import { createHealthApi } from '@api/modules/healthApi';
 import { createGamesApi } from '@api/modules/gamesApi';
-import { createScenarioApi } from './modules/scenarioApi';
+import { createScenarioApi } from '@api/modules/scenarioApi';
 
 // Unified API client used by presenter hooks: apiClient.<module>.<method>()
 // Register every new API module here.

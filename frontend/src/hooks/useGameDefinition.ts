@@ -162,13 +162,14 @@ export function useGameDefinition(): {
 
     setState((prev) => ({ ...prev, isSubmitting: true }));
     try {
-      const saved = await apiClient.games.saveGame(game, asDraft);
+      // Always saved as a draft first - submitting is a separate step.
+      // A game that already has an id is updated (PUT) instead of created again.
+      const saved = game.gameId
+        ? await apiClient.games.editGame(game.gameId, game, true)
+        : await apiClient.games.saveGame(game, true);
+      setState((prev) => ({ ...prev, activeGame: saved }));
       if (!asDraft) await apiClient.games.submitToReviewer(saved.gameId);
-      setState((prev) => ({
-        ...prev,
-        activeGame: saved,
-        isSubmitting: false,
-      }));
+      setState((prev) => ({ ...prev, isSubmitting: false }));
       if (asDraft) windows.showGameSavedMessageDialog();
       else windows.showGameSubmittedMessageDialog();
     } catch {

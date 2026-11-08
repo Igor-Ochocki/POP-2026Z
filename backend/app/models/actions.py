@@ -25,7 +25,7 @@ class Action(Base):
     __tablename__ = "action"
 
     action_id : Mapped[str] = mapped_column(primary_key = True, default = lambda: str(uuid4()))
-    game_id: Mapped[str] = mapped_column(ForeignKey("game.id"), index=True)
+    game_id: Mapped[str] = mapped_column(ForeignKey("games.id"), index=True)
     name: Mapped[str] = mapped_column(String(100))
     action_type: Mapped[ActionType] = mapped_column(_enum_column(ActionType))
     outcome_type: Mapped[EffectKind] = mapped_column(_enum_column(EffectKind))

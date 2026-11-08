@@ -2,11 +2,9 @@ from abc import ABC, abstractmethod
 
 from sqlalchemy.orm import Session
 
+from app.core.exceptions import ConflictError, NotFoundError
 from app.models.game import Game, GameStatus
 from app.schemas.game import GameCreateSchema, GameResponseSchema
-
-class GameNotFoundError(Exception):
-    pass
 
 
 class IGamesService(ABC):
@@ -63,12 +61,12 @@ class GamesService(IGamesService):
     def submit_to_reviewer(self, game_id: str, user_id: str) -> bool:
         game = self.db_session.get(Game, game_id)
         if game is None:
-            raise GameNotFoundError(f"Game {game_id} not found")
+            raise NotFoundError(f"Game {game_id} not found")
         if game.author_id != user_id:
-            raise GameNotFoundError(f"Game {game_id} not found")
+            raise NotFoundError(f"Game {game_id} not found")
 
         if game.status in (GameStatus.Submitted, GameStatus.Approved, GameStatus.Rejected):
-            raise ValueError(f"Game {game_id} is already in {game.status.value} status")
+            raise ConflictError(f"Game {game_id} is already in {game.status.value} status")
 
         game.status = GameStatus.Submitted
         self.db_session.commit()
@@ -78,20 +76,20 @@ class GamesService(IGamesService):
     def get_game(self, game_id: str, user_id: str) -> GameResponseSchema:
         game = self.db_session.get(Game, game_id)
         if game is None:
-            raise GameNotFoundError(f"Game {game_id} not found")
+            raise NotFoundError(f"Game {game_id} not found")
         if game.author_id != user_id:
-            raise GameNotFoundError(f"Game {game_id} not found")
+            raise NotFoundError(f"Game {game_id} not found")
         return self._map_to_response(game)
 
     def edit_game(self, game_id: str, user_id: str, dto: GameCreateSchema, as_draft: bool) -> GameResponseSchema:
         game = self.db_session.get(Game, game_id)
         if game is None:
-            raise GameNotFoundError(f"Game {game_id} not found")
+            raise NotFoundError(f"Game {game_id} not found")
         if game.author_id != user_id:
-            raise GameNotFoundError(f"Game {game_id} not found")
+            raise NotFoundError(f"Game {game_id} not found")
 
         if game.status == GameStatus.Approved:
-            raise ValueError(f"Game {game_id} is already approved and cannot be modified")
+            raise ConflictError(f"Game {game_id} is already approved and cannot be modified")
 
         game.title = dto.title
         game.description = dto.description

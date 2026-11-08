@@ -58,6 +58,7 @@ class useCreatorPanel <<Hook>> {
 
 interface IGamesApi <<interface>> {
     + saveGame(metadata: GameCreateDTO, asDraft: boolean): Promise<GameResponseDTO>
+    + editGame(gameId: string, metadata: GameCreateDTO, asDraft: boolean): Promise<GameResponseDTO>
     + submitToReviewer(gameId: string): Promise<boolean>
 }
 
