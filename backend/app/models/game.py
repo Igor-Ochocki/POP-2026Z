@@ -1,4 +1,6 @@
 from enum import Enum as PyEnum
+from typing import TYPE_CHECKING
+
 import uuid
 
 from sqlalchemy import Boolean, Enum, Integer, JSON, String
@@ -6,6 +8,8 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.database import Base
 
+if TYPE_CHECKING:
+    from app.models.actions import Action
 
 class GameStatus(str, PyEnum):
     Draft = "Draft"
@@ -27,3 +31,4 @@ class Game(Base):
     requires_invitation: Mapped[bool] = mapped_column(Boolean, default=False)
     tags: Mapped[list[str]] = mapped_column(JSON, default=list)
     status: Mapped[GameStatus] = mapped_column(Enum(GameStatus), default=GameStatus.Draft)
+    actions : Mapped[list["Action"]] = relationship("Action", back_populates="game", cascade="all, delete-orphan")
