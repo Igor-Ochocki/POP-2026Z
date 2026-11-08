@@ -124,6 +124,7 @@ export function GameDefinitionView() {
               icon={<SensorsOutlinedIcon />}
               title='Dodaj nowy czujnik'
               description='Czujniki wyzwalające akcje w grze'
+              onClick={() => actionDefinitionActions.onAddAction(game?.gameId || DEV_GAME_ID)}
             />
           </div>
           <footer className='game-definition-view__footer'>
