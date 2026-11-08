@@ -4,12 +4,17 @@ onShowCalendar()
 onBack()
 }
 
+class CalendarViewModel <<State>> {
+events :CalendarEvent[]
+}
+
 interface ICalendarActions <<interface>> {
 onShowCalendar()
 onBack()
 }
 
 useCalendar .|> ICalendarActions
+useCalendar *-- CalendarViewModel
 
 useCalendar --> ICalendarApi
 useCalendar -u-> ICalendarWindows
