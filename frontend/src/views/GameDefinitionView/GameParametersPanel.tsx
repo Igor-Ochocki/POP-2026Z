@@ -19,12 +19,14 @@ import './GameParametersPanel.css';
 interface GameParametersPanelProps {
   form: GameParametersForm;
   errors: GameParametersErrors;
+  isSubmitting: boolean;
   actions: IGameDefinitionActions;
 }
 
 export function GameParametersPanel({
   form,
   errors,
+  isSubmitting,
   actions,
 }: GameParametersPanelProps) {
   return (
@@ -116,8 +118,9 @@ export function GameParametersPanel({
           </div>
         </FormSection>
         <footer className='game-parameters-panel__footer'>
-          <Button onClick={actions.onSaveMetadata}>
-            <CheckIcon fontSize='small' /> Zapisz
+          <Button onClick={actions.onSaveMetadata} disabled={isSubmitting}>
+            <CheckIcon fontSize='small' />
+            {isSubmitting ? 'Zapisywanie...' : 'Zapisz'}
           </Button>
         </footer>
       </Card>

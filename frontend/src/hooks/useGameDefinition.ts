@@ -1,19 +1,22 @@
-import { useState } from 'react';
-import { useNavigate, type NavigateFunction } from 'react-router';
+import { useEffect, useRef, useState } from 'react';
+import { useMatch, useNavigate } from 'react-router';
 import { apiClient } from '@api/apiClient';
-import type {
-  GameDefinitionViewModel,
-  GameMetadataDTO,
-  GameParametersErrors,
-  GameParametersForm,
-  IGameDefinitionActions,
-  IGameDefinitionWindows,
+import { env } from '@config/env';
+import {
+  GAME_CATEGORIES,
+  type GameDefinitionViewModel,
+  type GameMetadataDTO,
+  type GameParametersErrors,
+  type GameParametersForm,
+  type IGameDefinitionActions,
+  type IGameDefinitionWindows,
 } from '@app-types/game';
 
-const CREATOR_PANEL_PATH = '/creator';
-const GAME_LIST_PATH = '/creator/games';
-const SENSOR_DEFINITION_PATH = '/creator/sensors/new';
-const SCENARIO_EDITOR_PATH = '/creator/scenario';
+// One route for a new and an existing game, so saving the first draft only
+// changes :gameId and the view keeps its state.
+const GAME_DEFINITION_PATTERN = '/creator/games/:gameId';
+const NEW_GAME_ID = 'new';
+const gameDefinitionPath = (gameId: string) => `/creator/games/${gameId}`;
 
 const REQUIRED = 'Pole wymagane';
 
@@ -28,12 +31,12 @@ const initialForm: GameParametersForm = {
 };
 
 const initialState: GameDefinitionViewModel = {
-  activePanel: 'definition',
+  activePanelType: 'definition',
   activeGame: null,
   parametersForm: initialForm,
   validationErrors: {},
   isSubmitting: false,
-  dialog: null,
+  dialogType: null,
 };
 
 type SetState = React.Dispatch<React.SetStateAction<GameDefinitionViewModel>>;
@@ -80,41 +83,54 @@ function toMetadata(
   };
 }
 
+function toForm(game: GameMetadataDTO): GameParametersForm {
+  return {
+    title: game.title,
+    description: game.description,
+    category: GAME_CATEGORIES.find((c) => c === game.tags[0]) ?? '',
+    minPlayers: String(game.minPlayers),
+    maxPlayers: String(game.maxPlayers),
+    durationMinutes: String(game.durationMinutes),
+    requiresInvitation: game.requiresInvitation,
+  };
+}
+
+// Draft save - a game that already has an id is updated (PUT), not created again.
+function saveDraft(game: GameMetadataDTO): Promise<GameMetadataDTO> {
+  const userId = env.devUserId;
+  return game.gameId
+    ? apiClient.games.editGame(game.gameId, userId, game, true)
+    : apiClient.games.saveGame(userId, game, true);
+}
+
 function createGameDefinitionWindows(
   setState: SetState,
-  navigate: NavigateFunction,
 ): IGameDefinitionWindows {
   return {
-    showCreatorPanelView: () => void navigate(CREATOR_PANEL_PATH),
-    showGameListView: () => void navigate(GAME_LIST_PATH),
     showGameDefinitionView: () =>
       setState((prev) => ({
         ...prev,
-        activePanel: 'definition',
-        dialog: null,
+        activePanelType: 'definition',
+        dialogType: null,
       })),
     showGameParametersView: () =>
       setState((prev) => ({
         ...prev,
-        activePanel: 'parameters',
-        dialog: null,
+        activePanelType: 'parameters',
+        dialogType: null,
       })),
-    showSensorDefinitionView: () => void navigate(SENSOR_DEFINITION_PATH),
-    showScenarioEditorView: () => void navigate(SCENARIO_EDITOR_PATH),
     showParametersSavedMessageDialog: () =>
-      setState((prev) => ({ ...prev, dialog: 'parametersSaved' })),
-    showIncorrectDataMessageDialog: (errors) =>
-      setState((prev) => ({
-        ...prev,
-        validationErrors: errors,
-        dialog: 'incorrectData',
-      })),
+      setState((prev) => ({ ...prev, dialogType: 'parametersSaved' })),
+    showIncorrectDataMessageDialog: () =>
+      setState((prev) => ({ ...prev, dialogType: 'incorrectData' })),
     showGameSavedMessageDialog: () =>
-      setState((prev) => ({ ...prev, dialog: 'gameSaved' })),
+      setState((prev) => ({ ...prev, dialogType: 'gameSaved' })),
     showGameSubmittedMessageDialog: () =>
-      setState((prev) => ({ ...prev, dialog: 'gameSubmitted' })),
+      setState((prev) => ({ ...prev, dialogType: 'gameSubmitted' })),
     showSaveErrorMessageDialog: () =>
-      setState((prev) => ({ ...prev, dialog: 'saveError' })),
+      setState((prev) => ({ ...prev, dialogType: 'saveError' })),
+    showLoadErrorMessageDialog: () =>
+      setState((prev) => ({ ...prev, dialogType: 'loadError' })),
   };
 }
 
@@ -124,7 +140,37 @@ export function useGameDefinition(): {
 } {
   const [state, setState] = useState<GameDefinitionViewModel>(initialState);
   const navigate = useNavigate();
-  const windows = createGameDefinitionWindows(setState, navigate);
+  const windows = createGameDefinitionWindows(setState);
+
+  const routeGameId = useMatch(GAME_DEFINITION_PATTERN)?.params.gameId;
+  const gameId =
+    routeGameId && routeGameId !== NEW_GAME_ID ? routeGameId : null;
+  // Id of the game this hook has just saved - its data is already in state.
+  const savedGameId = useRef<string | null>(null);
+
+  // Only the definition route of an existing game loads data - other views
+  // use this hook just to open the definition.
+  useEffect(() => {
+    if (!gameId || savedGameId.current === gameId) return;
+    let cancelled = false;
+    apiClient.games
+      .getGame(gameId, env.devUserId)
+      .then((game) => {
+        if (cancelled) return;
+        setState((prev) => ({
+          ...prev,
+          activeGame: game,
+          parametersForm: toForm(game),
+        }));
+      })
+      .catch(() => {
+        if (cancelled) return;
+        createGameDefinitionWindows(setState).showLoadErrorMessageDialog();
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [gameId]);
 
   const onEditParameters = () => {
     setState((prev) => ({ ...prev, validationErrors: {} }));
@@ -142,18 +188,30 @@ export function useGameDefinition(): {
     }));
   };
 
-  const onSaveMetadata = () => {
+  // Parameters are saved as a draft right away, so the game gets its id and
+  // the use cases that need it (scenario, actions, ...) become available.
+  const onSaveMetadata = async () => {
+    if (state.isSubmitting) return;
     const errors = validateParameters(state.parametersForm);
     if (Object.keys(errors).length > 0) {
-      windows.showIncorrectDataMessageDialog(errors);
+      setState((prev) => ({ ...prev, validationErrors: errors }));
+      windows.showIncorrectDataMessageDialog();
       return;
     }
-    setState((prev) => ({
-      ...prev,
-      activeGame: toMetadata(prev.parametersForm, prev.activeGame),
-      validationErrors: {},
-    }));
-    windows.showParametersSavedMessageDialog();
+    const metadata = toMetadata(state.parametersForm, state.activeGame);
+    setState((prev) => ({ ...prev, validationErrors: {}, isSubmitting: true }));
+    try {
+      const saved = await saveDraft(metadata);
+      setState((prev) => ({ ...prev, activeGame: saved, isSubmitting: false }));
+      if (!metadata.gameId) {
+        savedGameId.current = saved.gameId;
+        void navigate(gameDefinitionPath(saved.gameId), { replace: true });
+      }
+      windows.showParametersSavedMessageDialog();
+    } catch {
+      setState((prev) => ({ ...prev, isSubmitting: false }));
+      windows.showSaveErrorMessageDialog();
+    }
   };
 
   const saveGame = async (asDraft: boolean) => {
@@ -162,13 +220,12 @@ export function useGameDefinition(): {
 
     setState((prev) => ({ ...prev, isSubmitting: true }));
     try {
-      const saved = await apiClient.games.saveGame(game, asDraft);
-      if (!asDraft) await apiClient.games.submitToReviewer(saved.gameId);
-      setState((prev) => ({
-        ...prev,
-        activeGame: saved,
-        isSubmitting: false,
-      }));
+      // Always saved as a draft first - submitting is a separate step.
+      const saved = await saveDraft(game);
+      setState((prev) => ({ ...prev, activeGame: saved }));
+      if (!asDraft)
+        await apiClient.games.submitToReviewer(saved.gameId, env.devUserId);
+      setState((prev) => ({ ...prev, isSubmitting: false }));
       if (asDraft) windows.showGameSavedMessageDialog();
       else windows.showGameSubmittedMessageDialog();
     } catch {
@@ -180,19 +237,18 @@ export function useGameDefinition(): {
   return {
     state,
     actions: {
+      onCreateGame: () => void navigate(gameDefinitionPath(NEW_GAME_ID)),
+      onOpenGame: (id) => void navigate(gameDefinitionPath(id)),
       onEditParameters,
       onChangeParameter,
-      onSaveMetadata,
+      onSaveMetadata: () => void onSaveMetadata(),
       onParametersSavedMessageDialogConfirm: windows.showGameDefinitionView,
       onIncorrectDataMessageDialogConfirm: windows.showGameParametersView,
-      onAddSensor: windows.showSensorDefinitionView,
-      onEditScenario: windows.showScenarioEditorView,
       onSaveDraft: () => void saveGame(true),
-      onGameSavedMessageDialogConfirm: windows.showGameListView,
       onSubmitForReview: () => void saveGame(false),
-      onGameSubmittedMessageDialogConfirm: windows.showCreatorPanelView,
       onSaveErrorMessageDialogConfirm: windows.showGameDefinitionView,
-      onCancelGameCreation: windows.showCreatorPanelView,
+      onLoadErrorMessageDialogConfirm: () =>
+        void navigate(gameDefinitionPath(NEW_GAME_ID), { replace: true }),
     },
   };
 }

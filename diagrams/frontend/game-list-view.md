@@ -2,21 +2,22 @@
 @startuml
 
 interface IGameListWindows <<interface>> {
-    +showGameListView()
-    +showGameFilterView()
+    +showGameListView(navigationState: GameListNavigationState)
+    +showGameFilterDialog()
 }
 
 interface IGameListActions <<interface>> {
-    +onFilterApply(tags: string[*])
-    +onFilterClear()
+    +onChangeParameter(field: string, value: any)
+    +onFilterSubmit(filterTags: string[*])
     +onListReload()
-    +onTitleSearch(title: string)
     +onShowMore()
+    +onOpenGameList()
+    +onOpenFilterDialog()
 }
 
 class GameListWindows {
-    +showGameListView()
-    +showGameFilterView()
+    +showGameListView(navigationState: GameListNavigationState)
+    +showGameFilterDialog()
 }
 
 class GameListView {
@@ -24,17 +25,23 @@ class GameListView {
     +onClick()
 }
 
-class GameFilterView {
+class GameFilterDialog {
     +show()
     +onClick()
 }
 
 GameListWindows ..|> IGameListWindows
 GameListWindows -u-> GameListView
-GameListWindows -u-> GameFilterView
+GameListWindows -u-> GameFilterDialog
 
 GameListView --> IGameListActions
-GameFilterView --> IGameListActions
+
+interface IGameDefinitionActions <<interface>> {
+    +onOpenGame(gameId: string)
+}
+
+GameListView --> IGameDefinitionActions : wybór gry (PU49)
+GameFilterDialog --> IGameListActions
 
 @enduml
 ```

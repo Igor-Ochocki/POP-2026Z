@@ -32,7 +32,7 @@ package "Data Transfer Schemas (Pydantic Models)" {
         + duration_minutes: int
         + requires_invitation: bool
         + tags: list[str]
-        + status: str
+        + status: ReservationStatus
     }
 
     class ActionCreateSchema <<BaseModel>> {
@@ -47,9 +47,21 @@ package "Data Transfer Schemas (Pydantic Models)" {
         + title: str
         + narrative: str
         + interaction_type: str
-        + interaction_target_id: str
+        + interaction_target_id: str | None = None
         + required_player_level: int = 1
         + time_limit_minutes: int | None = None
+        + reward_type: str
+        + reward_value: str
+    }
+
+    class TaskSchema <<BaseModel>> {
+        + task_id: str
+        + title: str
+        + narrative: str
+        + interaction_type: str
+        + interaction_target_id: str | None
+        + required_player_level: int
+        + time_limit_minutes: int | None
         + reward_type: str
         + reward_value: str
     }
@@ -57,23 +69,18 @@ package "Data Transfer Schemas (Pydantic Models)" {
     class ScenarioDetailSchema <<BaseModel>> {
         + scenario_id: str
         + game_id: str
-        + tasks: list[TaskCreateSchema]
+        + tasks: list[TaskSchema]
         + victory_conditions: list[str]
     }
 
-    class TimeSlotSchema <<BaseModel>> {
-        + slot_id: str
-        + game_id: str
-        + start_time: datetime
-        + end_time: datetime
-        + location: str
-        + is_available: bool
-        + base_price: float
+    class CalendarEventSchema <<BaseModel>> {
+        + id: str
+        + title: str
+        + datetime: datetime
     }
 
     class ReservationCreateSchema <<BaseModel>> {
         + slot_id: str
-        + game_id: str
         + participant_count: int
     }
 
@@ -84,7 +91,7 @@ package "Data Transfer Schemas (Pydantic Models)" {
         + organizer_id: str
         + participant_count: int
         + total_cost: float
-        + status: str
+        + status: ReservationStatus
         + is_paid: bool
     }
 }
@@ -104,15 +111,22 @@ package "Services (Application Business Logic)" {
 
     class ScenariosService {
         - db_session: Session
-        + load_scenario(game_id: str): ScenarioDetailSchema
-        + add_task(scenario_id: str, dto: TaskCreateSchema): bool
+        + load_scenario(game_id: str, user_id: str): ScenarioDetailSchema
+        + add_task(game_id: str, dto: TaskCreateSchema): bool
     }
 
     class CalendarService {
         - db_session: Session
-        + query_available_slots(game_id: str, start_date: datetime, end_date: datetime): list[TimeSlotSchema]
+        + get_events(month: date): list[CalendarEventSchema]
+    }
+
+    class ReservationsService {
+        - db_session: Session
+        - payment_service: IPaymentService
+        - message_service: IMessageService
         + create_reservation(user_id: str, dto: ReservationCreateSchema): ReservationSummarySchema
-        + mark_payment_completed(reservation_id: str): bool
+        + cancel_reservation(user_id: str, reservation_id: str): bool
+        + mark_payment_completed(user_id: str, reservation_id: str): ReservationSummarySchema
     }
 }
 
@@ -120,10 +134,11 @@ GamesService ..> GameCreateSchema : consumes
 GamesService ..> GameResponseSchema : produces
 ActionsService ..> ActionCreateSchema : consumes
 ScenariosService ..> ScenarioDetailSchema : produces
+ScenarioDetailSchema *-- TaskSchema
 ScenariosService ..> TaskCreateSchema : consumes
-CalendarService ..> TimeSlotSchema : produces
-CalendarService ..> ReservationCreateSchema : consumes
-CalendarService ..> ReservationSummarySchema : produces
+CalendarService ..> CalendarEventSchema : produces
+ReservationsService ..> ReservationCreateSchema : consumes
+ReservationsService ..> ReservationSummarySchema : produces
 
 @enduml
 ```

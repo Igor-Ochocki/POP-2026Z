@@ -11,76 +11,98 @@ skinparam linetype polyline
 title PU49 Zdefiniowanie gry - presenter
 
 class useGameDefinition <<Hook>> {
+    + onCreateGame()
+    + onOpenGame(gameId: string)
     + onEditParameters()
     + onChangeParameter(field: string, value: string | boolean)
     + onSaveMetadata()
     + onParametersSavedMessageDialogConfirm()
     + onIncorrectDataMessageDialogConfirm()
-    + onAddSensor()
-    + onEditScenario()
     + onSaveDraft()
-    + onGameSavedMessageDialogConfirm()
     + onSubmitForReview()
-    + onGameSubmittedMessageDialogConfirm()
     + onSaveErrorMessageDialogConfirm()
-    + onCancelGameCreation()
+    + onLoadErrorMessageDialogConfirm()
     - validateParameters(form: GameParametersForm): GameParametersErrors
+    - toForm(game: GameMetadataDTO): GameParametersForm
+    - saveDraft(game: GameMetadataDTO): Promise<GameMetadataDTO>
     - saveGame(asDraft: boolean)
 }
 
 interface IGameDefinitionActions <<interface>> {
+    + onCreateGame()
+    + onOpenGame(gameId: string)
     + onEditParameters()
     + onChangeParameter(field: string, value: string | boolean)
     + onSaveMetadata()
     + onParametersSavedMessageDialogConfirm()
     + onIncorrectDataMessageDialogConfirm()
-    + onAddSensor()
-    + onEditScenario()
     + onSaveDraft()
-    + onGameSavedMessageDialogConfirm()
     + onSubmitForReview()
-    + onGameSubmittedMessageDialogConfirm()
     + onSaveErrorMessageDialogConfirm()
-    + onCancelGameCreation()
+    + onLoadErrorMessageDialogConfirm()
 }
 
 interface IGameDefinitionWindows <<interface>> {
-    + showCreatorPanelView()
-    + showGameListView()
     + showGameDefinitionView()
     + showGameParametersView()
-    + showSensorDefinitionView()
-    + showScenarioEditorView()
     + showParametersSavedMessageDialog()
-    + showIncorrectDataMessageDialog(errors: GameParametersErrors)
+    + showIncorrectDataMessageDialog()
     + showGameSavedMessageDialog()
     + showGameSubmittedMessageDialog()
     + showSaveErrorMessageDialog()
+    + showLoadErrorMessageDialog()
 }
 
-interface GamesApi <<interface>> {
-    + saveGame(metadata: GameMetadataDTO, asDraft: boolean): Promise<GameMetadataDTO>
-    + submitToReviewer(gameId: string): Promise<boolean>
+interface ICreatorPanelActions <<interface>> {
+    + onOpenCreatorPanel()
+}
+
+class useCreatorPanel <<Hook>> {
+    + onOpenCreatorPanel()
+}
+
+interface IGamesApi <<interface>> {
+    + getGame(gameId: string, userId: string): Promise<GameResponseDTO>
+    + saveGame(userId: string, metadata: GameCreateDTO, asDraft: boolean): Promise<GameResponseDTO>
+    + editGame(gameId: string, userId: string, metadata: GameCreateDTO, asDraft: boolean): Promise<GameResponseDTO>
+    + submitToReviewer(gameId: string, userId: string): Promise<boolean>
+}
+
+class GameCreateDTO <<DTO>> {
+    + title: string
+    + description: string
+    + minPlayers: number
+    + maxPlayers: number
+    + durationMinutes: number
+    + requiresInvitation: boolean
+    + tags: string[*]
+}
+
+class GameResponseDTO <<DTO>> {
+    + gameId: string
+    + status: string
 }
 
 class GameDefinitionViewModel <<State>> {
-    + activePanel: GameDefinitionPanel
+    + activePanelType: GameDefinitionPanelTypes
+    + activeGame: GameMetadataDTO | null
     + validationErrors: GameParametersErrors
     + isSubmitting: boolean
-    + dialog: GameDefinitionDialog | null
+    + dialogType: GameDefinitionDialogTypes | null
 }
 
-enum GameDefinitionPanel {
+enum GameDefinitionPanelTypes {
     definition
     parameters
 }
 
-enum GameDefinitionDialog {
+enum GameDefinitionDialogTypes {
     parametersSaved
     incorrectData
     gameSaved
     gameSubmitted
     saveError
+    loadError
 }
 
 class GameParametersForm {
@@ -95,37 +117,48 @@ class GameParametersForm {
 
 enum GameCategory {
     Fantasy
-    Science fiction
+    Science Fiction
     Historyczna
     Kryminalna
     Horror
     Przygodowa
 }
 
-class GameMetadataDTO <<DTO>> {
-    + gameId: string
-    + title: string
-    + description: string
-    + minPlayers: number
-    + maxPlayers: number
-    + durationMinutes: number
-    + requiresInvitation: boolean
-    + tags: string[*]
-    + status: string
-}
-
 useGameDefinition .u.|> IGameDefinitionActions
 useGameDefinition -u-> IGameDefinitionWindows
-useGameDefinition --> GamesApi : apiClient.games
+useCreatorPanel .u.|> ICreatorPanelActions
+useGameDefinition --> IGamesApi : apiClient.games
 useGameDefinition *-- "1" GameDefinitionViewModel : state
 
 GameDefinitionViewModel *-- "1" GameParametersForm : parametersForm
-GameDefinitionViewModel *-- "0..1" GameMetadataDTO : activeGame
-GamesApi ..> GameMetadataDTO
+GameResponseDTO -u-|> GameCreateDTO
+IGamesApi ..> GameCreateDTO
+IGamesApi ..> GameResponseDTO
+
+note top of useGameDefinition
+    Trasa /creator/games/{gameId}, dla nowej gry gameId = new.
+    onSaveMetadata zapisuje parametry od razu jako szkic (as_draft),
+    gra dostaje gameId i trasa zmienia się na jej id - od tego
+    momentu dostępne są PU wymagające gameId (scenariusz, akcje).
+    Na trasie istniejącej gry dane są wczytywane przez getGame.
+    onOpenGame(gameId) otwiera definicję gry z innych PU.
+end note
+
+note right of GameDefinitionViewModel
+    GameMetadataDTO: interfaces.md.
+end note
 
 note right of GameCategory
-    Ta sama lista ma być na backendzie.
-    Kategoria trafia do tags[0] w GameMetadataDTO.
+    Ta sama lista co na backendzie.
+    Kategoria trafia do tags[0].
+end note
+
+note bottom of IGamesApi
+    DTO odpowiadają GameCreateSchema
+    i GameResponseSchema z backendu.
+    gamesApi mapuje camelCase <-> snake_case.
+    userId to parametr user_id, do czasu
+    logowania brany z ENV (VITE_DEV_USER_ID).
 end note
 @enduml
 ```

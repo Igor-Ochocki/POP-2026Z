@@ -12,49 +12,60 @@ title PU56 Wyświetlenie scenariusza gry w edytorze - presenter
 
 class useScenarioEditor <<Hook>> {
     + onOpenScenarioEditor(gameId: string)
-    + onAddTask()
-    + onAddVictoryCondition()
-    + onCloseScenarioEditor()
+    + onReloadScenario()
 }
 
 interface IScenarioEditorActions <<interface>> {
     + onOpenScenarioEditor(gameId: string)
-    + onAddTask()
-    + onAddVictoryCondition()
-    + onCloseScenarioEditor()
+    + onReloadScenario()
 }
 
 interface IScenarioEditorWindows <<interface>> {
-    + showGameDefinitionView()
-    + showScenarioEditorView()
-    + showNewTaskView()
-    + showVictoryConditionDefinitionView()
+    + showScenarioEditorView(gameId: string)
 }
 
-interface ScenariosApi <<interface>> {
-    + loadScenario(gameId: string): Promise<ScenarioDetailDTO>
+interface IScenarioApi <<interface>> {
+    + loadScenario(gameId: string, userId: string): Promise<ScenarioDetailDTO>
+}
+
+interface IGamesApi <<interface>> {
+    + getGame(gameId: string, userId: string): Promise<GameResponseDTO>
 }
 
 class ScenarioEditorViewModel <<State>> {
-    + activeGame: GameMetadataDTO
+    + gameId: string | null
+    + activeGame: GameMetadataDTO | null
     + scenario: ScenarioDetailDTO | null
+    + isLoading: boolean
+    + errorMessage: string | null
+}
+
+class ScenarioDetailDTO <<DTO>> {
+    + scenarioId: string
+    + gameId: string
+    + tasks: TaskDTO[*]
+    + victoryConditions: string[*]
 }
 
 useScenarioEditor .u.|> IScenarioEditorActions
 useScenarioEditor -u-> IScenarioEditorWindows
-useScenarioEditor --> ScenariosApi : apiClient.scenarios
+useScenarioEditor --> IScenarioApi : apiClient.scenario
+useScenarioEditor --> IGamesApi : apiClient.games
 useScenarioEditor *-- "1" ScenarioEditorViewModel : state
+ScenarioEditorViewModel ..> ScenarioDetailDTO
+IScenarioApi ..> ScenarioDetailDTO
 
 note bottom of useScenarioEditor
-    onOpenScenarioEditor wczytuje scenariusz przez loadScenario(gameId),
-    zapisuje go w stanie i wywołuje showScenarioEditorView().
-    Po PU57 / PU58 scenariusz jest wczytywany ponownie.
+    onOpenScenarioEditor(gameId) przechodzi do edytora (showScenarioEditorView).
+    Gra i scenariusz są wczytywane tylko na trasie edytora,
+    więc widoki innych PU wołające onOpenScenarioEditor nie wywołują API.
+    onReloadScenario ponawia wczytanie po błędzie.
 end note
 
 note right of ScenarioEditorViewModel
-    activeGame pochodzi ze stanu PU49
-    (GameDefinitionViewModel.activeGame).
-    Typy DTO (GameMetadataDTO, ScenarioDetailDTO, TaskDTO): interfaces.md.
+    activeGame pobierane przez GET /games/{id} (IGamesApi.getGame),
+    scenariusz przez GET /games/{id}/scenario. userId z ENV (VITE_DEV_USER_ID).
+    TaskDTO: types/task.ts.
 end note
 @enduml
 ```

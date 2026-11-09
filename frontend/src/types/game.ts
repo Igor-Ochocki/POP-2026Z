@@ -10,6 +10,21 @@ export interface GameMetadataDTO {
   status: string;
 }
 
+export interface GameCreateDTO {
+  title: string;
+  description: string;
+  minPlayers: number;
+  maxPlayers: number;
+  durationMinutes: number;
+  requiresInvitation: boolean;
+  tags: string[];
+}
+
+export interface GameResponseDTO extends GameCreateDTO {
+  gameId: string;
+  status: string;
+}
+
 export interface GameParametersForm {
   title: string;
   description: string;
@@ -24,25 +39,28 @@ export type GameParametersErrors = Partial<
   Record<keyof GameParametersForm, string>
 >;
 
-export type GameDefinitionPanel = 'definition' | 'parameters';
+export type GameDefinitionPanelTypes = 'definition' | 'parameters';
 
-export type GameDefinitionDialog =
+export type GameDefinitionDialogTypes =
   | 'parametersSaved'
   | 'incorrectData'
   | 'gameSaved'
   | 'gameSubmitted'
-  | 'saveError';
+  | 'saveError'
+  | 'loadError';
 
 export interface GameDefinitionViewModel {
-  activePanel: GameDefinitionPanel;
+  activePanelType: GameDefinitionPanelTypes;
   activeGame: GameMetadataDTO | null;
   parametersForm: GameParametersForm;
   validationErrors: GameParametersErrors;
   isSubmitting: boolean;
-  dialog: GameDefinitionDialog | null;
+  dialogType: GameDefinitionDialogTypes | null;
 }
 
 export interface IGameDefinitionActions {
+  onCreateGame(): void;
+  onOpenGame(gameId: string): void;
   onEditParameters(): void;
   onChangeParameter<K extends keyof GameParametersForm>(
     field: K,
@@ -51,33 +69,37 @@ export interface IGameDefinitionActions {
   onSaveMetadata(): void;
   onParametersSavedMessageDialogConfirm(): void;
   onIncorrectDataMessageDialogConfirm(): void;
-  onAddSensor(): void;
-  onEditScenario(): void;
   onSaveDraft(): void;
-  onGameSavedMessageDialogConfirm(): void;
   onSubmitForReview(): void;
-  onGameSubmittedMessageDialogConfirm(): void;
   onSaveErrorMessageDialogConfirm(): void;
-  onCancelGameCreation(): void;
+  onLoadErrorMessageDialogConfirm(): void;
 }
 
 export interface IGameDefinitionWindows {
-  showCreatorPanelView(): void;
-  showGameListView(): void;
   showGameDefinitionView(): void;
   showGameParametersView(): void;
-  showSensorDefinitionView(): void;
-  showScenarioEditorView(): void;
   showParametersSavedMessageDialog(): void;
-  showIncorrectDataMessageDialog(errors: GameParametersErrors): void;
+  showIncorrectDataMessageDialog(): void;
   showGameSavedMessageDialog(): void;
   showGameSubmittedMessageDialog(): void;
   showSaveErrorMessageDialog(): void;
+  showLoadErrorMessageDialog(): void;
 }
+
+// Backend GameStatus -> label used in the scenarios.
+const GAME_STATUS_LABELS: Record<string, string> = {
+  Draft: 'W edycji',
+  Submitted: 'Oczekuje na weryfikację',
+  Rejected: 'Odrzucona',
+  Approved: 'Zatwierdzona',
+};
+
+export const gameStatusLabel = (status: string): string =>
+  GAME_STATUS_LABELS[status] ?? status;
 
 export const GAME_CATEGORIES = [
   'Fantasy',
-  'Science fiction',
+  'Science Fiction',
   'Historyczna',
   'Kryminalna',
   'Horror',

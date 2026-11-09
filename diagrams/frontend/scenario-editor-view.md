@@ -16,54 +16,47 @@ class GameDefinitionView {
 
 class ScenarioEditorView {
     + show(game: GameMetadataDTO, scenario: ScenarioDetailDTO)
+    + onRetryClick()
     + onAddTaskClick()
-    + onAddVictoryConditionClick()
-    + onCancelClick()
-    + onSaveAndCloseClick()
+    + onCloseClick()
 }
 
 class NewTaskView
-class VictoryConditionDefinitionView
 
 interface IScenarioEditorActions <<interface>> {
     + onOpenScenarioEditor(gameId: string)
-    + onAddTask()
-    + onAddVictoryCondition()
-    + onCloseScenarioEditor()
+    + onReloadScenario()
 }
 
-GameDefinitionView --> IScenarioEditorActions
-ScenarioEditorView --> IScenarioEditorActions
+interface INewTaskActions <<interface>> {
+    + onNewTaskSelect()
+}
+
+interface IGameDefinitionActions <<interface>> {
+    + onOpenGame(gameId: string)
+}
 
 interface IScenarioEditorWindows <<interface>> {
-    + showGameDefinitionView()
-    + showScenarioEditorView()
-    + showNewTaskView()
-    + showVictoryConditionDefinitionView()
+    + showScenarioEditorView(gameId: string)
 }
 
 class ScenarioEditorWindows
 
+GameDefinitionView --> IScenarioEditorActions : onOpenScenarioEditor
+ScenarioEditorView --> IScenarioEditorActions : onReloadScenario
+ScenarioEditorView --> INewTaskActions : "Dodaj zadanie" (PU57)
+ScenarioEditorView --> IGameDefinitionActions : "Zamknij" (PU49)
+
 ScenarioEditorWindows .u.|> IScenarioEditorWindows
-
-ScenarioEditorWindows --> GameDefinitionView
 ScenarioEditorWindows --> ScenarioEditorView
-ScenarioEditorWindows --> NewTaskView
-ScenarioEditorWindows --> VictoryConditionDefinitionView
 
-GameDefinitionView ..> ScenarioEditorView : "Edytuj scenariusz gry"
-ScenarioEditorView ..> GameDefinitionView : "Anuluj" / "Zapisz i zamknij"
+ScenarioEditorView ..> NewTaskView
+ScenarioEditorView ..> GameDefinitionView
 
 note right of ScenarioEditorView
     Lista zadań, lista warunków zwycięstwa i metadane
-    gry to części tego widoku. Edytor jest punktem
-    wyjścia dla PU57 i PU58, do czasu ich implementacji
-    przyciski dodawania są nieaktywne.
-end note
-
-note bottom of NewTaskView
-    Widoki z PU57 i PU58. Po ich zakończeniu
-    system wraca do ScenarioEditorView.
+    gry to części tego widoku. "Dodaj warunek" jest
+    nieaktywne do czasu PU58.
 end note
 @enduml
 ```
