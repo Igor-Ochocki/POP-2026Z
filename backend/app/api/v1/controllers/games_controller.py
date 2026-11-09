@@ -35,7 +35,7 @@ router = APIRouter(prefix="/games", tags=["games"])
 def get_games_service(db: Annotated[Session, Depends(get_db)]) -> IGamesService:
     return GamesService(db)
 
-@router.get("/authored", response_model=list[GameResponseSchema])
+@router.get("", response_model=list[GameResponseSchema])
 def get_authored_games(
     user_id: str, 
     limit: int, 
