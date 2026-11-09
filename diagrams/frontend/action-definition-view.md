@@ -1,82 +1,70 @@
-<div>
+<div hidden>
 
 ```
-@startuml
+@startuml action-definition-view
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam roundcorner 4
+skinparam linetype polyline
+
 title PU51 Zdefiniowanie akcji - widok
 
-skinparam classAttributeIconSize 0
-skinparam shadowing false
-
-interface IActionDefinitionWindows <<interface>> {
-  +showGameDefinitionView()
-  +showActionFormView()
-  +showActionSavedMessageDialog()
-  +showIncompleteActionDataMessageDialog()
-  +showActionSaveErrorMessageDialog()
+class GameDefinitionView {
+    + onDefineActionClick()
 }
 
-class ActionDefinitionWindows {
-  +showGameDefinitionView()
-  +showActionFormView(form: ActionForm, errors: ActionFormErrors, isSubmitting: boolean)
-  +showActionSavedMessageDialog()
-  +showIncompleteActionDataMessageDialog(errors: ActionFormErrors)
-  +showActionSaveErrorMessageDialog()
+class ActionDefinitionView {
+    + show(form: ActionForm, isSubmitting: boolean)
+    + onFieldChange(field: string, value: string)
+    + onSaveAndCloseClick()
+    + onCancelClick()
 }
-
-IActionDefinitionWindows <|.. ActionDefinitionWindows
 
 class MessageDialog {
-  +show(title: string, message: string)
-  +onOkClick()
-}
-
-class ActionSavedMessageDialog
-class IncompleteActionDataMessageDialog
-class ActionSaveErrorMessageDialog
-
-MessageDialog <|-- ActionSavedMessageDialog
-MessageDialog <|-- IncompleteActionDataMessageDialog
-MessageDialog <|-- ActionSaveErrorMessageDialog
-
-class GameDefinitionView {
-  +onDefineActionClick()
-}
-
-class ActionFormView {
-  +show(form: ActionForm, errors: ActionFormErrors, isSubmitting: boolean)
-  +onFieldChange(field: string, value: string)
-  +onSaveAndCloseClick()
-  +onCancelClick()
+    + show(title: string, message: string)
+    + onOkClick()
 }
 
 interface IActionDefinitionActions <<interface>> {
-  +onAddAction()
-  +onChangeActionField(field: string, value: string)
-  +onSaveAction()
-  +onCancelActionDefinition()
-  +onActionSavedMessageDialogConfirm()
-  +onIncompleteActionDataMessageDialogConfirm()
-  +onActionSaveErrorMessageDialogConfirm()
+    + onAddAction(gameId: string)
+    + onChangeParameter(field: string, value: any)
+    + onSaveAction()
+    + onCancelActionDefinition()
+    + onActionSavedMessageDialogConfirm()
+    + onIncompleteActionDataMessageDialogConfirm()
+    + onActionSaveErrorMessageDialogConfirm()
 }
 
+interface IActionDefinitionWindows <<interface>> {
+    + showGameDefinitionView()
+    + showActionDefinitionView(gameId: string)
+    + showActionSavedMessageDialog()
+    + showIncompleteActionDataMessageDialog()
+    + showActionSaveErrorMessageDialog()
+    + hideDialogs()
+}
+
+class ActionDefinitionWindows
+
+ActionDefinitionWindows .u.|> IActionDefinitionWindows
 ActionDefinitionWindows --> GameDefinitionView
-ActionDefinitionWindows --> ActionFormView
-ActionDefinitionWindows --> ActionSavedMessageDialog
-ActionDefinitionWindows --> IncompleteActionDataMessageDialog
-ActionDefinitionWindows --> ActionSaveErrorMessageDialog
+ActionDefinitionWindows --> ActionDefinitionView
+ActionDefinitionWindows --> MessageDialog
 
-GameDefinitionView --> IActionDefinitionActions
-ActionFormView --> IActionDefinitionActions
-ActionSavedMessageDialog --> IActionDefinitionActions
-IncompleteActionDataMessageDialog --> IActionDefinitionActions
-ActionSaveErrorMessageDialog --> IActionDefinitionActions
+GameDefinitionView --> IActionDefinitionActions : "Zdefiniuj akcję"
+ActionDefinitionView --> IActionDefinitionActions
+MessageDialog --> IActionDefinitionActions
 
-GameDefinitionView ..> ActionFormView : Zdefiniuj akcję
+GameDefinitionView ..> ActionDefinitionView : "Zdefiniuj akcję"
 
-
-
-
+note right of GameDefinitionView
+    Powrót trafia do /creator/games/new - otwarcie tej samej gry
+    wymaga wczytania gry po id w PU49 (TODO).
+end note
 @enduml
 ```
-<\div>
+
+</div>
+
 ![](rendered/action-definition-view.svg)

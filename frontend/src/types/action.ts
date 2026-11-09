@@ -1,65 +1,62 @@
+// Values accepted by the backend (ActionType / EffectKind enums).
 export type ActionType =
-  | 'MOVEMENT'
-  | 'ATTACK'
-  | 'USE_ITEM'
-  | 'DIALOGUE'
-  | 'CUSTOM'
-  |'MINI_GAME';
+  'movement' | 'attack' | 'useItem' | 'dialogue' | 'custom' | 'miniGame';
 
 export type EffectKind =
-  | 'CHANGE_STAT'
-  | 'ADD_ITEM'
-  | 'REMOVE_ITEM'
-  | 'CHANGE_LOCATION'
-  | 'SET_FLAG'
-  |'START_MINI_GAME';
+  | 'changeStat'
+  | 'addItem'
+  | 'removeItem'
+  | 'changeLocation'
+  | 'setFlag'
+  | 'startMiniGame';
 
-export type ActionDefinitionPanelTypes = 'gameDefinition' | 'actionForm';
+export interface ActionCreateDTO {
+  gameId: string;
+  name: string;
+  actionType: ActionType;
+  outcomeType: EffectKind;
+  outcomeValue: string;
+}
 
-export type ActionDefinitionDialogTypes =
-  | 'incompleteData'
-  | 'actionSaved'
-  | 'saveError';
+export interface ActionDTO extends ActionCreateDTO {
+  actionId: string;
+}
 
 export interface ActionForm {
   name: string;
-  type: ActionType | '';
-  effectKind: EffectKind | '';
-  effectValue: string;
+  actionType: ActionType | '';
+  outcomeType: EffectKind | '';
+  outcomeValue: string;
 }
 
-export interface ActionDto {
-  id?: string;
-  gameId: string;
-  name: string;
-  type: ActionType;
-  effectKind: EffectKind;
-  effectValue: string;
-}
+export type ActionDefinitionDialogTypes =
+  'incompleteData' | 'actionSaved' | 'saveError';
 
 export interface ActionDefinitionViewModel {
   gameId: string;
-  activePanelType: ActionDefinitionPanelTypes;
+  form: ActionForm;
   isSubmitting: boolean;
   dialogType: ActionDefinitionDialogTypes | null;
-  form: ActionForm;
-}
-
-export interface IActionDefinitionWindows {
-  showGameDefinitionView(): void;
-  showActionFormView(gameId: string): void; // było: ()
-  showActionSavedMessageDialog(): void;
-  showIncompleteActionDataMessageDialog(): void;
-  showActionSaveErrorMessageDialog(): void;
-  hideDialogs(): void; // nowa
 }
 
 export interface IActionDefinitionActions {
-  onAddAction(gameId: string): void; // było: ()
-  onChangeParameter(field: string, value: string | boolean): void;
+  onAddAction(gameId: string): void;
+  onChangeParameter<K extends keyof ActionForm>(
+    field: K,
+    value: ActionForm[K],
+  ): void;
   onSaveAction(): void;
   onCancelActionDefinition(): void;
   onActionSavedMessageDialogConfirm(): void;
   onIncompleteActionDataMessageDialogConfirm(): void;
   onActionSaveErrorMessageDialogConfirm(): void;
+}
+
+export interface IActionDefinitionWindows {
+  showGameDefinitionView(): void;
+  showActionDefinitionView(gameId: string): void;
+  showActionSavedMessageDialog(): void;
+  showIncompleteActionDataMessageDialog(): void;
+  showActionSaveErrorMessageDialog(): void;
+  hideDialogs(): void;
 }

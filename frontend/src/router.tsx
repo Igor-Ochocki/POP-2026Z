@@ -14,6 +14,10 @@ export const router = createBrowserRouter([
       { index: true, element: <HomeView /> },
       { path: 'creator', element: <CreatorPanelView /> },
       { path: 'creator/games/new', element: <GameDefinitionView /> },
+      {
+        path: 'creator/games/:gameId/actions/new',
+        element: <ActionDefinitionView />,
+      },
       { path: '*', element: <NotFoundView /> },
     ],
   },

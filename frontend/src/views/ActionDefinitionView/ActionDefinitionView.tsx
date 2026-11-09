@@ -15,21 +15,21 @@ import type {
 import './ActionDefinitionView.css';
 
 const actionTypeLabels: Record<ActionType, string> = {
-  MOVEMENT: 'ruch',
-  ATTACK: 'atak',
-  USE_ITEM: 'użycie przedmiotu',
-  DIALOGUE: 'dialog',
-  CUSTOM: 'własna',
-  MINI_GAME: 'minigra',
+  movement: 'ruch',
+  attack: 'atak',
+  useItem: 'użycie przedmiotu',
+  dialogue: 'dialog',
+  custom: 'własna',
+  miniGame: 'minigra',
 };
 
 const effectKindLabels: Record<EffectKind, string> = {
-  CHANGE_STAT: 'zmiana statystyki',
-  ADD_ITEM: 'dodanie przedmiotu',
-  REMOVE_ITEM: 'usunięcie przedmiotu',
-  CHANGE_LOCATION: 'zmiana lokacji',
-  SET_FLAG: 'ustawienie flagi',
-  START_MINI_GAME: 'rozpoczęcie minigry',
+  changeStat: 'zmiana statystyki',
+  addItem: 'dodanie przedmiotu',
+  removeItem: 'usunięcie przedmiotu',
+  changeLocation: 'zmiana lokacji',
+  setFlag: 'ustawienie flagi',
+  startMiniGame: 'rozpoczęcie minigry',
 };
 
 function keyByLabel<T extends string>(
@@ -67,7 +67,9 @@ function getDialogs(
 export function ActionDefinitionView() {
   const { state, actions } = useActionDefinition();
   const { form, isSubmitting } = state;
-  const dialog = state.dialogType ? getDialogs(actions)[state.dialogType] : null;
+  const dialog = state.dialogType
+    ? getDialogs(actions)[state.dialogType]
+    : null;
 
   return (
     <section className='action-definition-view'>
@@ -78,10 +80,7 @@ export function ActionDefinitionView() {
             actions.onSaveAction();
           }}
         >
-          <PageHeader
-            title='Akcja'
-            subtitle='Interakcje dostępne dla graczy'
-          />
+          <PageHeader title='Akcja' subtitle='Interakcje dostępne dla graczy' />
           <FormSection title='Informacje ogólne'>
             <InputField
               label='Nazwa akcji'
@@ -95,10 +94,12 @@ export function ActionDefinitionView() {
             <DropdownField
               label='Rodzaj akcji'
               options={Object.values(actionTypeLabels)}
-              value={form.type === '' ? '' : actionTypeLabels[form.type]}
+              value={
+                form.actionType === '' ? '' : actionTypeLabels[form.actionType]
+              }
               onOptionSelected={(option) =>
                 actions.onChangeParameter(
-                  'type',
+                  'actionType',
                   keyByLabel(actionTypeLabels, option),
                 )
               }
@@ -109,11 +110,13 @@ export function ActionDefinitionView() {
               label='Rodzaj skutków akcji'
               options={Object.values(effectKindLabels)}
               value={
-                form.effectKind === '' ? '' : effectKindLabels[form.effectKind]
+                form.outcomeType === ''
+                  ? ''
+                  : effectKindLabels[form.outcomeType]
               }
               onOptionSelected={(option) =>
                 actions.onChangeParameter(
-                  'effectKind',
+                  'outcomeType',
                   keyByLabel(effectKindLabels, option),
                 )
               }
@@ -121,11 +124,11 @@ export function ActionDefinitionView() {
             <InputField
               label='Wartość skutków akcji'
               inputProps={{
-                value: form.effectValue,
+                value: form.outcomeValue,
                 placeholder: 'Wprowadź wartość skutków...',
-               
+
                 onChange: (e) =>
-                  actions.onChangeParameter('effectValue', e.target.value),
+                  actions.onChangeParameter('outcomeValue', e.target.value),
               }}
             />
           </FormSection>

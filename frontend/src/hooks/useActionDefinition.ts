@@ -1,49 +1,52 @@
 import { useState } from 'react';
 import { useNavigate, useParams, type NavigateFunction } from 'react-router';
 import { apiClient } from '@api/apiClient';
-import { ActionValidationError } from '@api/modules/actionsApi';
+import { ApiError } from '@api/apiError';
 import type {
+  ActionCreateDTO,
   ActionDefinitionViewModel,
-  ActionDto,
   ActionForm,
   IActionDefinitionActions,
   IActionDefinitionWindows,
 } from '@app-types/action';
- 
+
+// TODO: return to this game's definition once PU49 can load a game by id.
 const GAME_DEFINITION_PATH = '/creator/games/new';
- 
-function actionFormURL(gameId: string) {
-  return `/creator/games/${gameId}/actions/new`;
-}
- 
+
+const actionDefinitionPath = (gameId: string) =>
+  `/creator/games/${gameId}/actions/new`;
+
 const initialForm: ActionForm = {
   name: '',
-  type: '',
-  effectKind: '',
-  effectValue: '',
+  actionType: '',
+  outcomeType: '',
+  outcomeValue: '',
 };
- 
+
+type SetState = React.Dispatch<React.SetStateAction<ActionDefinitionViewModel>>;
+
+function toCreateDTO(gameId: string, form: ActionForm): ActionCreateDTO | null {
+  const name = form.name.trim();
+  const outcomeValue = form.outcomeValue.trim();
+  if (!name || !form.actionType || !form.outcomeType || !outcomeValue)
+    return null;
+  return {
+    gameId,
+    name,
+    actionType: form.actionType,
+    outcomeType: form.outcomeType,
+    outcomeValue,
+  };
+}
+
 function createActionDefinitionWindows(
-  setState: React.Dispatch<React.SetStateAction<ActionDefinitionViewModel>>,
+  setState: SetState,
   navigate: NavigateFunction,
 ): IActionDefinitionWindows {
   return {
-    showGameDefinitionView: () => {
-      setState((prev) => ({
-        ...prev,
-        activePanelType: 'gameDefinition',
-        dialogType: null,
-      }));
-      void navigate(GAME_DEFINITION_PATH);
-    },
-    showActionFormView: (gameId) => {
-      setState((prev) => ({
-        ...prev,
-        activePanelType: 'actionForm',
-        dialogType: null,
-      }));
-      void navigate(actionFormURL(gameId));
-    },
+    showGameDefinitionView: () => void navigate(GAME_DEFINITION_PATH),
+    showActionDefinitionView: (gameId) =>
+      void navigate(actionDefinitionPath(gameId)),
     showActionSavedMessageDialog: () =>
       setState((prev) => ({ ...prev, dialogType: 'actionSaved' })),
     showIncompleteActionDataMessageDialog: () =>
@@ -53,71 +56,57 @@ function createActionDefinitionWindows(
     hideDialogs: () => setState((prev) => ({ ...prev, dialogType: null })),
   };
 }
- 
+
 export function useActionDefinition(): {
   state: ActionDefinitionViewModel;
   actions: IActionDefinitionActions;
 } {
   const { gameId = '' } = useParams<{ gameId: string }>();
   const navigate = useNavigate();
- 
   const [state, setState] = useState<ActionDefinitionViewModel>({
     gameId,
-    activePanelType: gameId ? 'actionForm' : 'gameDefinition',
+    form: initialForm,
     isSubmitting: false,
     dialogType: null,
-    form: initialForm,
   });
- 
   const windows = createActionDefinitionWindows(setState, navigate);
- 
-  const saveAction = async () => {
+
+  const saveAction = async (action: ActionCreateDTO) => {
     setState((prev) => ({ ...prev, isSubmitting: true }));
     try {
-      const created = await apiClient.actions.createAction(gameId, {
-        gameId,
-        ...state.form,
-      } as ActionDto);
-      if (!created.id) throw new Error('Brak identyfikatora zapisanej akcji');
+      await apiClient.actions.createAction(action);
       setState((prev) => ({ ...prev, isSubmitting: false }));
-      windows.showActionSavedMessageDialog(); 
+      windows.showActionSavedMessageDialog();
     } catch (e) {
       setState((prev) => ({ ...prev, isSubmitting: false }));
-      if (e instanceof ActionValidationError) {
+      if (e instanceof ApiError && e.status === 422)
         windows.showIncompleteActionDataMessageDialog();
-      } else {
-        windows.showActionSaveErrorMessageDialog();
-      }
+      else windows.showActionSaveErrorMessageDialog();
     }
   };
- 
-  const actions: IActionDefinitionActions = {
-    onAddAction: (targetGameId) => windows.showActionFormView(targetGameId), 
- 
-    onChangeParameter: (field, value) => {
-      if (!(field in initialForm)) return;
-      setState((prev) => ({
-        ...prev,
-        form: {
-          ...prev.form,
-          [field]: value,
-          ...(field === 'effectKind' ? { effectValue: '' } : {}),
-        },
-      }));
+
+  return {
+    state,
+    actions: {
+      onAddAction: windows.showActionDefinitionView,
+      onChangeParameter: (field, value) =>
+        setState((prev) => ({
+          ...prev,
+          form: { ...prev.form, [field]: value },
+        })),
+      onSaveAction: () => {
+        if (state.isSubmitting) return;
+        const action = toCreateDTO(state.gameId, state.form);
+        if (!action) {
+          windows.showIncompleteActionDataMessageDialog();
+          return;
+        }
+        void saveAction(action);
+      },
+      onCancelActionDefinition: windows.showGameDefinitionView,
+      onActionSavedMessageDialogConfirm: windows.showGameDefinitionView,
+      onIncompleteActionDataMessageDialogConfirm: windows.hideDialogs,
+      onActionSaveErrorMessageDialogConfirm: windows.hideDialogs,
     },
- 
-    onSaveAction: () => {
-      if (state.isSubmitting) return;
-      void saveAction();
-    },
- 
-    onCancelActionDefinition: () => windows.showGameDefinitionView(),
- 
-    onActionSavedMessageDialogConfirm: () => windows.showGameDefinitionView(),
- 
-    onIncompleteActionDataMessageDialogConfirm: () => windows.hideDialogs(),
-    onActionSaveErrorMessageDialogConfirm: () => windows.hideDialogs(),
   };
- 
-  return { state, actions };
 }

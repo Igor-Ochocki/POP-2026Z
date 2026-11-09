@@ -106,7 +106,7 @@ export function GameDefinitionView() {
               }
               onClick={actions.onEditParameters}
             />
-            {/* TODO: enable once PU56, PU60, PU51 and PU50 are implemented */}
+            {/* TODO: enable once PU56, PU60 and PU50 are implemented */}
             <ActionTile
               icon={<AutoStoriesOutlinedIcon />}
               title='Edytuj scenariusz gry'
@@ -120,12 +120,16 @@ export function GameDefinitionView() {
             <ActionTile
               icon={<BoltOutlinedIcon />}
               title='Zdefiniuj akcję'
-              description='Interakcje dostępne dla graczy'
-              onClick={() => {
-                if (game?.gameId) {
-                  actionDefinitionActions.onAddAction(game.gameId);
-                }
-              }}
+              description={
+                game?.gameId
+                  ? 'Interakcje dostępne dla graczy'
+                  : 'Zapisz grę, aby zdefiniować akcję'
+              }
+              onClick={
+                game?.gameId
+                  ? () => actionDefinitionActions.onAddAction(game.gameId)
+                  : undefined
+              }
             />
             <ActionTile
               icon={<SensorsOutlinedIcon />}

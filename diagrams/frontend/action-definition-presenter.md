@@ -1,110 +1,124 @@
 <div hidden>
-  
+
 ```
-@startuml
-title PU51 Zdefiniowanie akcji - prezenter
-
+@startuml action-definition-presenter
 skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
 skinparam shadowing false
+skinparam roundcorner 4
+skinparam linetype polyline
 
-interface IActionDefinitionWindows <<interface>> {
-  +showGameDefinitionView()
-  +showActionFormView()
-  +showActionSavedMessageDialog()
-  +showIncompleteActionDataMessageDialog()
-  +showActionSaveErrorMessageDialog()
+title PU51 Zdefiniowanie akcji - presenter
+
+class useActionDefinition <<Hook>> {
+    + onAddAction(gameId: string)
+    + onChangeParameter(field: string, value: any)
+    + onSaveAction()
+    + onCancelActionDefinition()
+    + onActionSavedMessageDialogConfirm()
+    + onIncompleteActionDataMessageDialogConfirm()
+    + onActionSaveErrorMessageDialogConfirm()
+    - toCreateDTO(gameId: string, form: ActionForm): ActionCreateDTO | null
+    - saveAction(action: ActionCreateDTO)
 }
 
 interface IActionDefinitionActions <<interface>> {
-  +onAddAction()
-  +onChangeActionField(field: string, value: string)
-  +onSaveAction()
-  +onCancelActionDefinition()
-  +onActionSavedMessageDialogConfirm()
-  +onIncompleteActionDataMessageDialogConfirm()
-  +onActionSaveErrorMessageDialogConfirm()
+    + onAddAction(gameId: string)
+    + onChangeParameter(field: string, value: any)
+    + onSaveAction()
+    + onCancelActionDefinition()
+    + onActionSavedMessageDialogConfirm()
+    + onIncompleteActionDataMessageDialogConfirm()
+    + onActionSaveErrorMessageDialogConfirm()
 }
 
-enum ActionType {
-  MOVEMENT
-  ATTACK
-  USE_ITEM
-  DIALOGUE
-  CUSTOM
-  MINI_GAME
+interface IActionDefinitionWindows <<interface>> {
+    + showGameDefinitionView()
+    + showActionDefinitionView(gameId: string)
+    + showActionSavedMessageDialog()
+    + showIncompleteActionDataMessageDialog()
+    + showActionSaveErrorMessageDialog()
+    + hideDialogs()
 }
 
-enum EffectKind {
-  CHANGE_STAT
-  ADD_ITEM
-  REMOVE_ITEM
-  CHANGE_LOCATION
-  SET_FLAG
-  START_MINI_GAME
+interface IActionsApi <<interface>> {
+    + createAction(action: ActionCreateDTO): Promise<ActionDTO>
 }
-
-enum ActionDefinitionPanelTypes {
-  gameDefinition
-  actionForm
-}
-
-enum ActionDefinitionDialogTypes {
-  incompleteData
-  actionSaved
-  saveError
-}
-
-class useActionDefinition <<Hook>> {
-  +onAddAction()
-  +onChangeActionField(field: string, value: string)
-  +onSaveAction()
-  +onCancelActionDefinition()
-  +onActionSavedMessageDialogConfirm()
-  +onIncompleteActionDataMessageDialogConfirm()
-  +onActionSaveErrorMessageDialogConfirm()
-  -saveAction()
-}
-
-interface ActionsApi <<interface>> {
-  +createAction(gameId: string, action: ActionDto): Promise<ActionDto>
-}
-
-class ActionValidationError <<Error>>
 
 class ActionDefinitionViewModel <<State>> {
-  +gameId: string
-  +activePanelType: ActionDefinitionPanelTypes
-  +isSubmitting: boolean
-  +dialogType: ActionDefinitionDialogTypes | null
+    + gameId: string
+    + form: ActionForm
+    + isSubmitting: boolean
+    + dialogType: ActionDefinitionDialogTypes | null
 }
 
 class ActionForm {
-  +name: string
-  +type: ActionType | ''
-  +effectKind: EffectKind | ''
-  +effectValue: string
+    + name: string
+    + actionType: ActionType | ''
+    + outcomeType: EffectKind | ''
+    + outcomeValue: string
 }
 
-class ActionDto <<DTO>> {
-  +id?: string
-  +gameId: string
-  +name: string
-  +type: ActionType
-  +effectKind: EffectKind
-  +effectValue: string
+class ActionCreateDTO <<DTO>> {
+    + gameId: string
+    + name: string
+    + actionType: ActionType
+    + outcomeType: EffectKind
+    + outcomeValue: string
 }
 
-useActionDefinition --> IActionDefinitionWindows
-useActionDefinition ..|> IActionDefinitionActions
-useActionDefinition --> ActionsApi : apiClient.actions
-useActionDefinition *-- "1" ActionDefinitionViewModel
+class ActionDTO <<DTO>> {
+    + actionId: string
+}
 
+enum ActionType {
+    movement
+    attack
+    useItem
+    dialogue
+    custom
+    miniGame
+}
+
+enum EffectKind {
+    changeStat
+    addItem
+    removeItem
+    changeLocation
+    setFlag
+    startMiniGame
+}
+
+enum ActionDefinitionDialogTypes {
+    incompleteData
+    actionSaved
+    saveError
+}
+
+useActionDefinition .u.|> IActionDefinitionActions
+useActionDefinition -u-> IActionDefinitionWindows
+useActionDefinition --> IActionsApi : apiClient.actions
+useActionDefinition *-- "1" ActionDefinitionViewModel : state
 ActionDefinitionViewModel *-- "1" ActionForm : form
+ActionDTO -u-|> ActionCreateDTO
+IActionsApi ..> ActionCreateDTO
+IActionsApi ..> ActionDTO
 
-ActionsApi ..> ActionDto
-ActionsApi ..> ActionValidationError
+note bottom of useActionDefinition
+    onSaveAction: niepełny formularz albo 422 z backendu
+    -> showIncompleteActionDataMessageDialog,
+    inny błąd -> showActionSaveErrorMessageDialog.
+    Anuluj / OK po sukcesie -> showGameDefinitionView.
+end note
 
+note right of IActionsApi
+    DTO odpowiadają ActionCreateSchema i ActionSchema z backendu,
+    mapowanie camelCase <-> snake_case w actionsApi.
+    Wartości enumów takie jak na backendzie.
+end note
 @enduml
 ```
-<\div>
+
+</div>
+
 ![](rendered/action-definition-presenter.svg)
