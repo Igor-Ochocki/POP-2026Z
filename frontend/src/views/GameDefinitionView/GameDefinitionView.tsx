@@ -13,12 +13,17 @@ import MessageDialog from '@components/MessageDialog/MessageDialog';
 import PageHeader from '@components/PageHeader/PageHeader';
 import TextLabel from '@components/TextLabel/TextLabel';
 import { useActionDefinition } from '@hooks/useActionDefinition';
+import { useCreatorPanel } from '@hooks/useCreatorPanel';
 import { useGameDefinition } from '@hooks/useGameDefinition';
+import { useGameList } from '@hooks/useGameList';
+import { useScenarioEditor } from '@hooks/useScenarioEditor';
+import type { ICreatorPanelActions } from '@app-types/creatorPanel';
 import type {
-  GameDefinitionDialog,
+  GameDefinitionDialogTypes,
   GameMetadataDTO,
   IGameDefinitionActions,
 } from '@app-types/game';
+import type { IGameListActions } from '@app-types/gameList';
 import { GameParametersPanel } from './GameParametersPanel';
 import './GameDefinitionView.css';
 
@@ -33,8 +38,10 @@ function describeGame(game: GameMetadataDTO): string {
 
 function getDialogs(
   actions: IGameDefinitionActions,
+  creatorPanelActions: ICreatorPanelActions,
+  gameListActions: IGameListActions,
 ): Record<
-  GameDefinitionDialog,
+  GameDefinitionDialogTypes,
   { title: string; message: string; onConfirm: () => void }
 > {
   return {
@@ -51,12 +58,12 @@ function getDialogs(
     gameSaved: {
       title: 'Sukces',
       message: 'Poprawnie zapisano grę',
-      onConfirm: actions.onGameSavedMessageDialogConfirm,
+      onConfirm: gameListActions.onOpenGameList,
     },
     gameSubmitted: {
       title: 'Sukces',
       message: 'Poprawnie zapisano grę i wysłano do recenzenta',
-      onConfirm: actions.onGameSubmittedMessageDialogConfirm,
+      onConfirm: creatorPanelActions.onOpenCreatorPanel,
     },
     saveError: {
       title: 'Błąd',
@@ -69,13 +76,20 @@ function getDialogs(
 export function GameDefinitionView() {
   const { state, actions } = useGameDefinition();
   const { actions: actionDefinitionActions } = useActionDefinition();
+  const creatorPanel = useCreatorPanel();
+  const gameList = useGameList();
+  const scenarioEditor = useScenarioEditor();
   const game = state.activeGame;
   const canSave = game !== null && !state.isSubmitting;
-  const dialog = state.dialog ? getDialogs(actions)[state.dialog] : null;
+  const dialog = state.dialogType
+    ? getDialogs(actions, creatorPanel.actions, gameList.actions)[
+        state.dialogType
+      ]
+    : null;
 
   return (
     <section className='game-definition-view'>
-      {state.activePanel === 'parameters' ? (
+      {state.activePanelType === 'parameters' ? (
         <GameParametersPanel
           form={state.parametersForm}
           errors={state.validationErrors}
@@ -110,8 +124,19 @@ export function GameDefinitionView() {
             <ActionTile
               icon={<AutoStoriesOutlinedIcon />}
               title='Edytuj scenariusz gry'
-              description='Zadania i warunki zwycięstwa'
+              description={
+                game?.gameId
+                  ? 'Zadania i warunki zwycięstwa'
+                  : 'Zapisz grę, aby otworzyć jej scenariusz'
+              }
+              onClick={
+                game?.gameId
+                  ? () =>
+                      scenarioEditor.actions.onOpenScenarioEditor(game.gameId)
+                  : undefined
+              }
             />
+            {/* TODO: enable once PU60 and PU51 are implemented */}
             <ActionTile
               icon={<MapOutlinedIcon />}
               title='Edytuj mapę gry'
@@ -131,6 +156,7 @@ export function GameDefinitionView() {
                   : undefined
               }
             />
+            {/* TODO: PU50 onOpenSensorDefinition(gameId) */}
             <ActionTile
               icon={<SensorsOutlinedIcon />}
               title='Dodaj nowy czujnik'
@@ -138,7 +164,10 @@ export function GameDefinitionView() {
             />
           </div>
           <footer className='game-definition-view__footer'>
-            <Button variant='secondary' onClick={actions.onCancelGameCreation}>
+            <Button
+              variant='secondary'
+              onClick={creatorPanel.actions.onOpenCreatorPanel}
+            >
               Anuluj
             </Button>
             <div className='game-definition-view__save'>

@@ -1,41 +1,53 @@
 ```
 @startuml
 interface IGameListActions <<interface>> {
-    +onFilterApply(tags: string[*])
-    +onFilterClear()
+    +onChangeParameter(field: string, value: any)
+    +onFilterSubmit(filterTags: string[*])
     +onListReload()
-    +onTitleSearch(title: string)
     +onShowMore()
+    +onOpenGameList()
+    +onOpenFilterDialog()
 }
 
 interface IGamesApi <<interface>> {
-    +getGames(tags: string[*], limit: number, offset: number): Promise<GameMetadataDTO[*]>
+    +getGames(userId: string, tags: string[*], limit: number, offset: number): Promise<GameMetadataDTO[*]>
     +getGameTags(): Promise<string[*]>
 }
 
 interface IGameListWindows <<interface>> {
-    +showGameListView()
-    +showGameFilterView()
+    +showGameListView(navigationState: GameListNavigationState)
+    +showGameFilterDialog()
 }
 
 class useGameList {
-    +onFilterApply(tags: string[*])
-    +onFilterClear()
+    +onChangeParameter(field: string, value: any)
+    +onFilterSubmit(filterTags: string[*])
     +onListReload()
-    +onTitleSearch(title: string)
     +onShowMore()
+    +onOpenGameList()
+    +onOpenFilterDialog()
 }
 
 class GameListViewModel <<State>> {
     +games: GameMetadataDTO[*]
     +searchString: string
     +filterTags: string[*]
+    +appliedTags: string[*]
+    +downloadOffset: number
+    +hasMoreGames: boolean
+    +downloadErrored: boolean
+    +filterDialogOpen: boolean
+}
+
+class GameListNavigationState {
+    +appliedTags: string[*]
 }
 
 useGameList -u-> IGameListWindows
 useGameList .|> IGameListActions
 useGameList -->  IGamesApi
 GameListViewModel *- useGameList
+useGameList ..> GameListNavigationState
 
 @enduml
 ```
