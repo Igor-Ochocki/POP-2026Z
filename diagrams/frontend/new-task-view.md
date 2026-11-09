@@ -27,13 +27,15 @@ IncorrectDataMessageDialog -u-|> MessageDialog
 NewTaskSuccessMessageDialog -u-|> MessageDialog
 
 interface INewTaskActions <<interface>> {
-    onSubmitNewTask(task :TaskDTO)
+    onNewTaskSelect()
+    onSubmitNewTask()
     onCancelNewTask()
     onCancelNewTaskConfirm()
     onCancelNewTaskCancel()
     onNewTaskSuccessMessageDialogConfirm()
     onIncorrectDataMessageDialogConfirm()
     onConflictMessageDialogConfirm()
+    onChangeParameter(field: string, value: string | number)
 }
 
 INewTaskActions <-u- CancelNewTaskConfirmationDialog
@@ -54,6 +56,7 @@ interface INewTaskWindows <<interface>> {
     showConflictMessageDialog()
     showIncorrectDataMessageDialog()
     showNewTaskSuccessMessageDialog()
+    hideDialogs()
 }
 
 class NewTaskWindows {
@@ -62,6 +65,7 @@ class NewTaskWindows {
     showConflictMessageDialog()
     showIncorrectDataMessageDialog()
     showNewTaskSuccessMessageDialog()
+    hideDialogs()
 }
 
 NewTaskWindows .d.|> INewTaskWindows
