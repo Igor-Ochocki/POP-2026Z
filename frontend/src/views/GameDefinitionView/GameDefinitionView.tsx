@@ -15,6 +15,7 @@ import TextLabel from '@components/TextLabel/TextLabel';
 import { useCreatorPanel } from '@hooks/useCreatorPanel';
 import { useGameDefinition } from '@hooks/useGameDefinition';
 import { useGameList } from '@hooks/useGameList';
+import { useScenarioEditor } from '@hooks/useScenarioEditor';
 import type { ICreatorPanelActions } from '@app-types/creatorPanel';
 import type {
   GameDefinitionDialogTypes,
@@ -75,6 +76,7 @@ export function GameDefinitionView() {
   const { state, actions } = useGameDefinition();
   const creatorPanel = useCreatorPanel();
   const gameList = useGameList();
+  const scenarioEditor = useScenarioEditor();
   const game = state.activeGame;
   const canSave = game !== null && !state.isSubmitting;
   const dialog = state.dialogType
@@ -116,11 +118,20 @@ export function GameDefinitionView() {
               }
               onClick={actions.onEditParameters}
             />
-            {/* TODO: PU56 onOpenScenarioEditor(gameId) */}
             <ActionTile
               icon={<AutoStoriesOutlinedIcon />}
               title='Edytuj scenariusz gry'
-              description='Zadania i warunki zwycięstwa'
+              description={
+                game?.gameId
+                  ? 'Zadania i warunki zwycięstwa'
+                  : 'Zapisz grę, aby otworzyć jej scenariusz'
+              }
+              onClick={
+                game?.gameId
+                  ? () =>
+                      scenarioEditor.actions.onOpenScenarioEditor(game.gameId)
+                  : undefined
+              }
             />
             {/* TODO: enable once PU60 and PU51 are implemented */}
             <ActionTile

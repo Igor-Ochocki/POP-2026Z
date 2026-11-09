@@ -6,6 +6,7 @@ import { GameDefinitionView } from '@views/GameDefinitionView/GameDefinitionView
 import { NotFoundView } from '@views/NotFoundView/NotFoundView';
 import { GameListView } from '@views/GameListView/GameListView';
 import { NewTaskView } from '@views/NewTaskView/NewTaskView';
+import { ScenarioEditorView } from '@views/ScenarioEditorView/ScenarioEditorView';
 
 export const router = createBrowserRouter([
   {
@@ -16,6 +17,10 @@ export const router = createBrowserRouter([
       { path: 'creator', element: <CreatorPanelView /> },
       { path: 'creator/games', element: <GameListView /> },
       { path: 'creator/games/new', element: <GameDefinitionView /> },
+      {
+        path: 'creator/games/:gameId/scenario',
+        element: <ScenarioEditorView />,
+      },
       {
         path: 'creator/games/:gameId/scenario/new-task',
         element: <NewTaskView />,

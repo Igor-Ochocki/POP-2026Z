@@ -1,5 +1,6 @@
 import type { AxiosInstance } from 'axios';
-import type { TaskCreateDTO } from '@app-types/task';
+import type { ScenarioDetailDTO } from '@app-types/scenarioEditor';
+import type { TaskCreateDTO, TaskDTO } from '@app-types/task';
 
 interface TaskCreatePayload {
   title: string;
@@ -21,7 +22,58 @@ const toCreatePayload = (dto: TaskCreateDTO): TaskCreatePayload => ({
   reward_value: dto.rewardValue,
 });
 
+interface TaskResponsePayload {
+  task_id: string;
+  title: string;
+  narrative: string;
+  interaction_type: string;
+  interaction_target_id: string | null;
+  required_player_level: number;
+  time_limit_minutes: number | null;
+  reward_type: string;
+  reward_value: string;
+}
+
+interface ScenarioResponsePayload {
+  scenario_id: string;
+  game_id: string;
+  tasks: TaskResponsePayload[];
+  victory_conditions: string[];
+}
+
+const fromTaskPayload = (task: TaskResponsePayload): TaskDTO => ({
+  taskId: task.task_id,
+  title: task.title,
+  narrative: task.narrative,
+  interactionType: task.interaction_type,
+  interactionTargetId: task.interaction_target_id,
+  requiredPlayerLevel: task.required_player_level,
+  timeLimitMinutes: task.time_limit_minutes,
+  rewardType: task.reward_type,
+  rewardValue: task.reward_value,
+});
+
+const fromScenarioPayload = (
+  scenario: ScenarioResponsePayload,
+): ScenarioDetailDTO => ({
+  scenarioId: scenario.scenario_id,
+  gameId: scenario.game_id,
+  tasks: scenario.tasks.map(fromTaskPayload),
+  victoryConditions: scenario.victory_conditions,
+});
+
 export const createScenarioApi = (http: AxiosInstance) => ({
+  loadScenario: async (
+    gameId: string,
+    userId: string,
+  ): Promise<ScenarioDetailDTO> => {
+    const { data } = await http.get<ScenarioResponsePayload>(
+      `/games/${gameId}/scenario`,
+      { params: { user_id: userId } },
+    );
+    return fromScenarioPayload(data);
+  },
+
   addTask: async (gameId: string, userId: string, task: TaskCreateDTO) => {
     const res = await http.post(
       `/games/${gameId}/scenario/tasks`,
