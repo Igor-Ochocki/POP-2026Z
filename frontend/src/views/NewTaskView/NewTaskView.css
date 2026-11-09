@@ -1,0 +1,14 @@
+.new-task-view {
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+.new-task-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.new-task-form__form-group {
+  display: grid;
+  gap: 0.5rem;
+}

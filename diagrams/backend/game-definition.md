@@ -14,25 +14,39 @@ skinparam linetype polyline
 title PU49 Zdefiniowanie gry - backend
 
 interface GamesApi <<interface>>\n<< /api/v1/games >> {
-    + <<POST / >>\n\tsave_game(metadata: GameCreateSchema, as_draft: bool): GameResponseSchema
-    + <<POST /{id}/submit >>\n\tsubmit_to_reviewer(game_id: str): bool
+    + <<GET /{id} >>\n\tget_game(game_id: str, user_id: str): GameResponseSchema
+    + <<POST / >>\n\tsave_game(user_id: str, dto: GameCreateSchema, as_draft: bool): GameResponseSchema
+    + <<PUT /{id} >>\n\tedit_game(game_id: str, user_id: str, dto: GameCreateSchema, as_draft: bool): GameResponseSchema
+    + <<POST /{id}/submit >>\n\tsubmit_to_reviewer(game_id: str, user_id: str): bool
+}
+
+note right of GamesApi {
+    user_id używany do sprawdzenia
+    czy użytkownik ma dostęp do zasobu
+    lub przypisania go jako autora
 }
 
 class GamesController <<Controller>> {
     - games_service: IGamesService
-    + save_game(metadata: GameCreateSchema, as_draft: bool): GameResponseSchema
-    + submit_to_reviewer(game_id: str): bool
+    + get_game(game_id: str, user_id: str): GameResponseSchema
+    + save_game(user_id: str, dto: GameCreateSchema, as_draft: bool): GameResponseSchema
+    + edit_game(game_id: str, user_id: str, dto: GameCreateSchema, as_draft: bool): GameResponseSchema
+    + submit_to_reviewer(game_id: str, user_id: str): bool
 }
 
 interface IGamesService <<interface>> {
-    + save_game(dto: GameCreateSchema, as_draft: bool): GameResponseSchema
-    + submit_to_reviewer(game_id: str): bool
+    + get_game(game_id: str, user_id: str): GameResponseSchema
+    + save_game(user_id: str, dto: GameCreateSchema, as_draft: bool): GameResponseSchema
+    + edit_game(game_id: str, user_id: str, dto: GameCreateSchema, as_draft: bool): GameResponseSchema
+    + submit_to_reviewer(game_id: str, user_id: str): bool
 }
 
 class GamesService {
     - db_session: Session
-    + save_game(dto: GameCreateSchema, as_draft: bool): GameResponseSchema
-    + submit_to_reviewer(game_id: str): bool
+    + get_game(game_id: str, user_id: str): GameResponseSchema
+    + save_game(user_id: str, dto: GameCreateSchema, as_draft: bool): GameResponseSchema
+    + edit_game(game_id: str, user_id: str, dto: GameCreateSchema, as_draft: bool): GameResponseSchema
+    + submit_to_reviewer(game_id: str, user_id: str): bool
 }
 
 package "Schemas" {
@@ -70,10 +84,7 @@ package "Models (Db)" as models {
         + requires_invitation: bool
         + tags: list[str]
         + status: GameStatus
-    }
-    
-    class User <<Base>> {
-        + created_games: list[Game]
+        + author_id: str
     }
 }
 
@@ -93,19 +104,20 @@ package "Enums"{
         Horror
         Przygodowa
     }
+    
+    note right of GameCategory
+        Kategoria jest zapisywana
+        jako pierwszy element: tags[0]
+    end note
 }
 
 GamesService .up.|> IGamesService
 GamesController .up.|> GamesApi
 
 GamesService -right-> Game
-GamesService -right-> User
-
 
 GamesController --> IGamesService
 
-
-User "1" --> "*" Game : created_games
 ```
 
 </div>
