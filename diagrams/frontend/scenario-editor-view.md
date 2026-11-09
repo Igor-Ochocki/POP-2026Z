@@ -22,7 +22,6 @@ class ScenarioEditorView {
 }
 
 class NewTaskView
-class GameListView
 
 interface IScenarioEditorActions <<interface>> {
     + onOpenScenarioEditor(gameId: string)
@@ -33,8 +32,8 @@ interface INewTaskActions <<interface>> {
     + onNewTaskSelect()
 }
 
-interface IGameListActions <<interface>> {
-    + onOpenGameList()
+interface IGameDefinitionActions <<interface>> {
+    + onOpenGame(gameId: string)
 }
 
 interface IScenarioEditorWindows <<interface>> {
@@ -46,23 +45,18 @@ class ScenarioEditorWindows
 GameDefinitionView --> IScenarioEditorActions : onOpenScenarioEditor
 ScenarioEditorView --> IScenarioEditorActions : onReloadScenario
 ScenarioEditorView --> INewTaskActions : "Dodaj zadanie" (PU57)
-ScenarioEditorView --> IGameListActions : "Zamknij" (PU25)
+ScenarioEditorView --> IGameDefinitionActions : "Zamknij" (PU49)
 
 ScenarioEditorWindows .u.|> IScenarioEditorWindows
 ScenarioEditorWindows --> ScenarioEditorView
 
 ScenarioEditorView ..> NewTaskView
-ScenarioEditorView ..> GameListView
+ScenarioEditorView ..> GameDefinitionView
 
 note right of ScenarioEditorView
     Lista zadań, lista warunków zwycięstwa i metadane
     gry to części tego widoku. "Dodaj warunek" jest
     nieaktywne do czasu PU58.
-end note
-
-note bottom of GameListView
-    Powrót do definicji tej samej gry wymaga wczytania
-    gry po id w PU49 - do tego czasu edytor wraca do listy gier.
 end note
 @enduml
 ```

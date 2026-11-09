@@ -10,9 +10,6 @@ import type {
   IActionDefinitionWindows,
 } from '@app-types/action';
 
-// TODO: return to this game's definition once PU49 can load a game by id.
-const GAME_DEFINITION_PATH = '/creator/games/new';
-
 const actionDefinitionPath = (gameId: string) =>
   `/creator/games/${gameId}/actions/new`;
 
@@ -44,7 +41,6 @@ function createActionDefinitionWindows(
   navigate: NavigateFunction,
 ): IActionDefinitionWindows {
   return {
-    showGameDefinitionView: () => void navigate(GAME_DEFINITION_PATH),
     showActionDefinitionView: (gameId) =>
       void navigate(actionDefinitionPath(gameId)),
     showActionSavedMessageDialog: () =>
@@ -103,8 +99,6 @@ export function useActionDefinition(): {
         }
         void saveAction(action);
       },
-      onCancelActionDefinition: windows.showGameDefinitionView,
-      onActionSavedMessageDialogConfirm: windows.showGameDefinitionView,
       onIncompleteActionDataMessageDialogConfirm: windows.hideDialogs,
       onActionSaveErrorMessageDialogConfirm: windows.hideDialogs,
     },

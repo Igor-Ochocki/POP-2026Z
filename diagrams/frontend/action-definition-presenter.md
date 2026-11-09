@@ -14,8 +14,6 @@ class useActionDefinition <<Hook>> {
     + onAddAction(gameId: string)
     + onChangeParameter(field: string, value: any)
     + onSaveAction()
-    + onCancelActionDefinition()
-    + onActionSavedMessageDialogConfirm()
     + onIncompleteActionDataMessageDialogConfirm()
     + onActionSaveErrorMessageDialogConfirm()
     - toCreateDTO(gameId: string, form: ActionForm): ActionCreateDTO | null
@@ -26,14 +24,11 @@ interface IActionDefinitionActions <<interface>> {
     + onAddAction(gameId: string)
     + onChangeParameter(field: string, value: any)
     + onSaveAction()
-    + onCancelActionDefinition()
-    + onActionSavedMessageDialogConfirm()
     + onIncompleteActionDataMessageDialogConfirm()
     + onActionSaveErrorMessageDialogConfirm()
 }
 
 interface IActionDefinitionWindows <<interface>> {
-    + showGameDefinitionView()
     + showActionDefinitionView(gameId: string)
     + showActionSavedMessageDialog()
     + showIncompleteActionDataMessageDialog()
@@ -108,7 +103,6 @@ note bottom of useActionDefinition
     onSaveAction: niepełny formularz albo 422 z backendu
     -> showIncompleteActionDataMessageDialog,
     inny błąd -> showActionSaveErrorMessageDialog.
-    Anuluj / OK po sukcesie -> showGameDefinitionView.
 end note
 
 note right of IActionsApi

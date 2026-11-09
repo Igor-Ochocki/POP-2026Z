@@ -33,6 +33,7 @@ interface IGamesApi <<interface>> {
 }
 
 class ScenarioEditorViewModel <<State>> {
+    + gameId: string | null
     + activeGame: GameMetadataDTO | null
     + scenario: ScenarioDetailDTO | null
     + isLoading: boolean
@@ -56,7 +57,7 @@ IScenarioApi ..> ScenarioDetailDTO
 
 note bottom of useScenarioEditor
     onOpenScenarioEditor(gameId) przechodzi do edytora (showScenarioEditorView).
-    Gra i scenariusz są wczytywane tylko na trasie z :gameId,
+    Gra i scenariusz są wczytywane tylko na trasie edytora,
     więc widoki innych PU wołające onOpenScenarioEditor nie wywołują API.
     onReloadScenario ponawia wczytanie po błędzie.
 end note

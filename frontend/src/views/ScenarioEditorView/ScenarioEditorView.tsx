@@ -4,7 +4,7 @@ import Card from '@components/Card/Card';
 import PageHeader from '@components/PageHeader/PageHeader';
 import TextLabel from '@components/TextLabel/TextLabel';
 import TextSubheading from '@components/TextSubheading/TextSubheading';
-import { useGameList } from '@hooks/useGameList';
+import { useGameDefinition } from '@hooks/useGameDefinition';
 import { useNewTask } from '@hooks/useNewTask';
 import { useScenarioEditor } from '@hooks/useScenarioEditor';
 import type { TaskDTO } from '@app-types/task';
@@ -21,7 +21,7 @@ function describeTask(task: TaskDTO): string {
 export function ScenarioEditorView() {
   const { state, actions } = useScenarioEditor();
   const newTask = useNewTask();
-  const gameList = useGameList();
+  const gameDefinition = useGameDefinition();
   const { activeGame, scenario } = state;
 
   return (
@@ -104,9 +104,14 @@ export function ScenarioEditorView() {
           )}
         </section>
 
-        {/* TODO: return to this game's definition once PU49 can load a game by id */}
         <footer className='scenario-editor-view__footer'>
-          <Button variant='secondary' onClick={gameList.actions.onOpenGameList}>
+          <Button
+            variant='secondary'
+            disabled={!state.gameId}
+            onClick={() =>
+              state.gameId && gameDefinition.actions.onOpenGame(state.gameId)
+            }
+          >
             Zamknij
           </Button>
         </footer>

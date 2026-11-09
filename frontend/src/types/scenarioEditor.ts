@@ -9,6 +9,7 @@ export interface ScenarioDetailDTO {
 }
 
 export interface ScenarioEditorViewModel {
+  gameId: string | null;
   activeGame: GameMetadataDTO | null;
   scenario: ScenarioDetailDTO | null;
   isLoading: boolean;

@@ -6,6 +6,7 @@ import InputField from '@components/InputField/InputField';
 import MessageDialog from '@components/MessageDialog/MessageDialog';
 import PageHeader from '@components/PageHeader/PageHeader';
 import { useActionDefinition } from '@hooks/useActionDefinition';
+import { useGameDefinition } from '@hooks/useGameDefinition';
 import type {
   ActionDefinitionDialogTypes,
   ActionType,
@@ -41,6 +42,7 @@ function keyByLabel<T extends string>(
 
 function getDialogs(
   actions: IActionDefinitionActions,
+  onBackToGame: () => void,
 ): Record<
   ActionDefinitionDialogTypes,
   { title: string; message: string; onConfirm: () => void }
@@ -49,7 +51,7 @@ function getDialogs(
     actionSaved: {
       title: 'Sukces',
       message: 'Nowa akcja została dodana',
-      onConfirm: actions.onActionSavedMessageDialogConfirm,
+      onConfirm: onBackToGame,
     },
     incompleteData: {
       title: 'Błąd',
@@ -66,9 +68,11 @@ function getDialogs(
 
 export function ActionDefinitionView() {
   const { state, actions } = useActionDefinition();
+  const gameDefinition = useGameDefinition();
   const { form, isSubmitting } = state;
+  const onBackToGame = () => gameDefinition.actions.onOpenGame(state.gameId);
   const dialog = state.dialogType
-    ? getDialogs(actions)[state.dialogType]
+    ? getDialogs(actions, onBackToGame)[state.dialogType]
     : null;
 
   return (
@@ -136,7 +140,7 @@ export function ActionDefinitionView() {
             <Button
               variant='secondary'
               disabled={isSubmitting}
-              onClick={actions.onCancelActionDefinition}
+              onClick={onBackToGame}
             >
               Anuluj
             </Button>

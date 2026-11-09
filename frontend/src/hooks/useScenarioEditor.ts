@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams, type NavigateFunction } from 'react-router';
+import { useMatch, useNavigate, type NavigateFunction } from 'react-router';
 import { apiClient } from '@api/apiClient';
 import { env } from '@config/env';
 import type {
@@ -9,6 +9,8 @@ import type {
 } from '@app-types/scenarioEditor';
 
 const LOAD_ERROR = 'Nie udało się wczytać scenariusza. Spróbuj ponownie.';
+
+const SCENARIO_EDITOR_PATTERN = '/creator/games/:gameId/scenario';
 
 const scenarioEditorPath = (gameId: string) =>
   `/creator/games/${gameId}/scenario`;
@@ -35,18 +37,19 @@ export function useScenarioEditor(): {
   state: ScenarioEditorViewModel;
   actions: IScenarioEditorActions;
 } {
-  const { gameId } = useParams<{ gameId: string }>();
+  const gameId = useMatch(SCENARIO_EDITOR_PATTERN)?.params.gameId ?? null;
   const navigate = useNavigate();
   const windows = createScenarioEditorWindows(navigate);
   const [reloadCount, setReloadCount] = useState(0);
   const [state, setState] = useState<ScenarioEditorViewModel>(() => ({
+    gameId,
     activeGame: null,
     scenario: null,
     isLoading: Boolean(gameId),
     errorMessage: null,
   }));
 
-  // Only the editor route has :gameId - other views use this hook just to
+  // Only the editor route loads data - other views use this hook just to
   // open the editor, so they never call the API.
   useEffect(() => {
     if (!gameId) return;
@@ -75,7 +78,7 @@ export function useScenarioEditor(): {
   }, [gameId, reloadCount]);
 
   return {
-    state,
+    state: { ...state, gameId },
     actions: {
       onOpenScenarioEditor: windows.showScenarioEditorView,
       onReloadScenario: () => {

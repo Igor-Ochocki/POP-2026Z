@@ -30,14 +30,11 @@ interface IActionDefinitionActions <<interface>> {
     + onAddAction(gameId: string)
     + onChangeParameter(field: string, value: any)
     + onSaveAction()
-    + onCancelActionDefinition()
-    + onActionSavedMessageDialogConfirm()
     + onIncompleteActionDataMessageDialogConfirm()
     + onActionSaveErrorMessageDialogConfirm()
 }
 
 interface IActionDefinitionWindows <<interface>> {
-    + showGameDefinitionView()
     + showActionDefinitionView(gameId: string)
     + showActionSavedMessageDialog()
     + showIncompleteActionDataMessageDialog()
@@ -45,22 +42,27 @@ interface IActionDefinitionWindows <<interface>> {
     + hideDialogs()
 }
 
+interface IGameDefinitionActions <<interface>> {
+    + onOpenGame(gameId: string)
+}
+
 class ActionDefinitionWindows
 
 ActionDefinitionWindows .u.|> IActionDefinitionWindows
-ActionDefinitionWindows --> GameDefinitionView
 ActionDefinitionWindows --> ActionDefinitionView
 ActionDefinitionWindows --> MessageDialog
 
 GameDefinitionView --> IActionDefinitionActions : "Zdefiniuj akcję"
 ActionDefinitionView --> IActionDefinitionActions
-MessageDialog --> IActionDefinitionActions
+MessageDialog --> IActionDefinitionActions : błędy
+ActionDefinitionView --> IGameDefinitionActions : "Anuluj" (PU49)
+MessageDialog --> IGameDefinitionActions : "Sukces" (PU49)
 
 GameDefinitionView ..> ActionDefinitionView : "Zdefiniuj akcję"
 
 note right of GameDefinitionView
-    Powrót trafia do /creator/games/new - otwarcie tej samej gry
-    wymaga wczytania gry po id w PU49 (TODO).
+    Po zapisie akcji albo anulowaniu widok wraca
+    do definicji tej samej gry (onOpenGame).
 end note
 @enduml
 ```

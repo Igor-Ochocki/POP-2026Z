@@ -46,14 +46,11 @@ export interface IActionDefinitionActions {
     value: ActionForm[K],
   ): void;
   onSaveAction(): void;
-  onCancelActionDefinition(): void;
-  onActionSavedMessageDialogConfirm(): void;
   onIncompleteActionDataMessageDialogConfirm(): void;
   onActionSaveErrorMessageDialogConfirm(): void;
 }
 
 export interface IActionDefinitionWindows {
-  showGameDefinitionView(): void;
   showActionDefinitionView(gameId: string): void;
   showActionSavedMessageDialog(): void;
   showIncompleteActionDataMessageDialog(): void;

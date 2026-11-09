@@ -70,6 +70,11 @@ function getDialogs(
       message: 'Nie udało się zapisać gry. Spróbuj ponownie.',
       onConfirm: actions.onSaveErrorMessageDialogConfirm,
     },
+    loadError: {
+      title: 'Błąd',
+      message: 'Nie udało się wczytać gry.',
+      onConfirm: actions.onLoadErrorMessageDialogConfirm,
+    },
   };
 }
 
@@ -93,6 +98,7 @@ export function GameDefinitionView() {
         <GameParametersPanel
           form={state.parametersForm}
           errors={state.validationErrors}
+          isSubmitting={state.isSubmitting}
           actions={actions}
         />
       ) : (

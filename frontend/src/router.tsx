@@ -19,7 +19,8 @@ export const router = createBrowserRouter([
       { path: 'calendar', element: <CalendarView /> },
       { path: 'creator', element: <CreatorPanelView /> },
       { path: 'creator/games', element: <GameListView /> },
-      { path: 'creator/games/new', element: <GameDefinitionView /> },
+      // :gameId is 'new' for a game that has not been saved yet.
+      { path: 'creator/games/:gameId', element: <GameDefinitionView /> },
       {
         path: 'creator/games/:gameId/actions/new',
         element: <ActionDefinitionView />,

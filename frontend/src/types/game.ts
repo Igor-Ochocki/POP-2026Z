@@ -46,7 +46,8 @@ export type GameDefinitionDialogTypes =
   | 'incorrectData'
   | 'gameSaved'
   | 'gameSubmitted'
-  | 'saveError';
+  | 'saveError'
+  | 'loadError';
 
 export interface GameDefinitionViewModel {
   activePanelType: GameDefinitionPanelTypes;
@@ -59,6 +60,7 @@ export interface GameDefinitionViewModel {
 
 export interface IGameDefinitionActions {
   onCreateGame(): void;
+  onOpenGame(gameId: string): void;
   onEditParameters(): void;
   onChangeParameter<K extends keyof GameParametersForm>(
     field: K,
@@ -70,6 +72,7 @@ export interface IGameDefinitionActions {
   onSaveDraft(): void;
   onSubmitForReview(): void;
   onSaveErrorMessageDialogConfirm(): void;
+  onLoadErrorMessageDialogConfirm(): void;
 }
 
 export interface IGameDefinitionWindows {
@@ -80,6 +83,7 @@ export interface IGameDefinitionWindows {
   showGameSavedMessageDialog(): void;
   showGameSubmittedMessageDialog(): void;
   showSaveErrorMessageDialog(): void;
+  showLoadErrorMessageDialog(): void;
 }
 
 export const GAME_CATEGORIES = [

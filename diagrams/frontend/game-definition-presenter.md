@@ -12,6 +12,7 @@ title PU49 Zdefiniowanie gry - presenter
 
 class useGameDefinition <<Hook>> {
     + onCreateGame()
+    + onOpenGame(gameId: string)
     + onEditParameters()
     + onChangeParameter(field: string, value: string | boolean)
     + onSaveMetadata()
@@ -20,12 +21,16 @@ class useGameDefinition <<Hook>> {
     + onSaveDraft()
     + onSubmitForReview()
     + onSaveErrorMessageDialogConfirm()
+    + onLoadErrorMessageDialogConfirm()
     - validateParameters(form: GameParametersForm): GameParametersErrors
+    - toForm(game: GameMetadataDTO): GameParametersForm
+    - saveDraft(game: GameMetadataDTO): Promise<GameMetadataDTO>
     - saveGame(asDraft: boolean)
 }
 
 interface IGameDefinitionActions <<interface>> {
     + onCreateGame()
+    + onOpenGame(gameId: string)
     + onEditParameters()
     + onChangeParameter(field: string, value: string | boolean)
     + onSaveMetadata()
@@ -34,6 +39,7 @@ interface IGameDefinitionActions <<interface>> {
     + onSaveDraft()
     + onSubmitForReview()
     + onSaveErrorMessageDialogConfirm()
+    + onLoadErrorMessageDialogConfirm()
 }
 
 interface IGameDefinitionWindows <<interface>> {
@@ -44,6 +50,7 @@ interface IGameDefinitionWindows <<interface>> {
     + showGameSavedMessageDialog()
     + showGameSubmittedMessageDialog()
     + showSaveErrorMessageDialog()
+    + showLoadErrorMessageDialog()
 }
 
 interface ICreatorPanelActions <<interface>> {
@@ -55,6 +62,7 @@ class useCreatorPanel <<Hook>> {
 }
 
 interface IGamesApi <<interface>> {
+    + getGame(gameId: string, userId: string): Promise<GameResponseDTO>
     + saveGame(userId: string, metadata: GameCreateDTO, asDraft: boolean): Promise<GameResponseDTO>
     + editGame(gameId: string, userId: string, metadata: GameCreateDTO, asDraft: boolean): Promise<GameResponseDTO>
     + submitToReviewer(gameId: string, userId: string): Promise<boolean>
@@ -94,6 +102,7 @@ enum GameDefinitionDialogTypes {
     gameSaved
     gameSubmitted
     saveError
+    loadError
 }
 
 class GameParametersForm {
@@ -125,6 +134,15 @@ GameDefinitionViewModel *-- "1" GameParametersForm : parametersForm
 GameResponseDTO -u-|> GameCreateDTO
 IGamesApi ..> GameCreateDTO
 IGamesApi ..> GameResponseDTO
+
+note top of useGameDefinition
+    Trasa /creator/games/{gameId}, dla nowej gry gameId = new.
+    onSaveMetadata zapisuje parametry od razu jako szkic (as_draft),
+    gra dostaje gameId i trasa zmienia się na jej id - od tego
+    momentu dostępne są PU wymagające gameId (scenariusz, akcje).
+    Na trasie istniejącej gry dane są wczytywane przez getGame.
+    onOpenGame(gameId) otwiera definicję gry z innych PU.
+end note
 
 note right of GameDefinitionViewModel
     GameMetadataDTO: interfaces.md.

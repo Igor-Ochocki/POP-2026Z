@@ -42,15 +42,18 @@ class IncorrectDataMessageDialog
 class GameSavedMessageDialog
 class GameSubmittedMessageDialog
 class SaveErrorMessageDialog
+class LoadErrorMessageDialog
 
 ParametersSavedMessageDialog -u-|> MessageDialog
 IncorrectDataMessageDialog -u-|> MessageDialog
 GameSavedMessageDialog -u-|> MessageDialog
 GameSubmittedMessageDialog -u-|> MessageDialog
 SaveErrorMessageDialog -u-|> MessageDialog
+LoadErrorMessageDialog -u-|> MessageDialog
 
 interface IGameDefinitionActions <<interface>> {
     + onCreateGame()
+    + onOpenGame(gameId: string)
     + onEditParameters()
     + onChangeParameter(field: string, value: string | boolean)
     + onSaveMetadata()
@@ -59,6 +62,7 @@ interface IGameDefinitionActions <<interface>> {
     + onSaveDraft()
     + onSubmitForReview()
     + onSaveErrorMessageDialogConfirm()
+    + onLoadErrorMessageDialogConfirm()
 }
 
 interface ICreatorPanelActions <<interface>> {
@@ -93,6 +97,7 @@ IncorrectDataMessageDialog --> IGameDefinitionActions
 GameSavedMessageDialog --> IGameListActions
 GameSubmittedMessageDialog --> ICreatorPanelActions
 SaveErrorMessageDialog --> IGameDefinitionActions
+LoadErrorMessageDialog --> IGameDefinitionActions
 
 interface IGameDefinitionWindows <<interface>> {
     + showGameDefinitionView()
@@ -102,6 +107,7 @@ interface IGameDefinitionWindows <<interface>> {
     + showGameSavedMessageDialog()
     + showGameSubmittedMessageDialog()
     + showSaveErrorMessageDialog()
+    + showLoadErrorMessageDialog()
 }
 
 class GameDefinitionWindows {
@@ -112,6 +118,7 @@ class GameDefinitionWindows {
     + showGameSavedMessageDialog()
     + showGameSubmittedMessageDialog()
     + showSaveErrorMessageDialog()
+    + showLoadErrorMessageDialog()
 }
 
 GameDefinitionWindows .u.|> IGameDefinitionWindows
@@ -123,6 +130,7 @@ GameDefinitionWindows --> IncorrectDataMessageDialog
 GameDefinitionWindows --> GameSavedMessageDialog
 GameDefinitionWindows --> GameSubmittedMessageDialog
 GameDefinitionWindows --> SaveErrorMessageDialog
+GameDefinitionWindows --> LoadErrorMessageDialog
 
 note bottom of IGameListActions
     Przejścia do innych przypadków użycia widok woła
@@ -131,9 +139,11 @@ note bottom of IGameListActions
 end note
 
 note right of GameDefinitionView
-    "Dodaj nowy czujnik" (scenariusz B, PU50)
-    i "Edytuj scenariusz gry" (scenariusz C, PU56)
-    oraz "Edytuj mapę gry" (PU60) i "Zdefiniuj akcję" (PU51)
+    Ten sam widok dla nowej gry (/creator/games/new)
+    i istniejącej (/creator/games/{gameId}).
+    "Edytuj scenariusz gry" (PU56) i "Zdefiniuj akcję" (PU51)
+    są aktywne po pierwszym zapisie parametrów.
+    "Dodaj nowy czujnik" (PU50) i "Edytuj mapę gry" (PU60)
     są nieaktywne do czasu implementacji tych przypadków użycia.
 end note
 @enduml
