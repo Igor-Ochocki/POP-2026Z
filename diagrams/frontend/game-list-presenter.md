@@ -1,11 +1,12 @@
 ```
 @startuml
 interface IGameListActions <<interface>> {
-    +onFilterApply(tags: string[*])
-    +onFilterClear()
+    +onChangeParameter(field: string, value: any)
+    +onFilterSubmit(filterTags: string[*])
     +onListReload()
-    +onTitleSearch(title: string)
     +onShowMore()
+    +onOpenGameList()
+    +onOpenFilterDialog()
 }
 
 interface IGamesApi <<interface>> {
@@ -15,7 +16,7 @@ interface IGamesApi <<interface>> {
 
 interface IGameListWindows <<interface>> {
     +showGameListView()
-    +showGameFilterView()
+    +showGameFilterDialog()
 }
 
 class useGameList {
@@ -30,6 +31,9 @@ class GameListViewModel <<State>> {
     +games: GameMetadataDTO[*]
     +searchString: string
     +filterTags: string[*]
+    +appliedtags: string[*]
+    +downloadOffset: number
+    +filterDialogOpen: boolean
 }
 
 useGameList -u-> IGameListWindows

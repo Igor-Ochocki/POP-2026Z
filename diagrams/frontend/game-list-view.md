@@ -3,15 +3,16 @@
 
 interface IGameListWindows <<interface>> {
     +showGameListView()
-    +showGameFilterView()
+    +showGameFilterDialog()
 }
 
 interface IGameListActions <<interface>> {
-    +onFilterApply(tags: string[*])
-    +onFilterClear()
+    +onChangeParameter(field: string, value: any)
+    +onFilterSubmit(filterTags: string[*])
     +onListReload()
-    +onTitleSearch(title: string)
     +onShowMore()
+    +onOpenGameList()
+    +onOpenFilterDialog()
 }
 
 class GameListWindows {

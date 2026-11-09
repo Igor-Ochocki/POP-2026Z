@@ -55,6 +55,28 @@ export const createGamesApi = (http: AxiosInstance) => ({
     const { data } = await http.post<boolean>(`/games/${gameId}/submit`);
     return data;
   },
+
+  getGames: async (
+    tags: string[],
+    limit: number,
+    offset: number,
+  ): Promise<GameMetadataDTO[]> => {
+    const response = await http.get('/games', {
+      params: { tags, limit, offset },
+    });
+    if (response.status !== 200) {
+      throw response.status;
+    }
+    return response.data.map(fromResponsePayload);
+  },
+
+  getGameTags: async (): Promise<string[]> => {
+    const response = await http.get('/games/tags');
+    if (response.status !== 200) {
+      throw response.status;
+    }
+    return response.data;
+  },
 });
 
 export type GamesApi = ReturnType<typeof createGamesApi>;

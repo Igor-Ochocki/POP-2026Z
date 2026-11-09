@@ -4,6 +4,7 @@ import { HomeView } from '@views/HomeView/HomeView';
 import { CreatorPanelView } from '@views/CreatorPanelView/CreatorPanelView';
 import { GameDefinitionView } from '@views/GameDefinitionView/GameDefinitionView';
 import { NotFoundView } from '@views/NotFoundView/NotFoundView';
+import { GameListView } from '@views/GameListView/GameListView.tsx';
 
 export const router = createBrowserRouter([
   {
@@ -12,6 +13,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <HomeView /> },
       { path: 'creator', element: <CreatorPanelView /> },
+      { path: 'creator/games', element: <GameListView /> },
       { path: 'creator/games/new', element: <GameDefinitionView /> },
       { path: '*', element: <NotFoundView /> },
     ],
