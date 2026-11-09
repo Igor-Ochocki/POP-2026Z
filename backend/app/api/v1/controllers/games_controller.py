@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -20,6 +20,12 @@ class GamesApi(ABC):
     def edit_game(self, game_id: str, user_id: str, metadata: GameCreateSchema, as_draft: bool) -> GameResponseSchema: ...
 
     @abstractmethod
+    def get_authored_games(self, user_id: str, tags: list[str], limit: int, offset: int): ...
+
+    @abstractmethod
+    def get_tags(self): ...
+
+    @abstractmethod
     def submit_to_reviewer(self, game_id: str, user_id: str) -> bool: ...
 
 
@@ -28,6 +34,23 @@ router = APIRouter(prefix="/games", tags=["games"])
 
 def get_games_service(db: Annotated[Session, Depends(get_db)]) -> IGamesService:
     return GamesService(db)
+
+@router.get("/authored", response_model=list[GameResponseSchema])
+def get_authored_games(
+    user_id: str, 
+    limit: int, 
+    offset: int,
+    service: Annotated[IGamesService, Depends(get_games_service)],
+    tags: Annotated[list[str], Query()] = [], 
+    ) -> list[GameResponseSchema]:
+    return service.get_authored_games(user_id, tags, limit, offset)
+
+@router.get("/tags", response_model=list[str])
+def get_tags(
+#    user_id: str,
+    service: Annotated[IGamesService, Depends(get_games_service)],
+    ) -> list[str]:
+    return service.get_game_tags()
 
 
 @router.get("/{game_id}", response_model=GameResponseSchema)
@@ -67,3 +90,4 @@ def submit_to_reviewer(
     service: Annotated[IGamesService, Depends(get_games_service)],
 ) -> bool:
     return service.submit_to_reviewer(game_id, user_id)
+

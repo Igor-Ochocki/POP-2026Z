@@ -13,18 +13,9 @@ class GamesApiController <<Controller>> implements GamesApi {
 }
 
 class GamesService implements IGamesService {
-    - auth_service: IAuthService
 
     +getAuthoredGames(tags: string[*], limit: number, offset: number): Promise<GameMetadataDTO[*]>
     +getGameTags(): Promise<string[*]>
-}
-
-interface IAuthService {
-    + getCurrentUser(): User
-}
-
-class AuthService implements IAuthService {
-    + getCurrentUser(): User
 }
 
 
@@ -81,9 +72,7 @@ Game --> GameStatus
 GamesApiController -> GameMetadataDTO
 IGamesService -> GameMetadataDTO
 GamesService -> GameMetadataDTO
-GamesService --> IAuthService
 GamesService --> User
-AuthService --> User
 GamesService --> Game
 
 @enduml
