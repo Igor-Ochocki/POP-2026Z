@@ -5,6 +5,7 @@ show()
 
 interface ICalendarActions <<interface>> {
 onShowCalendar()
+onChangeMonth(month :Date)
 onBack()
 }
 

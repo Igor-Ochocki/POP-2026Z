@@ -1,9 +1,9 @@
 import FullCalendar from '@fullcalendar/react';
-import type { DayCellInfo } from '@fullcalendar/react';
+import type { DatesSetInfo, DayCellInfo } from '@fullcalendar/react';
 import themePlugin from '@fullcalendar/react/themes/classic';
 import dayGridPlugin from '@fullcalendar/react/daygrid';
 import plLocale from '@fullcalendar/react/locales/pl';
-import type { CalendarEvent } from '@app-types/calendar';
+import type { CalendarEventDTO } from '@app-types/calendar';
 
 import '@fullcalendar/react/skeleton.css';
 import '@fullcalendar/react/themes/classic/theme.css';
@@ -11,7 +11,9 @@ import '@fullcalendar/react/themes/classic/palette.css';
 import './Calendar.css';
 
 interface CalendarProps {
-  events: CalendarEvent[];
+  events: CalendarEventDTO[];
+  // First day of the month currently shown - also fired on the first render.
+  onMonthChange: (month: Date) => void;
 }
 
 function getDayCellClass({ isOther, isToday }: DayCellInfo): string {
@@ -21,7 +23,7 @@ function getDayCellClass({ isOther, isToday }: DayCellInfo): string {
   return classes.join(' ');
 }
 
-export default function Calendar({ events }: CalendarProps) {
+export default function Calendar({ events, onMonthChange }: CalendarProps) {
   return (
     <div className='calendar'>
       <FullCalendar
@@ -33,7 +35,12 @@ export default function Calendar({ events }: CalendarProps) {
         dayCellTopClass='calendar-day-top'
         fixedWeekCount={false}
         headerToolbar={{ left: 'prev', center: 'title', right: 'next' }}
-        events={events}
+        events={events.map(({ id, title, datetime }) => ({
+          id,
+          title,
+          start: datetime,
+        }))}
+        datesSet={(info: DatesSetInfo) => onMonthChange(info.view.currentStart)}
         toolbarClass='calendar-toolbar'
         toolbarTitleClass='calendar-title'
         buttonClass='calendar-button'

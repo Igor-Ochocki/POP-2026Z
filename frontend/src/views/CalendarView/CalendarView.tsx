@@ -22,12 +22,23 @@ export function CalendarView() {
         </div>
       </header>
 
-      <Calendar
-        events={state.events}
-      />
+      {state.errorMessage && state.month && (
+        <div className='calendar-page__error' role='alert'>
+          <p>{state.errorMessage}</p>
+          <Button
+            variant='outline'
+            onClick={() => state.month && actions.onChangeMonth(state.month)}
+          >
+            Spróbuj ponownie
+          </Button>
+        </div>
+      )}
+
+      <Calendar events={state.events} onMonthChange={actions.onChangeMonth} />
 
       <div className='calendar-page__actions'>
-        <Button variant='primary'>
+        {/* TODO: PU39 onAddEvent */}
+        <Button variant='primary' disabled>
           Dodaj wydarzenie
         </Button>
       </div>

@@ -4,7 +4,6 @@ import { HomeView } from '@views/HomeView/HomeView';
 import { CreatorPanelView } from '@views/CreatorPanelView/CreatorPanelView';
 import { GameDefinitionView } from '@views/GameDefinitionView/GameDefinitionView';
 import { CalendarView } from '@views/CalendarView/CalendarView';
-import { MainMenuView } from '@views/MainMenuView/MainMenuView';
 import { NotFoundView } from '@views/NotFoundView/NotFoundView';
 
 export const router = createBrowserRouter([
@@ -12,9 +11,8 @@ export const router = createBrowserRouter([
     path: '/',
     element: <Layout />,
     children: [
-      { index: true, element: <MainMenuView /> },
+      { index: true, element: <HomeView /> },
       { path: 'calendar', element: <CalendarView /> },
-      { path: 'status', element: <HomeView /> },
       { path: 'creator', element: <CreatorPanelView /> },
       { path: 'creator/games/new', element: <GameDefinitionView /> },
       { path: '*', element: <NotFoundView /> },

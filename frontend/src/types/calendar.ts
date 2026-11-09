@@ -1,15 +1,21 @@
-export interface CalendarEvent {
+export interface CalendarEventDTO {
   id: string;
   title: string;
-  start: string; // 'YYYY-MM-DD'
-  end?: string;
+  datetime: Date;
 }
 
 export interface CalendarViewModel {
-  events: CalendarEvent[];
+  events: CalendarEventDTO[];
+  month: Date | null;
+  errorMessage: string | null;
 }
 
 export interface ICalendarActions {
-  onShowCalendar: () => void;
-  onBack: () => void;
+  onShowCalendar(): void;
+  onChangeMonth(month: Date): void;
+  onBack(): void;
+}
+
+export interface ICalendarWindows {
+  showCalendarView(): void;
 }

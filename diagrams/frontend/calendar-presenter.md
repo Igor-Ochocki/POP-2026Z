@@ -1,15 +1,19 @@
 @startuml
 class useCalendar {
 onShowCalendar()
+onChangeMonth(month :Date)
 onBack()
 }
 
 class CalendarViewModel <<State>> {
 events :CalendarEventDTO[]
+month :Date | null
+errorMessage :string | null
 }
 
 interface ICalendarActions <<interface>> {
 onShowCalendar()
+onChangeMonth(month :Date)
 onBack()
 }
 
@@ -20,7 +24,7 @@ useCalendar --> ICalendarApi
 useCalendar -u-> ICalendarWindows
 
 interface ICalendarApi <<interface>> {
-getEvents(month :Date) :CalendarEventDTO[]
+getEvents(month :Date) :Promise<CalendarEventDTO[]>
 }
 
 interface ICalendarWindows <<interface>> {
