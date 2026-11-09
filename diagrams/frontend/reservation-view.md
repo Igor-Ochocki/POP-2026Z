@@ -30,7 +30,7 @@ class MessageDialog {
 }
 
 interface IReservationsActions <<interface>> {
-    + onOpenReservation(slot: TimeSlotDTO | null)
+    + onOpenReservation(slot: CalendarEventDTO | null)
     + onChangeParameter(field: string, value: unknown)
     + onSubmitReservation()
     + onConfirmReservation()

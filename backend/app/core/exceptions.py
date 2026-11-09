@@ -8,6 +8,12 @@ class AppError(Exception):
     status_code = 400
 
 
+class ForbiddenError(AppError):
+    """Użytkownik nie ma uprawnień do tego obiektu."""
+
+    status_code = 403
+
+
 class NotFoundError(AppError):
     """Podany obiekt nie istnieje."""
 
