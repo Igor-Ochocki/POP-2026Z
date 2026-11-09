@@ -20,11 +20,12 @@ interface IGameListWindows <<interface>> {
 }
 
 class useGameList {
-    +onFilterApply(tags: string[*])
-    +onFilterClear()
+    +onChangeParameter(field: string, value: any)
+    +onFilterSubmit(filterTags: string[*])
     +onListReload()
-    +onTitleSearch(title: string)
     +onShowMore()
+    +onOpenGameList()
+    +onOpenFilterDialog()
 }
 
 class GameListViewModel <<State>> {
