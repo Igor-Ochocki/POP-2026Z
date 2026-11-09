@@ -13,6 +13,7 @@ import MessageDialog from '@components/MessageDialog/MessageDialog';
 import PageHeader from '@components/PageHeader/PageHeader';
 import TextLabel from '@components/TextLabel/TextLabel';
 import { useGameDefinition } from '@hooks/useGameDefinition';
+import { useScenarioEditor } from '@hooks/useScenarioEditor';
 import type {
   GameDefinitionDialog,
   GameMetadataDTO,
@@ -72,6 +73,7 @@ function getDialogs(
 
 export function GameDefinitionView() {
   const { state, actions } = useGameDefinition();
+  const { actions: scenarioActions } = useScenarioEditor();
   const game = state.activeGame;
   const canCreateGame = game !== null && !game.gameId && !state.isSubmitting;
   const canSubmitGame = game !== null && !state.isSubmitting;
@@ -120,7 +122,9 @@ export function GameDefinitionView() {
                   : 'Zapisz grę, aby otworzyć jej scenariusz'
               }
               onClick={
-                game?.gameId ? () => actions.onEditScenario(game) : undefined
+                game?.gameId
+                  ? () => scenarioActions.onOpenScenarioEditor(game)
+                  : undefined
               }
             />
             <ActionTile

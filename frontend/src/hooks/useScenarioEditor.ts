@@ -10,10 +10,20 @@ import type {
 
 function createScenarioEditorWindows(
   navigate: ReturnType<typeof useNavigate>,
+  currentPath: string,
 ): IScenarioEditorWindows {
   return {
     showGameDefinitionView: (activeGame) =>
       void navigate('/creator/games/new', { state: { activeGame } }),
+    showScenarioEditorView: async (game) => {
+      await navigate(currentPath, {
+        replace: true,
+        state: { activeGame: game },
+      });
+      await navigate(`/creator/games/${game.gameId}/scenario`, {
+        state: { activeGame: game },
+      });
+    },
   };
 }
 
@@ -33,9 +43,12 @@ export function useScenarioEditor(): {
     isLoading: Boolean(gameId),
     errorMessage: null,
   });
-  const windows = createScenarioEditorWindows(navigate);
+  const windows = createScenarioEditorWindows(
+    navigate,
+    location.pathname + location.search + location.hash,
+  );
 
-  const onOpenScenarioEditor = useCallback(async (targetGameId: string) => {
+  const loadScenario = useCallback(async (targetGameId: string) => {
     if (!targetGameId) {
       setState((previous) => ({
         ...previous,
@@ -69,14 +82,14 @@ export function useScenarioEditor(): {
   }, []);
 
   useEffect(() => {
-    void onOpenScenarioEditor(gameId ?? '');
-  }, [gameId, onOpenScenarioEditor]);
+    if (gameId) void loadScenario(gameId);
+  }, [gameId, loadScenario]);
 
   return {
     state,
     actions: {
-      onOpenScenarioEditor: (targetGameId) =>
-        void onOpenScenarioEditor(targetGameId),
+      onOpenScenarioEditor: (game) => void windows.showScenarioEditorView(game),
+      onRetryLoadScenario: () => void loadScenario(gameId ?? ''),
       onAddTask: () => undefined,
       onAddVictoryCondition: () => undefined,
       onCloseScenarioEditor: () =>

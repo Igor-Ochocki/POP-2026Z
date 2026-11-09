@@ -83,7 +83,6 @@ function toMetadata(
 function createGameDefinitionWindows(
   setState: SetState,
   navigate: NavigateFunction,
-  currentPath: string,
 ): IGameDefinitionWindows {
   return {
     showCreatorPanelView: () => void navigate(CREATOR_PANEL_PATH),
@@ -101,15 +100,6 @@ function createGameDefinitionWindows(
         dialog: null,
       })),
     showSensorDefinitionView: () => void navigate(SENSOR_DEFINITION_PATH),
-    showScenarioEditorView: async (game) => {
-      await navigate(currentPath, {
-        replace: true,
-        state: { activeGame: game },
-      });
-      await navigate(`/creator/games/${game.gameId}/scenario`, {
-        state: { activeGame: game },
-      });
-    },
     showParametersSavedMessageDialog: () =>
       setState((prev) => ({ ...prev, dialog: 'parametersSaved' })),
     showIncorrectDataMessageDialog: (errors) =>
@@ -156,11 +146,7 @@ export function useGameDefinition(): {
         }
       : initialState,
   );
-  const windows = createGameDefinitionWindows(
-    setState,
-    navigate,
-    location.pathname,
-  );
+  const windows = createGameDefinitionWindows(setState, navigate);
 
   const onEditParameters = () => {
     setState((prev) => ({ ...prev, validationErrors: {} }));
@@ -235,7 +221,6 @@ export function useGameDefinition(): {
       onParametersSavedMessageDialogConfirm: windows.showGameDefinitionView,
       onIncorrectDataMessageDialogConfirm: windows.showGameParametersView,
       onAddSensor: windows.showSensorDefinitionView,
-      onEditScenario: windows.showScenarioEditorView,
       onSaveDraft: () => void saveGame(true),
       onGameSavedMessageDialogConfirm: windows.showGameDefinitionView,
       onSubmitForReview: () => void saveGame(false),

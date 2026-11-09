@@ -5,12 +5,10 @@ import PageHeader from '@components/PageHeader/PageHeader';
 import TextLabel from '@components/TextLabel/TextLabel';
 import TextSubheading from '@components/TextSubheading/TextSubheading';
 import { useScenarioEditor } from '@hooks/useScenarioEditor';
-import { useParams } from 'react-router';
 import './ScenarioEditorView.css';
 
 export function ScenarioEditorView() {
   const { state, actions } = useScenarioEditor();
-  const { gameId } = useParams<{ gameId: string }>();
   const scenario = state.scenario;
 
   return (
@@ -36,10 +34,7 @@ export function ScenarioEditorView() {
           <div className='scenario-editor-view__error' role='alert'>
             <p>{state.errorMessage}</p>
             {state.errorMessage !== 'Nie podano identyfikatora gry.' && (
-              <Button
-                variant='outline'
-                onClick={() => actions.onOpenScenarioEditor(gameId ?? '')}
-              >
+              <Button variant='outline' onClick={actions.onRetryLoadScenario}>
                 Spróbuj ponownie
               </Button>
             )}

@@ -72,7 +72,6 @@ export interface IGameDefinitionActions {
   onParametersSavedMessageDialogConfirm(): void;
   onIncorrectDataMessageDialogConfirm(): void;
   onAddSensor(): void;
-  onEditScenario(game: GameMetadataDTO): void;
   onSaveDraft(): void;
   onGameSavedMessageDialogConfirm(): void;
   onSubmitForReview(): void;
@@ -87,7 +86,6 @@ export interface IGameDefinitionWindows {
   showGameDefinitionView(): void;
   showGameParametersView(): void;
   showSensorDefinitionView(): void;
-  showScenarioEditorView(game: GameMetadataDTO): void;
   showParametersSavedMessageDialog(): void;
   showIncorrectDataMessageDialog(errors: GameParametersErrors): void;
   showGameSavedMessageDialog(): void;
@@ -104,7 +102,8 @@ export interface ScenarioEditorViewModel {
 }
 
 export interface IScenarioEditorActions {
-  onOpenScenarioEditor(gameId: string): void;
+  onOpenScenarioEditor(game: GameMetadataDTO): void;
+  onRetryLoadScenario(): void;
   onAddTask(): void;
   onAddVictoryCondition(): void;
   onCloseScenarioEditor(): void;
@@ -112,6 +111,7 @@ export interface IScenarioEditorActions {
 
 export interface IScenarioEditorWindows {
   showGameDefinitionView(activeGame: GameMetadataDTO | null): void;
+  showScenarioEditorView(game: GameMetadataDTO): Promise<void>;
 }
 
 export const GAME_CATEGORIES = [
