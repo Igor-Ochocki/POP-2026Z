@@ -1,6 +1,7 @@
 import { httpClient } from '@api/httpClient';
 import { createHealthApi } from '@api/modules/healthApi';
 import { createGamesApi } from '@api/modules/gamesApi';
+import { createCalendarApi } from '@api/modules/calendarApi';
 import { createActionsApi } from '@api/modules/actionsApi';
 import { createScenarioApi } from '@api/modules/scenarioApi';
 
@@ -9,6 +10,7 @@ import { createScenarioApi } from '@api/modules/scenarioApi';
 export const apiClient = {
   health: createHealthApi(httpClient),
   games: createGamesApi(httpClient),
+  calendar: createCalendarApi(httpClient),
   actions: createActionsApi(httpClient),
   scenario: createScenarioApi(httpClient),
 };

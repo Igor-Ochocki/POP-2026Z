@@ -3,6 +3,7 @@ import { Layout } from '@components/Layout/Layout';
 import { HomeView } from '@views/HomeView/HomeView';
 import { CreatorPanelView } from '@views/CreatorPanelView/CreatorPanelView';
 import { GameDefinitionView } from '@views/GameDefinitionView/GameDefinitionView';
+import { CalendarView } from '@views/CalendarView/CalendarView';
 import { ActionDefinitionView } from '@views/ActionDefinitionView/ActionDefinitionView';
 import { NotFoundView } from '@views/NotFoundView/NotFoundView';
 import { GameListView } from '@views/GameListView/GameListView';
@@ -15,6 +16,7 @@ export const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { index: true, element: <HomeView /> },
+      { path: 'calendar', element: <CalendarView /> },
       { path: 'creator', element: <CreatorPanelView /> },
       { path: 'creator/games', element: <GameListView /> },
       { path: 'creator/games/new', element: <GameDefinitionView /> },
