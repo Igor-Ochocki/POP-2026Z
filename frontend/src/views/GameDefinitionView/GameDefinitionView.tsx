@@ -12,6 +12,7 @@ import Card from '@components/Card/Card';
 import MessageDialog from '@components/MessageDialog/MessageDialog';
 import PageHeader from '@components/PageHeader/PageHeader';
 import TextLabel from '@components/TextLabel/TextLabel';
+import { useActionDefinition } from '@hooks/useActionDefinition';
 import { useCreatorPanel } from '@hooks/useCreatorPanel';
 import { useGameDefinition } from '@hooks/useGameDefinition';
 import { useGameList } from '@hooks/useGameList';
@@ -74,6 +75,7 @@ function getDialogs(
 
 export function GameDefinitionView() {
   const { state, actions } = useGameDefinition();
+  const { actions: actionDefinitionActions } = useActionDefinition();
   const creatorPanel = useCreatorPanel();
   const gameList = useGameList();
   const scenarioEditor = useScenarioEditor();
@@ -133,7 +135,7 @@ export function GameDefinitionView() {
                   : undefined
               }
             />
-            {/* TODO: enable once PU60 and PU51 are implemented */}
+            {/* TODO: enable once PU60 is implemented */}
             <ActionTile
               icon={<MapOutlinedIcon />}
               title='Edytuj mapę gry'
@@ -142,7 +144,16 @@ export function GameDefinitionView() {
             <ActionTile
               icon={<BoltOutlinedIcon />}
               title='Zdefiniuj akcję'
-              description='Interakcje dostępne dla graczy'
+              description={
+                game?.gameId
+                  ? 'Interakcje dostępne dla graczy'
+                  : 'Zapisz grę, aby zdefiniować akcję'
+              }
+              onClick={
+                game?.gameId
+                  ? () => actionDefinitionActions.onAddAction(game.gameId)
+                  : undefined
+              }
             />
             {/* TODO: PU50 onOpenSensorDefinition(gameId) */}
             <ActionTile

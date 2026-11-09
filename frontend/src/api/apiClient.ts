@@ -1,6 +1,7 @@
 import { httpClient } from '@api/httpClient';
 import { createHealthApi } from '@api/modules/healthApi';
 import { createGamesApi } from '@api/modules/gamesApi';
+import { createActionsApi } from '@api/modules/actionsApi';
 import { createScenarioApi } from '@api/modules/scenarioApi';
 
 // Unified API client used by presenter hooks: apiClient.<module>.<method>()
@@ -8,6 +9,7 @@ import { createScenarioApi } from '@api/modules/scenarioApi';
 export const apiClient = {
   health: createHealthApi(httpClient),
   games: createGamesApi(httpClient),
+  actions: createActionsApi(httpClient),
   scenario: createScenarioApi(httpClient),
 };
 
