@@ -12,6 +12,7 @@ import Card from '@components/Card/Card';
 import MessageDialog from '@components/MessageDialog/MessageDialog';
 import PageHeader from '@components/PageHeader/PageHeader';
 import TextLabel from '@components/TextLabel/TextLabel';
+import { useActionDefinition } from '@hooks/useActionDefinition';
 import { useGameDefinition } from '@hooks/useGameDefinition';
 import type {
   GameDefinitionDialog,
@@ -67,6 +68,7 @@ function getDialogs(
 
 export function GameDefinitionView() {
   const { state, actions } = useGameDefinition();
+  const { actions: actionDefinitionActions } = useActionDefinition();
   const game = state.activeGame;
   const canSave = game !== null && !state.isSubmitting;
   const dialog = state.dialog ? getDialogs(actions)[state.dialog] : null;
@@ -119,12 +121,16 @@ export function GameDefinitionView() {
               icon={<BoltOutlinedIcon />}
               title='Zdefiniuj akcję'
               description='Interakcje dostępne dla graczy'
+              onClick={() => {
+                if (game?.gameId) {
+                  actionDefinitionActions.onAddAction(game.gameId);
+                }
+              }}
             />
             <ActionTile
               icon={<SensorsOutlinedIcon />}
               title='Dodaj nowy czujnik'
               description='Czujniki wyzwalające akcje w grze'
-              onClick={() => actionDefinitionActions.onAddAction(game?.gameId || DEV_GAME_ID)}
             />
           </div>
           <footer className='game-definition-view__footer'>
