@@ -15,7 +15,7 @@ skinparam linetype polyline
 title PU2 - Game Time Reservation - Presenter
 
 class useReservations <<Hook>> {
-    + onOpenReservation(slot: TimeSlotDTO | null)
+    + onOpenReservation(slot: CalendarEventDTO | null)
     + onChangeParameter(field: string, value: unknown)
     + onSubmitReservation()
     + onConfirmReservation()
@@ -29,7 +29,7 @@ class useReservations <<Hook>> {
 }
 
 interface IReservationsActions <<interface>> {
-    + onOpenReservation(slot: TimeSlotDTO | null)
+    + onOpenReservation(slot: CalendarEventDTO | null)
     + onChangeParameter(field: string, value: unknown)
     + onSubmitReservation()
     + onConfirmReservation()
@@ -49,7 +49,7 @@ interface IReservationsWindows <<interface>> {
 }
 
 class ReservationViewModel <<State>> {
-    + selectedSlot: TimeSlotDTO | null
+    + selectedSlot: CalendarEventDTO | null
     + participantCount: number
     + activeReservation: ReservationSummaryDTO | null
     + paymentUrl: string | null
@@ -77,17 +77,16 @@ enum ReservationDialogType {
 }
 
 interface IReservationsApi <<interface>> {
-    + createReservation(dto: ReservationCreateDTO): Promise<boolean>
-    + cancelReservation(reservationId: string): Promise<boolean>
+    + createReservation(userId: string, dto: ReservationCreateDTO): Promise<ReservationSummaryDTO>
+    + cancelReservation(reservationId: string, userId: string): Promise<boolean>
 }
 
 class ReservationCreateDTO <<DTO>> {
     + slotId: string
-    + gameId: string
     + participantCount: number
 }
 
-class TimeSlotDTO <<PU1 DTO>>
+class CalendarEventDTO <<PU1 DTO>>
 
 enum ReservationStatus {
     Unpaid
@@ -100,10 +99,11 @@ useReservations -u-> IReservationsWindows
 useReservations --> IReservationsApi : reservationsApi
 useReservations *-- "1" ReservationViewModel : owns state
 
-ReservationViewModel ..> TimeSlotDTO
+ReservationViewModel ..> CalendarEventDTO
 ReservationViewModel ..> ReservationSummaryDTO
 
 IReservationsApi ..> ReservationCreateDTO
+IReservationsApi ..> ReservationSummaryDTO
 
 @enduml
 

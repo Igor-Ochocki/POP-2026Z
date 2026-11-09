@@ -63,7 +63,6 @@ class MessageService {
 package "Schemas" {
     class ReservationCreateSchema <<BaseModel>> {
         + slot_id: str
-        + game_id: str
         + participant_count: int
     }
 

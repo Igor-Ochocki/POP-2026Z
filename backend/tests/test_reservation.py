@@ -25,7 +25,7 @@ def slot(db_session: Session) -> TimeSlot:
 
 def reserve(client: TestClient, slot: TimeSlot, count: int = 4, params: dict = ORGANIZER):
     return client.post(
-        URL, params=params, json={"slot_id": slot.id, "game_id": slot.game_id, "participant_count": count}
+        URL, params=params, json={"slot_id": slot.id, "participant_count": count}
     )
 
 
@@ -68,15 +68,9 @@ def test_slot_taken_by_parallel_request_returns_409(
 
 
 def test_create_reservation_unknown_slot_returns_404(client: TestClient, slot: TimeSlot) -> None:
-    response = client.post(URL, params=ORGANIZER, json={"slot_id": "brak", "game_id": slot.game_id, "participant_count": 2})
+    response = client.post(URL, params=ORGANIZER, json={"slot_id": "brak", "participant_count": 2})
 
     assert response.status_code == 404
-
-
-def test_create_reservation_game_mismatch_returns_400(client: TestClient, slot: TimeSlot) -> None:
-    response = client.post(URL, params=ORGANIZER, json={"slot_id": slot.id, "game_id": "inna-gra", "participant_count": 2})
-
-    assert response.status_code == 400
 
 
 @pytest.mark.parametrize("count", [1, 7])

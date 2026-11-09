@@ -36,8 +36,6 @@ class ReservationsService(IReservationsService):
         slot = self.db_session.get(TimeSlot, dto.slot_id)
         if slot is None:
             raise NotFoundError(f"Termin '{dto.slot_id}' nie istnieje")
-        if slot.game_id != dto.game_id:
-            raise AppError(f"Termin '{dto.slot_id}' nie należy do gry '{dto.game_id}'")
         game = slot.game
         if not game.min_players <= dto.participant_count <= game.max_players:
             raise AppError(f"Liczba uczestników musi być w zakresie {game.min_players}-{game.max_players}")

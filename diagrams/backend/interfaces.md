@@ -81,7 +81,6 @@ package "Data Transfer Schemas (Pydantic Models)" {
 
     class ReservationCreateSchema <<BaseModel>> {
         + slot_id: str
-        + game_id: str
         + participant_count: int
     }
 

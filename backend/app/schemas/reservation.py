@@ -4,10 +4,9 @@ from app.models.enums import ReservationStatus
 
 
 class ReservationCreateSchema(BaseModel):
-    """Nowa rezerwacja (PU2) - odpowiada ReservationCreateDTO frontendu."""
+    """Nowa rezerwacja (PU2) - odpowiada ReservationCreateDTO frontendu. Gra wynika z terminu."""
 
     slot_id: str
-    game_id: str
     participant_count: int = Field(gt=0)
 
 
