@@ -26,6 +26,10 @@ interface ActionResponsePayload {
   outcome_type: string;
   outcome_value: string;
 }
+
+const toCamel = (value: string): string =>
+  value.toLowerCase().replace(/_([a-z])/g, (_, c: string) => c.toUpperCase());
+ 
  
 const toActionRequest = (
   gameId: string,
