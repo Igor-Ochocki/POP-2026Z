@@ -2,7 +2,7 @@
 @startuml
 
 interface IGameListWindows <<interface>> {
-    +showGameListView()
+    +showGameListView(navigationState: GameListNavigationState)
     +showGameFilterDialog()
 }
 
@@ -16,8 +16,8 @@ interface IGameListActions <<interface>> {
 }
 
 class GameListWindows {
-    +showGameListView()
-    +showGameFilterView()
+    +showGameListView(navigationState: GameListNavigationState)
+    +showGameFilterDialog()
 }
 
 class GameListView {
@@ -25,17 +25,17 @@ class GameListView {
     +onClick()
 }
 
-class GameFilterView {
+class GameFilterDialog {
     +show()
     +onClick()
 }
 
 GameListWindows ..|> IGameListWindows
 GameListWindows -u-> GameListView
-GameListWindows -u-> GameFilterView
+GameListWindows -u-> GameFilterDialog
 
 GameListView --> IGameListActions
-GameFilterView --> IGameListActions
+GameFilterDialog --> IGameListActions
 
 @enduml
 ```

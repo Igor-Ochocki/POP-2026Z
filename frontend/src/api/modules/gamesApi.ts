@@ -1,5 +1,9 @@
 import type { AxiosInstance } from 'axios';
-import type { GameCreateDTO, GameResponseDTO } from '@app-types/game';
+import type {
+  GameCreateDTO,
+  GameMetadataDTO,
+  GameResponseDTO,
+} from '@app-types/game';
 
 export interface IGamesApi {
   saveGame(
@@ -14,6 +18,13 @@ export interface IGamesApi {
     asDraft: boolean,
   ): Promise<GameResponseDTO>;
   submitToReviewer(gameId: string, userId: string): Promise<boolean>;
+  getGames(
+    userId: string,
+    tags: string[],
+    limit: number,
+    offset: number,
+  ): Promise<GameMetadataDTO[]>;
+  getGameTags(): Promise<string[]>;
 }
 
 // Backend payloads (GameCreateSchema / GameResponseSchema) - snake_case stays inside this module.
@@ -82,25 +93,17 @@ export const createGamesApi = (http: AxiosInstance): IGamesApi => ({
     return data;
   },
 
-  getGames: async (
-    tags: string[],
-    limit: number,
-    offset: number,
-  ): Promise<GameMetadataDTO[]> => {
-    const response = await http.get('/games', {
-      params: { tags, limit, offset },
+  getGames: async (userId, tags, limit, offset) => {
+    const { data } = await http.get<GameResponsePayload[]>('/games', {
+      params: { user_id: userId, tags, limit, offset },
+      // FastAPI expects tags=a&tags=b, not axios' default tags[]=a&tags[]=b.
+      paramsSerializer: { indexes: null },
     });
-    if (response.status !== 200) {
-      throw response.status;
-    }
-    return response.data.map(fromResponsePayload);
+    return data.map(fromResponsePayload);
   },
 
-  getGameTags: async (): Promise<string[]> => {
-    const response = await http.get('/games/tags');
-    if (response.status !== 200) {
-      throw response.status;
-    }
-    return response.data;
+  getGameTags: async () => {
+    const { data } = await http.get<string[]>('/games/tags');
+    return data;
   },
 });

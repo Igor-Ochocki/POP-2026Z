@@ -1,11 +1,11 @@
+import { useState, type JSX } from 'react';
+import Button from '@components/Button/Button';
+import Input from '@components/Input/Input';
+import PageHeader from '@components/PageHeader/PageHeader';
+import TextHeading from '@components/TextHeading/TextHeading';
+import TextSubtitle from '@components/TextSubtitle/TextSubtitle';
+import { useGameList } from '@hooks/useGameList';
 import './GameListView.css';
-import Input from '@components/Input/Input.tsx';
-import Button from '@components/Button/Button.tsx';
-import { useGameList } from '@hooks/useGameList.ts';
-import TextHeading from '@components/TextHeading/TextHeading.tsx';
-import PageHeader from '@components/PageHeader/PageHeader.tsx';
-import TextSubtitle from '@components/TextSubtitle/TextSubtitle.tsx';
-import { type JSX, useState } from 'react';
 
 interface FilterDialogProps {
   filterTags: string[];
@@ -19,17 +19,19 @@ function FilterDialog({
   applyFilter,
 }: FilterDialogProps): JSX.Element {
   const [tags, setTags] = useState(appliedTags);
+
+  const toggleTag = (tag: string) => {
+    if (tags.includes(tag)) setTags(tags.filter((t) => t !== tag));
+    else setTags([...tags, tag]);
+  };
+
   return (
     <div className='game-list-filter-dialog'>
       <PageHeader title='Filtry' />
       {filterTags.map((tag) => (
         <Button
           key={tag}
-          onClick={() => {
-            tags.includes(tag)
-              ? setTags(tags.filter((v) => v !== tag))
-              : setTags([...tags, tag]);
-          }}
+          onClick={() => toggleTag(tag)}
           variant={tags.includes(tag) ? 'primary' : 'secondary'}
         >
           {tag}
@@ -41,26 +43,10 @@ function FilterDialog({
 }
 
 export function GameListView() {
-  const {
-    state: {
-      games,
-      searchString,
-      filterTags,
-      appliedTags,
-      downloadErrored,
-      filterDialogOpen,
-    },
-    actions: {
-      onChangeParameter,
-      onListReload,
-      onShowMore,
-      onOpenFilterDialog,
-      onFilterSubmit,
-    },
-  } = useGameList();
+  const { state, actions } = useGameList();
 
-  const filteredGames = games.filter((game) =>
-    game.title.toLowerCase().includes(searchString.toLocaleLowerCase()),
+  const filteredGames = state.games.filter((game) =>
+    game.title.toLowerCase().includes(state.searchString.toLowerCase()),
   );
 
   return (
@@ -68,20 +54,26 @@ export function GameListView() {
       <PageHeader title='Lista gier' />
       <div className='game-list-filter-row'>
         <Input
-          onChange={(e) => onChangeParameter('searchString', e.target.value)}
+          value={state.searchString}
+          onChange={(e) =>
+            actions.onChangeParameter('searchString', e.target.value)
+          }
           placeholder='Szukaj gry...'
-        ></Input>
-        <Button onClick={onOpenFilterDialog} disabled={filterTags.length === 0}>
+        />
+        <Button
+          onClick={actions.onOpenFilterDialog}
+          disabled={state.filterTags.length === 0}
+        >
           Filtruj
         </Button>
       </div>
 
-      {downloadErrored ? (
+      {state.downloadErrored ? (
         <>
           <TextHeading level={5}>
             Ups! Mamy problemy z pobraniem danych
           </TextHeading>
-          <Button onClick={onListReload}>Spróbuj ponownie</Button>
+          <Button onClick={actions.onListReload}>Spróbuj ponownie</Button>
         </>
       ) : (
         <div className='game-list-list'>
@@ -99,14 +91,14 @@ export function GameListView() {
         </div>
       )}
 
-      {filteredGames.length > 0 && !downloadErrored && (
-        <Button onClick={onShowMore}>Pokaż wiecej</Button>
+      {state.hasMoreGames && !state.downloadErrored && (
+        <Button onClick={actions.onShowMore}>Pokaż więcej</Button>
       )}
-      {filterDialogOpen && (
+      {state.filterDialogOpen && (
         <FilterDialog
-          filterTags={filterTags}
-          appliedTags={appliedTags}
-          applyFilter={(tags) => onFilterSubmit(tags)}
+          filterTags={state.filterTags}
+          appliedTags={state.appliedTags}
+          applyFilter={actions.onFilterSubmit}
         />
       )}
     </div>

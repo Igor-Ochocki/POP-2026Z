@@ -1,115 +1,116 @@
-import { apiClient } from '@api/apiClient.ts';
-import React, { useEffect, useState } from 'react';
-import type { IGameListActions, IGameListWindows } from '@/types/game-list.ts';
-import type { GameMetadataDTO } from '@/types/game.ts';
-import { type NavigateFunction, useNavigate } from 'react-router';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate, type NavigateFunction } from 'react-router';
+import { apiClient } from '@api/apiClient';
+import { env } from '@config/env';
+import type {
+  GameListNavigationState,
+  GameListViewModel,
+  IGameListActions,
+  IGameListWindows,
+} from '@app-types/gameList';
 
+const GAME_LIST_PATH = '/creator/games';
 const DOWNLOAD_LIMIT = 10;
 
-export type GameListViewModel = {
-  games: GameMetadataDTO[];
-  searchString: string;
-  filterTags: string[];
-  appliedTags: string[];
-  downloadOffset: number;
-  downloadErrored: boolean;
-  filterDialogOpen: boolean;
+const initialState: GameListViewModel = {
+  games: [],
+  searchString: '',
+  filterTags: [],
+  appliedTags: [],
+  downloadOffset: 0,
+  hasMoreGames: false,
+  downloadErrored: false,
+  filterDialogOpen: false,
 };
 
-async function loadGames(
-  tags: string[],
-  downloadOffset: number,
-): Promise<GameMetadataDTO[]> {
-  return apiClient.games.getGames(tags, DOWNLOAD_LIMIT, downloadOffset);
+type SetState = React.Dispatch<React.SetStateAction<GameListViewModel>>;
+
+// offset 0 replaces the list, any other offset appends the next page.
+async function loadGames(setState: SetState, tags: string[], offset: number) {
+  setState((prev) => ({ ...prev, downloadErrored: false }));
+  try {
+    const page = await apiClient.games.getGames(
+      env.devUserId,
+      tags,
+      DOWNLOAD_LIMIT,
+      offset,
+    );
+    setState((prev) => {
+      const games = offset === 0 ? page : [...prev.games, ...page];
+      return {
+        ...prev,
+        games,
+        downloadOffset: games.length,
+        hasMoreGames: page.length === DOWNLOAD_LIMIT,
+      };
+    });
+  } catch {
+    setState((prev) => ({ ...prev, downloadErrored: true }));
+  }
 }
 
-async function loadTags(): Promise<string[]> {
-  return apiClient.games.getGameTags();
+async function loadTags(setState: SetState) {
+  try {
+    const filterTags = await apiClient.games.getGameTags();
+    setState((prev) => ({ ...prev, filterTags }));
+  } catch {
+    setState((prev) => ({ ...prev, downloadErrored: true }));
+  }
 }
 
 function createGameListWindows(
-  setViewModel: React.Dispatch<React.SetStateAction<GameListViewModel>>,
+  setState: SetState,
   navigate: NavigateFunction,
 ): IGameListWindows {
   return {
-    showGameListView: () => navigate('/creator/games'),
+    showGameListView: (navigationState) =>
+      void navigate(GAME_LIST_PATH, { state: navigationState }),
     showGameFilterDialog: () =>
-      setViewModel((vm) => ({ ...vm, filterDialogOpen: true })),
+      setState((prev) => ({ ...prev, filterDialogOpen: true })),
   };
 }
 
-export function useGameList() {
-  const [state, setState] = useState<GameListViewModel>({
-    games: [],
-    searchString: '',
-    filterTags: [],
-    appliedTags: [],
-    downloadOffset: 0,
-    downloadErrored: false,
-    filterDialogOpen: false,
-  });
+export function useGameList(): {
+  state: GameListViewModel;
+  actions: IGameListActions;
+} {
   const navigate = useNavigate();
-  const { showGameListView, showGameFilterDialog } = createGameListWindows(
-    setState,
-    navigate,
-  );
+  const location = useLocation();
+
+  // Other views use this hook only to call onOpenGameList, so the API is called
+  // only once the list was opened with data passed through navigation.
+  const navigationState = location.state as GameListNavigationState | null;
+  const openedWithTags = navigationState?.appliedTags;
+
+  const [state, setState] = useState<GameListViewModel>(() => ({
+    ...initialState,
+    appliedTags: openedWithTags ?? [],
+  }));
+  const windows = createGameListWindows(setState, navigate);
 
   useEffect(() => {
-    loadGames(state.appliedTags, state.downloadOffset)
-      .then((games) => setState({ ...state, games }))
-      .catch(() => setState({ ...state, downloadErrored: true }));
+    if (!openedWithTags) return;
+    void loadTags(setState);
+    void loadGames(setState, openedWithTags, 0);
+  }, [openedWithTags]);
 
-    loadTags().then((tags) => setState({ ...state, filterTags: tags }));
-
-    return () => {};
-  }, []);
-
-  const actions: IGameListActions = {
-    onOpenGameList: () => showGameListView(),
-    onOpenFilterDialog: () => showGameFilterDialog(),
-
-    onFilterSubmit: (appliedTags) => {
-      setState((vm) => ({
-        ...vm,
-        appliedTags,
-        filterDialogOpen: false,
-      }));
-
-      loadGames(appliedTags, state.downloadOffset)
-        .then((games) =>
-          setState((vm) => ({
-            ...vm,
-            games,
-          })),
-        )
-        .catch(() =>
-          setState((vm) => ({
-            ...vm,
-            downloadErrored: true,
-          })),
-        );
-    },
-
-    onChangeParameter: (field: string, value: any) => {
-      setState({ ...state, [field]: value });
-    },
-    onListReload: () => {
-      loadGames(state.appliedTags, state.downloadOffset)
-        .then((games) => setState({ ...state, games }))
-        .catch(() => setState({ ...state, downloadErrored: true }));
-    },
-    onShowMore: () => {
-      loadGames(state.appliedTags, state.downloadOffset + DOWNLOAD_LIMIT)
-        .then((games) => {
-          const newGames = state.games.concat(games);
-          setState({
-            ...state,
-            games: newGames,
-            downloadOffset: newGames.length,
-          });
-        })
-        .catch(() => setState({ ...state, downloadErrored: true }));
+  return {
+    state,
+    actions: {
+      onOpenGameList: () => windows.showGameListView({ appliedTags: [] }),
+      onOpenFilterDialog: windows.showGameFilterDialog,
+      onChangeParameter: (field, value) =>
+        setState((prev) => ({ ...prev, [field]: value })),
+      onFilterSubmit: (appliedTags) => {
+        setState((prev) => ({ ...prev, appliedTags, filterDialogOpen: false }));
+        void loadGames(setState, appliedTags, 0);
+      },
+      onListReload: () => {
+        void loadTags(setState);
+        void loadGames(setState, state.appliedTags, 0);
+      },
+      onShowMore: () =>
+        void loadGames(setState, state.appliedTags, state.downloadOffset),
     },
   };
-  return { state, actions };
 }

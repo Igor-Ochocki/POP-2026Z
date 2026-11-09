@@ -1,66 +1,66 @@
 .game-list-view {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    max-width: 48rem;
-    margin: 0 auto;
-    align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 48rem;
+  margin: 0 auto;
+  align-items: center;
 }
 
 .game-list-view .page-header {
-    width: 100%;
+  width: 100%;
 }
 
 .game-list-view > button {
-    width: fit-content;
+  width: fit-content;
 }
 
 .game-list-filter-row {
-    display: flex;
-    justify-content: center;
-    gap: 1.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
 }
 
 .game-list-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    width: 100%;
-    max-width: 40rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 40rem;
 }
 
 .game-list-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 1rem;
-    border-radius: var(--radius-md);
-    background-color: var(--color-surface);
-    color: var(--color-text);
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  align-items: center;
 }
 
 .game-list-filter-dialog {
-    display: flex;
-    max-width: 20rem;
-    width: 100%;
-    flex-direction: column;
-    gap: 1rem;
-    background-color: var(--color-surface-lighter);
-    border: 1px solid var(--color-primary);
-    border-radius: var(--radius-md);
-    padding: 1rem;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 9999;
+  display: flex;
+  max-width: 20rem;
+  width: 100%;
+  flex-direction: column;
+  gap: 1rem;
+  background-color: var(--color-surface-lighter);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
 }
 
-.game-list-filter-dialog > button{
-    margin: 0 1rem;
+.game-list-filter-dialog > button {
+  margin: 0 1rem;
 }
 
 .game-list-filter-dialog > :last-child {
-    width: fit-content;
-    margin: 1rem auto;
+  width: fit-content;
+  margin: 1rem auto;
 }

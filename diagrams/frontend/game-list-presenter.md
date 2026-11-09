@@ -10,12 +10,12 @@ interface IGameListActions <<interface>> {
 }
 
 interface IGamesApi <<interface>> {
-    +getGames(tags: string[*], limit: number, offset: number): Promise<GameMetadataDTO[*]>
+    +getGames(userId: string, tags: string[*], limit: number, offset: number): Promise<GameMetadataDTO[*]>
     +getGameTags(): Promise<string[*]>
 }
 
 interface IGameListWindows <<interface>> {
-    +showGameListView()
+    +showGameListView(navigationState: GameListNavigationState)
     +showGameFilterDialog()
 }
 
@@ -32,15 +32,22 @@ class GameListViewModel <<State>> {
     +games: GameMetadataDTO[*]
     +searchString: string
     +filterTags: string[*]
-    +appliedtags: string[*]
+    +appliedTags: string[*]
     +downloadOffset: number
+    +hasMoreGames: boolean
+    +downloadErrored: boolean
     +filterDialogOpen: boolean
+}
+
+class GameListNavigationState {
+    +appliedTags: string[*]
 }
 
 useGameList -u-> IGameListWindows
 useGameList .|> IGameListActions
 useGameList -->  IGamesApi
 GameListViewModel *- useGameList
+useGameList ..> GameListNavigationState
 
 @enduml
 ```

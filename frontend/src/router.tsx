@@ -4,7 +4,7 @@ import { HomeView } from '@views/HomeView/HomeView';
 import { CreatorPanelView } from '@views/CreatorPanelView/CreatorPanelView';
 import { GameDefinitionView } from '@views/GameDefinitionView/GameDefinitionView';
 import { NotFoundView } from '@views/NotFoundView/NotFoundView';
-import { GameListView } from '@views/GameListView/GameListView.tsx';
+import { GameListView } from '@views/GameListView/GameListView';
 import { NewTaskView } from '@views/NewTaskView/NewTaskView';
 
 export const router = createBrowserRouter([
