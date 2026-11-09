@@ -7,6 +7,7 @@ import TextSubheading from '@components/TextSubheading/TextSubheading';
 import { useGameDefinition } from '@hooks/useGameDefinition';
 import { useNewTask } from '@hooks/useNewTask';
 import { useScenarioEditor } from '@hooks/useScenarioEditor';
+import { gameStatusLabel } from '@app-types/game';
 import type { TaskDTO } from '@app-types/task';
 import './ScenarioEditorView.css';
 
@@ -30,7 +31,7 @@ export function ScenarioEditorView() {
         <PageHeader
           title='Edytor scenariusza'
           subtitle={activeGame?.title ?? 'Scenariusz gry'}
-          aside={activeGame?.status}
+          aside={activeGame ? gameStatusLabel(activeGame.status) : undefined}
         />
         {activeGame && (
           <div className='scenario-editor-view__metadata'>

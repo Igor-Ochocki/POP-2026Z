@@ -21,10 +21,12 @@ CancelNewTaskConfirmationDialog -u-|> ConfirmationDialog
 class ConflictMessageDialog
 class IncorrectDataMessageDialog
 class NewTaskSuccessMessageDialog
+class SaveErrorMessageDialog
 
 ConflictMessageDialog -u-|> MessageDialog
 IncorrectDataMessageDialog -u-|> MessageDialog
 NewTaskSuccessMessageDialog -u-|> MessageDialog
+SaveErrorMessageDialog -u-|> MessageDialog
 
 interface INewTaskActions <<interface>> {
     onNewTaskSelect()
@@ -35,6 +37,7 @@ interface INewTaskActions <<interface>> {
     onNewTaskSuccessMessageDialogConfirm()
     onIncorrectDataMessageDialogConfirm()
     onConflictMessageDialogConfirm()
+    onSaveErrorMessageDialogConfirm()
     onChangeParameter(field: string, value: string | number)
 }
 
@@ -42,12 +45,14 @@ INewTaskActions <-u- CancelNewTaskConfirmationDialog
 INewTaskActions <-u- ConflictMessageDialog
 INewTaskActions <-u- IncorrectDataMessageDialog
 INewTaskActions <-u- NewTaskSuccessMessageDialog
+INewTaskActions <-u- SaveErrorMessageDialog
 INewTaskActions <-u- NewTaskView
 
 NewTaskWindows --u-> CancelNewTaskConfirmationDialog
 NewTaskWindows --u-> ConflictMessageDialog
 NewTaskWindows --u-> IncorrectDataMessageDialog
 NewTaskWindows --u-> NewTaskSuccessMessageDialog
+NewTaskWindows --u-> SaveErrorMessageDialog
 NewTaskWindows --u-> NewTaskView
 
 interface INewTaskWindows <<interface>> {
@@ -56,6 +61,7 @@ interface INewTaskWindows <<interface>> {
     showConflictMessageDialog()
     showIncorrectDataMessageDialog()
     showNewTaskSuccessMessageDialog()
+    showSaveErrorMessageDialog()
     hideDialogs()
 }
 
@@ -65,6 +71,7 @@ class NewTaskWindows {
     showConflictMessageDialog()
     showIncorrectDataMessageDialog()
     showNewTaskSuccessMessageDialog()
+    showSaveErrorMessageDialog()
     hideDialogs()
 }
 

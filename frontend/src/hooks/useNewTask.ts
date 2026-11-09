@@ -17,6 +17,17 @@ function newTaskURL(gameId: string) {
   return baseURL(gameId) + '/new-task';
 }
 
+// Step 4 - required fields are checked before anything is sent.
+function isComplete(state: NewTaskViewModel): boolean {
+  return [
+    state.title,
+    state.narrative,
+    state.rewardType,
+    state.rewardValue,
+    state.interactionType,
+  ].every((value) => value.trim() !== '');
+}
+
 function createNewTaskWindows(
   setViewModel: React.Dispatch<React.SetStateAction<NewTaskViewModel>>,
   navigate: NavigateFunction,
@@ -39,6 +50,9 @@ function createNewTaskWindows(
     showNewTaskSuccessMessageDialog: () => {
       setViewModel((vm) => ({ ...vm, newTaskSuccessMessageDialogOpen: true }));
     },
+    showSaveErrorMessageDialog: () => {
+      setViewModel((vm) => ({ ...vm, saveErrorMessageDialogOpen: true }));
+    },
     hideDialogs: () => {
       setViewModel((vm) => ({
         ...vm,
@@ -46,6 +60,7 @@ function createNewTaskWindows(
         cancelNewTaskConfirmationDialogOpen: false,
         conflictMessageDialogOpen: false,
         incorrectDataMessageDialogOpen: false,
+        saveErrorMessageDialogOpen: false,
       }));
     },
   };
@@ -70,6 +85,7 @@ export function useNewTask(): {
     newTaskSuccessMessageDialogOpen: false,
     conflictMessageDialogOpen: false,
     incorrectDataMessageDialogOpen: false,
+    saveErrorMessageDialogOpen: false,
   });
 
   const navigate = useNavigate();
@@ -80,12 +96,17 @@ export function useNewTask(): {
     showConflictMessageDialog,
     showIncorrectDataMessageDialog,
     showNewTaskSuccessMessageDialog,
+    showSaveErrorMessageDialog,
   } = createNewTaskWindows(setState, navigate, gameId);
 
   const actions: INewTaskActions = {
     onNewTaskSelect: () => showNewTaskView(),
 
     onSubmitNewTask: async () => {
+      if (!isComplete(state)) {
+        showIncorrectDataMessageDialog();
+        return;
+      }
       try {
         await apiClient.scenario.addTask(gameId, env.devUserId, {
           title: state.title,
@@ -103,8 +124,8 @@ export function useNewTask(): {
           showConflictMessageDialog();
         } else if (status === 422) {
           showIncorrectDataMessageDialog();
-        } else if (status === 404) {
-          navigate('/creator/games');
+        } else {
+          showSaveErrorMessageDialog();
         }
       }
     },
@@ -115,6 +136,7 @@ export function useNewTask(): {
     onNewTaskSuccessMessageDialogConfirm: () => navigate(baseURL(gameId)),
     onIncorrectDataMessageDialogConfirm: () => hideDialogs(),
     onConflictMessageDialogConfirm: () => hideDialogs(),
+    onSaveErrorMessageDialogConfirm: () => hideDialogs(),
 
     onChangeParameter: (field, value) => {
       setState({ ...state, [field]: value });

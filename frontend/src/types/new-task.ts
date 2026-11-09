@@ -18,6 +18,7 @@ export type INewTaskActions = {
   onNewTaskSuccessMessageDialogConfirm: () => void;
   onIncorrectDataMessageDialogConfirm: () => void;
   onConflictMessageDialogConfirm: () => void;
+  onSaveErrorMessageDialogConfirm: () => void;
 
   onChangeParameter: (
     field: keyof NewTaskForm,
@@ -30,6 +31,7 @@ export type NewTaskViewModel = NewTaskForm & {
   newTaskSuccessMessageDialogOpen: boolean;
   conflictMessageDialogOpen: boolean;
   incorrectDataMessageDialogOpen: boolean;
+  saveErrorMessageDialogOpen: boolean;
 };
 
 export type INewTaskWindows = {
@@ -38,5 +40,6 @@ export type INewTaskWindows = {
   showConflictMessageDialog: () => void;
   showIncorrectDataMessageDialog: () => void;
   showNewTaskSuccessMessageDialog: () => void;
+  showSaveErrorMessageDialog: () => void;
   hideDialogs: () => void;
 };

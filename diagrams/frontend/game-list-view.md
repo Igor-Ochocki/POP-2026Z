@@ -35,6 +35,12 @@ GameListWindows -u-> GameListView
 GameListWindows -u-> GameFilterDialog
 
 GameListView --> IGameListActions
+
+interface IGameDefinitionActions <<interface>> {
+    +onOpenGame(gameId: string)
+}
+
+GameListView --> IGameDefinitionActions : wybór gry (PU49)
 GameFilterDialog --> IGameListActions
 
 @enduml

@@ -23,6 +23,7 @@ import type {
   GameMetadataDTO,
   IGameDefinitionActions,
 } from '@app-types/game';
+import { gameStatusLabel } from '@app-types/game';
 import type { IGameListActions } from '@app-types/gameList';
 import { GameParametersPanel } from './GameParametersPanel';
 import './GameDefinitionView.css';
@@ -107,7 +108,9 @@ export function GameDefinitionView() {
             title='Definicja gry'
             subtitle={game?.title ?? 'Nowa gra'}
             aside={
-              <Badge variant='primary'>{game?.status ?? 'W edycji'}</Badge>
+              <Badge variant='primary'>
+                {game ? gameStatusLabel(game.status) : 'W edycji'}
+              </Badge>
             }
           />
           <div className='game-definition-view__tiles'>

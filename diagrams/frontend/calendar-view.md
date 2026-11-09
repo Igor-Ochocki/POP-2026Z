@@ -11,6 +11,12 @@ onBack()
 
 ICalendarActions <-u- CalendarView
 
+class Layout {
+onCalendarMenuClick()
+}
+
+ICalendarActions <-u- Layout : "Kalendarz" (onShowCalendar)
+
 CalendarView --> CalendarEventDTO
 
 class CalendarEventDTO <<DTO>> {

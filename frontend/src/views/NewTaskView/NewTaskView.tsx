@@ -24,6 +24,7 @@ export function NewTaskView() {
       newTaskSuccessMessageDialogOpen,
       conflictMessageDialogOpen,
       incorrectDataMessageDialogOpen,
+      saveErrorMessageDialogOpen,
     },
     actions: {
       onSubmitNewTask,
@@ -33,6 +34,7 @@ export function NewTaskView() {
       onNewTaskSuccessMessageDialogConfirm,
       onIncorrectDataMessageDialogConfirm,
       onConflictMessageDialogConfirm,
+      onSaveErrorMessageDialogConfirm,
       onChangeParameter,
     },
   } = useNewTask();
@@ -159,6 +161,12 @@ export function NewTaskView() {
           message='Podane dane zadania są błędne'
           onClosed={onIncorrectDataMessageDialogConfirm}
           open={incorrectDataMessageDialogOpen}
+        />
+        <MessageDialog
+          title='Błąd'
+          message='Nie udało się zapisać zadania. Spróbuj ponownie.'
+          onClosed={onSaveErrorMessageDialogConfirm}
+          open={saveErrorMessageDialogOpen}
         />
       </form>
     </div>

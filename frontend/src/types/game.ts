@@ -86,6 +86,17 @@ export interface IGameDefinitionWindows {
   showLoadErrorMessageDialog(): void;
 }
 
+// Backend GameStatus -> label used in the scenarios.
+const GAME_STATUS_LABELS: Record<string, string> = {
+  Draft: 'W edycji',
+  Submitted: 'Oczekuje na weryfikację',
+  Rejected: 'Odrzucona',
+  Approved: 'Zatwierdzona',
+};
+
+export const gameStatusLabel = (status: string): string =>
+  GAME_STATUS_LABELS[status] ?? status;
+
 export const GAME_CATEGORIES = [
   'Fantasy',
   'Science Fiction',

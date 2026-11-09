@@ -37,6 +37,15 @@
   background-color: var(--color-surface);
   color: var(--color-text);
   align-items: center;
+  width: 100%;
+  border: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.game-list-item:hover {
+  background-color: var(--color-surface-lighter);
 }
 
 .game-list-filter-dialog {

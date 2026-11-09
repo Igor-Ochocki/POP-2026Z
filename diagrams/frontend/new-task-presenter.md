@@ -9,6 +9,7 @@ class useNewTask {
     onNewTaskSuccessMessageDialogConfirm()
     onIncorrectDataMessageDialogConfirm()
     onConflictMessageDialogConfirm()
+    onSaveErrorMessageDialogConfirm()
     onChangeParameter(field: string, value: string | number)
 }
 
@@ -21,6 +22,7 @@ interface INewTaskActions <<interface>> {
     onNewTaskSuccessMessageDialogConfirm()
     onIncorrectDataMessageDialogConfirm()
     onConflictMessageDialogConfirm()
+    onSaveErrorMessageDialogConfirm()
     onChangeParameter(field: string, value: string | number)
 }
 
@@ -39,6 +41,7 @@ interface INewTaskWindows <<interface>> {
     showConflictMessageDialog()
     showIncorrectDataMessageDialog()
     showNewTaskSuccessMessageDialog()
+    showSaveErrorMessageDialog()
     hideDialogs()
 }
 
@@ -54,6 +57,7 @@ class NewTaskViewModel {
     newTaskSuccessMessageDialogOpen: boolean
     conflictMessageDialogOpen: boolean
     incorrectDataMessageDialogOpen: boolean
+    saveErrorMessageDialogOpen: boolean
 }
 
 useNewTask *-l- NewTaskViewModel :state

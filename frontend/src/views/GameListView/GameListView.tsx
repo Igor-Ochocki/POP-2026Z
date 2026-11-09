@@ -4,6 +4,7 @@ import Input from '@components/Input/Input';
 import PageHeader from '@components/PageHeader/PageHeader';
 import TextHeading from '@components/TextHeading/TextHeading';
 import TextSubtitle from '@components/TextSubtitle/TextSubtitle';
+import { useGameDefinition } from '@hooks/useGameDefinition';
 import { useGameList } from '@hooks/useGameList';
 import './GameListView.css';
 
@@ -44,6 +45,7 @@ function FilterDialog({
 
 export function GameListView() {
   const { state, actions } = useGameList();
+  const gameDefinition = useGameDefinition();
 
   const filteredGames = state.games.filter((game) =>
     game.title.toLowerCase().includes(state.searchString.toLowerCase()),
@@ -78,10 +80,15 @@ export function GameListView() {
       ) : (
         <div className='game-list-list'>
           {filteredGames.map((game) => (
-            <div className='game-list-item' key={game.gameId}>
+            <button
+              type='button'
+              className='game-list-item'
+              key={game.gameId}
+              onClick={() => gameDefinition.actions.onOpenGame(game.gameId)}
+            >
               <TextHeading level={5}>{game.title}</TextHeading>
               <TextSubtitle>Maximum graczy: {game.maxPlayers}</TextSubtitle>
-            </div>
+            </button>
           ))}
           {filteredGames.length === 0 && (
             <TextHeading level={6}>
