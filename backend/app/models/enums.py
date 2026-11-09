@@ -15,3 +15,15 @@ class EffectKind(StrEnum):
     CHANGE_LOCATION = "changeLocation"
     SET_FLAG = "setFlag"
     START_MINI_GAME = "startMiniGame"
+
+
+class ReservationStatus(StrEnum):
+    UNPAID = "unpaid"
+    CONFIRMED = "confirmed"
+    CANCELLED = "cancelled"
+
+
+class PaymentStatus(StrEnum):
+    PENDING = "pending"
+    COMPLETED = "completed"
+    FAILED = "failed"

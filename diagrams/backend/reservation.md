@@ -12,32 +12,34 @@ skinparam linetype polyline
 
 title PU2 Rezerwacja czasu dla gry - backend
 
-interface CalendarApi <<interface>>\n<< /api/v1/reservations >> {
+interface ReservationsApi <<interface>>\n<< /api/v1/reservations >> {
     + <<POST / >>\n\tcreate_reservation(user_id: str, dto: ReservationCreateSchema): ReservationSummarySchema
     + <<DELETE /{reservation_id} >>\n\tcancel_reservation(user_id: str, reservation_id: str): bool
     + <<POST /{reservation_id}/payment >>\n\tmark_payment_completed(user_id: str, reservation_id: str): ReservationSummarySchema
 }
 
-class CalendarController <<Controller>> {
-    - calendar_service: ICalendarService
+class ReservationsController <<Controller>> {
+    - reservations_service: IReservationsService
     + create_reservation(user_id: str, dto: ReservationCreateSchema): ReservationSummarySchema
     + cancel_reservation(user_id: str, reservation_id: str): bool
     + mark_payment_completed(user_id: str, reservation_id: str): ReservationSummarySchema
 }
 
-interface ICalendarService <<interface>> {
+interface IReservationsService <<interface>> {
     + create_reservation(user_id: str, dto: ReservationCreateSchema): ReservationSummarySchema
     + cancel_reservation(user_id: str, reservation_id: str): bool
     + mark_payment_completed(user_id: str, reservation_id: str): ReservationSummarySchema
 }
 
-class CalendarService {
+class ReservationsService {
     - db_session: Session
     - payment_service: IPaymentService
     - message_service: IMessageService
     + create_reservation(user_id: str, dto: ReservationCreateSchema): ReservationSummarySchema
     + cancel_reservation(user_id: str, reservation_id: str): bool
     + mark_payment_completed(user_id: str, reservation_id: str): ReservationSummarySchema
+    - _lock_slot(slot_id: str)
+    - _get_own_reservation(user_id: str, reservation_id: str): Reservation
 }
 
 interface IPaymentService <<interface>> {
@@ -72,7 +74,7 @@ package "Schemas" {
         + organizer_id: str
         + participant_count: int
         + total_cost: float
-        + status: str
+        + status: ReservationStatus
         + is_paid: bool
     }
 }
@@ -94,7 +96,7 @@ package "Models (Db)" as models {
         + reservation_id: str
         + amount: float
         + status: PaymentStatus
-        + paid_at: datetime
+        + paid_at: datetime | None
     }
 
     class Message <<Base>> {
@@ -115,60 +117,74 @@ package "Models (Db)" as models {
         + is_available: bool
     }
 
-    class User <<Base>> {
+    class Game <<Base>> {
         + id: str
-        + inbox: list[Message]
+        + title: str
+        + min_players: int
+        + max_players: int
+        + duration_minutes: int
     }
 }
 
 package "Enums" {
     enum ReservationStatus {
-        Unpaid
-        Confirmed
-        Cancelled
+        UNPAID
+        CONFIRMED
+        CANCELLED
     }
 
     enum PaymentStatus {
-        Pending
-        Completed
-        Failed
+        PENDING
+        COMPLETED
+        FAILED
     }
 }
 
-CalendarController .up.|> CalendarApi
-CalendarController --> ICalendarService
+ReservationsController .up.|> ReservationsApi
+ReservationsController --> IReservationsService
 
-CalendarService .up.|> ICalendarService
-CalendarService --> IPaymentService : payment_service
-CalendarService --> IMessageService : message_service
+ReservationsService .up.|> IReservationsService
+ReservationsService --> IPaymentService : payment_service
+ReservationsService --> IMessageService : message_service
 
 PaymentService .up.|> IPaymentService
 PaymentService -right-> Payment
 MessageService .up.|> IMessageService
 MessageService -right-> Message
 
-CalendarService -right-> Reservation
-CalendarService ..> ReservationCreateSchema : consumes
-CalendarService ..> ReservationSummarySchema : produces
+ReservationsService -right-> Reservation
+ReservationsService ..> ReservationCreateSchema : consumes
+ReservationsService ..> ReservationSummarySchema : produces
 
 Reservation "*" --> "1" TimeSlot : slot_id
-User "1" --> "*" Reservation : reservations
-User "1" --> "*" Message : inbox
+Reservation "1" --> "*" Payment : payments
+TimeSlot "*" --> "1" Game : game_id
 
-note right of TimeSlot
-    Wspólny kontrakt z frontendem (CalendarEventDTO:
-    id, title, datetime) - jeden datetime, końcowy
-    czas trwania wyliczany z Game.durationMinutes (PU49).
+note bottom of ReservationsService
+    Mapowanie scenariusza PU2 (główny):
+    1. utworzenie rezerwacji dla terminu -> create_reservation
+       (status UNPAID, termin zajmowany atomowo: UPDATE ... WHERE is_available,
+       równoczesna druga rezerwacja -> 409)
+    2. prośba o potwierdzenie (z opcją cofnięcia) -> cancel_reservation zwalnia termin
+    3. potwierdzenie -> wymaganie płatności (total_cost = base_price * participant_count)
+    4. płatność -> mark_payment_completed: PaymentService.process_payment, status CONFIRMED
+    5. potwierdzenie rezerwacji -> MessageService.send_reservation_confirmation
+       (wiadomość w skrzynce organizatora)
+    Anulowanie i płatność tylko przez właściciela rezerwacji (inaczej 403).
 end note
 
-note bottom of CalendarService
-    Mapowanie scenariusza PU2 (główny):
-    1. utworzenie rezerwacji dla slotu -> create_reservation (status Unpaid, slot staje się zajęty)
-    2. prośba o potwierdzenie (z opcją cofnięcia) -> cancel_reservation zwalnia slot
-    3. potwierdzenie -> wymaganie płatności (total_cost z base_price slotu)
-    4. płatność -> mark_payment_completed: PaymentService.process_payment, status Confirmed, is_paid true
-    5. potwierdzenie rezerwacji -> MessageService.send_reservation_confirmation,
-       wiadomość trafia do skrzynki wiadomości organizatora
+note right of ReservationsApi
+    Błędy (wspólne AppError z core/exceptions):
+    404 - brak terminu / rezerwacji
+    403 - rezerwacja innego organizatora
+    409 - termin zajęty, rezerwacja opłacona / anulowana
+    400 - termin innej gry, liczba uczestników poza min-max gry
+    user_id - parametr query do czasu JWT (jak w GamesApi)
+end note
+
+note right of TimeSlot
+    Brak end_time: koniec terminu =
+    start_time + Game.duration_minutes (PU49).
 end note
 
 note right of PaymentService
@@ -178,14 +194,7 @@ end note
 
 note bottom of Message
     Odczyt skrzynki wiadomości
-    to osobny PU (SkrzynkaWiadomosciView).
-end note
-
-note bottom of Reservation
-    user_id pochodzi z tokenu sesji (JWT)
-    - organizator zewnętrzny.
-    Slot z aktywną rezerwacją (Unpaid/Confirmed)
-    jest niedostępny w PU1.
+    to osobny PU.
 end note
 @enduml
 ```
