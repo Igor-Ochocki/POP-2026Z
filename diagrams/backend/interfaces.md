@@ -32,7 +32,7 @@ package "Data Transfer Schemas (Pydantic Models)" {
         + duration_minutes: int
         + requires_invitation: bool
         + tags: list[str]
-        + status: str
+        + status: ReservationStatus
     }
 
     class ActionCreateSchema <<BaseModel>> {
@@ -80,7 +80,7 @@ package "Data Transfer Schemas (Pydantic Models)" {
         + organizer_id: str
         + participant_count: int
         + total_cost: float
-        + status: str
+        + status: ReservationStatus
         + is_paid: bool
     }
 }
@@ -107,8 +107,15 @@ package "Services (Application Business Logic)" {
     class CalendarService {
         - db_session: Session
         + get_events(month: date): list[CalendarEventSchema]
+    }
+
+    class ReservationsService {
+        - db_session: Session
+        - payment_service: IPaymentService
+        - message_service: IMessageService
         + create_reservation(user_id: str, dto: ReservationCreateSchema): ReservationSummarySchema
-        + mark_payment_completed(reservation_id: str): bool
+        + cancel_reservation(user_id: str, reservation_id: str): bool
+        + mark_payment_completed(user_id: str, reservation_id: str): ReservationSummarySchema
     }
 }
 
@@ -118,8 +125,8 @@ ActionsService ..> ActionCreateSchema : consumes
 ScenariosService ..> ScenarioDetailSchema : produces
 ScenariosService ..> TaskCreateSchema : consumes
 CalendarService ..> CalendarEventSchema : produces
-CalendarService ..> ReservationCreateSchema : consumes
-CalendarService ..> ReservationSummarySchema : produces
+ReservationsService ..> ReservationCreateSchema : consumes
+ReservationsService ..> ReservationSummarySchema : produces
 
 @enduml
 ```
