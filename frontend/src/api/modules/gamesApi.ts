@@ -6,6 +6,7 @@ import type {
 } from '@app-types/game';
 
 export interface IGamesApi {
+  getGame(gameId: string, userId: string): Promise<GameResponseDTO>;
   saveGame(
     userId: string,
     metadata: GameCreateDTO,
@@ -66,6 +67,13 @@ const fromResponsePayload = (data: GameResponsePayload): GameResponseDTO => ({
 });
 
 export const createGamesApi = (http: AxiosInstance): IGamesApi => ({
+  getGame: async (gameId, userId) => {
+    const { data } = await http.get<GameResponsePayload>(`/games/${gameId}`, {
+      params: { user_id: userId },
+    });
+    return fromResponsePayload(data);
+  },
+
   saveGame: async (userId, metadata, asDraft) => {
     const { data } = await http.post<GameResponsePayload>(
       '/games',
