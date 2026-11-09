@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { ApiError } from '@api/apiError';
 import { env } from '@config/env';
 
 // The ONLY axios instance in the app. Do not call axios directly anywhere else -
@@ -13,6 +14,11 @@ httpClient.interceptors.response.use(
   (response) => response,
   (error) => {
     // Common place for global error handling (auth, logging, toasts...).
+    if (axios.isAxiosError(error)) {
+      return Promise.reject(
+        new ApiError(error.response?.status ?? null, error.message),
+      );
+    }
     return Promise.reject(error);
   },
 );
