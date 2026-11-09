@@ -1,36 +1,21 @@
 <div hidden>
 
 ```
-
 @startuml reservation-presenter
-
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
 skinparam shadowing false
 skinparam roundcorner 4
-skinparam nodesep 26
-skinparam ranksep 34
 skinparam linetype polyline
+skinparam nodesep 30
+skinparam ranksep 40
+hide empty members
 
-title PU2 - Game Time Reservation - Presenter
+title PU2 Rezerwacja czasu dla gry - presenter (planowany, bez implementacji)
 
-class useReservations <<Hook>> {
+interface IReservationActions <<interface>> {
     + onOpenReservation(slot: CalendarEventDTO | null)
-    + onChangeParameter(field: string, value: unknown)
-    + onSubmitReservation()
-    + onConfirmReservation()
-    + onCancelReservation()
-    + onPayLater()
-    + onPaymentCompletedMessageDialogConfirm()
-    + onSlotUnavailableMessageDialogConfirm()
-    + onReservationCancelledMessageDialogConfirm()
-    - createReservation()
-    - cancelReservation()
-}
-
-interface IReservationsActions <<interface>> {
-    + onOpenReservation(slot: CalendarEventDTO | null)
-    + onChangeParameter(field: string, value: unknown)
+    + onChangeParameter(field: string, value: any)
     + onSubmitReservation()
     + onConfirmReservation()
     + onCancelReservation()
@@ -40,12 +25,17 @@ interface IReservationsActions <<interface>> {
     + onReservationCancelledMessageDialogConfirm()
 }
 
-interface IReservationsWindows <<interface>> {
+interface IReservationWindows <<interface>> {
     + showReservationView()
     + showReservationConfirmDialog()
     + showPaymentCompletedMessageDialog()
     + showSlotUnavailableMessageDialog()
     + showReservationCancelledMessageDialog()
+}
+
+class useReservation <<Hook>> {
+    - createReservation()
+    - cancelReservation()
 }
 
 class ReservationViewModel <<State>> {
@@ -54,59 +44,41 @@ class ReservationViewModel <<State>> {
     + activeReservation: ReservationSummaryDTO | null
     + paymentUrl: string | null
     + isProcessing: boolean
-    + dialogType: ReservationDialogType | null
+    + dialogType: ReservationDialogTypes | null
     + errorMessage: string | null
 }
 
-class ReservationSummaryDTO <<DTO>> {
-    + reservationId: string
-    + slotId: string
-    + gameId: string
-    + organizerId: string
-    + participantCount: number
-    + totalCost: number
-    + status: ReservationStatus
-    + isPaid: boolean
-}
-
-enum ReservationDialogType {
+enum ReservationDialogTypes {
     confirmation
     paymentCompleted
     slotUnavailable
     reservationCancelled
 }
 
-interface IReservationsApi <<interface>> {
-    + createReservation(userId: string, dto: ReservationCreateDTO): Promise<ReservationSummaryDTO>
-    + cancelReservation(reservationId: string, userId: string): Promise<boolean>
-}
+interface IReservationsApi <<interface>>
+class CalendarEventDTO <<DTO>>
+class ReservationSummaryDTO <<DTO>>
+class ReservationCreateDTO <<DTO>>
 
-class ReservationCreateDTO <<DTO>> {
-    + slotId: string
-    + participantCount: number
-}
+useReservation .u.|> IReservationActions
+useReservation -u-> IReservationWindows
+useReservation *-- "1" ReservationViewModel : state
+ReservationViewModel ..> ReservationDialogTypes
+ReservationViewModel ..> CalendarEventDTO : selectedSlot
+ReservationViewModel ..> ReservationSummaryDTO : activeReservation
+useReservation ..> ReservationCreateDTO
+useReservation --> IReservationsApi : apiClient.reservations\ncreateReservation, cancelReservation
 
-class CalendarEventDTO <<PU1 DTO>>
+note right of useReservation
+    Projekt z PR #72 - frontend PU2 nie jest jeszcze
+    zaimplementowany. Backend PU2 jest gotowy
+    (POST /reservations, DELETE /reservations/{id}).
+end note
 
-enum ReservationStatus {
-    Unpaid
-    Confirmed
-    Cancelled
-}
-
-useReservations .u.|> IReservationsActions
-useReservations -u-> IReservationsWindows
-useReservations --> IReservationsApi : reservationsApi
-useReservations *-- "1" ReservationViewModel : owns state
-
-ReservationViewModel ..> CalendarEventDTO
-ReservationViewModel ..> ReservationSummaryDTO
-
-IReservationsApi ..> ReservationCreateDTO
-IReservationsApi ..> ReservationSummaryDTO
-
+note bottom of IReservationsApi
+    DTO i porty API: interfaces.md
+end note
 @enduml
-
 ```
 
 </div>

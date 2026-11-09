@@ -7,27 +7,27 @@ skinparam packageStyle rectangle
 skinparam shadowing false
 skinparam roundcorner 4
 skinparam linetype polyline
+skinparam nodesep 30
+skinparam ranksep 40
+hide empty members
 
 title PU49 Zdefiniowanie gry - widok
 
-class CreatorPanelView {
-    + show()
+class CreatorPanelView <<View>> {
     + onCreateGameClick()
     + onGameListClick()
 }
 
-class GameDefinitionView {
-    + show()
+class GameDefinitionView <<View>> {
     + onEditParametersClick()
-    + onAddSensorClick()
     + onEditScenarioClick()
-    + onSaveAndSubmitClick()
+    + onDefineActionClick()
     + onSaveClick()
+    + onSaveAndSubmitClick()
     + onCancelClick()
 }
 
-class GameParametersPanel {
-    + show()
+class GameParametersPanel <<View>> {
     + onFieldChange(field: string, value: string | boolean)
     + onSaveClick()
 }
@@ -51,92 +51,36 @@ GameSubmittedMessageDialog -u-|> MessageDialog
 SaveErrorMessageDialog -u-|> MessageDialog
 LoadErrorMessageDialog -u-|> MessageDialog
 
-interface IGameDefinitionActions <<interface>> {
-    + onCreateGame()
-    + onOpenGame(gameId: string)
-    + onEditParameters()
-    + onChangeParameter(field: string, value: string | boolean)
-    + onSaveMetadata()
-    + onParametersSavedMessageDialogConfirm()
-    + onIncorrectDataMessageDialogConfirm()
-    + onSaveDraft()
-    + onSubmitForReview()
-    + onSaveErrorMessageDialogConfirm()
-    + onLoadErrorMessageDialogConfirm()
-}
-
-interface ICreatorPanelActions <<interface>> {
-    + onOpenCreatorPanel()
-}
-
-interface IGameListActions <<interface>> {
-    + onOpenGameList()
-}
-
-interface IScenarioEditorActions <<interface>> {
-    + onOpenScenarioEditor(gameId: string)
-}
-
-interface ISensorDefinitionActions <<interface>> {
-    + onOpenSensorDefinition(gameId: string)
-}
-
+class GameDefinitionWindows
+interface IGameDefinitionWindows <<interface>>
+interface IGameDefinitionActions <<interface>>
 class GameDefinitionViewModel <<State>>
 
-CreatorPanelView --> IGameDefinitionActions
-CreatorPanelView --> IGameListActions
+interface ICreatorPanelActions <<interface>>
+interface IGameListActions <<interface>>
+interface IScenarioEditorActions <<interface>>
+interface IActionDefinitionActions <<interface>>
+
+GameDefinitionWindows .u.|> IGameDefinitionWindows
+GameDefinitionWindows --> GameDefinitionView
+GameDefinitionWindows --> GameParametersPanel
+GameDefinitionWindows --> MessageDialog
+
+CreatorPanelView --> IGameDefinitionActions : onCreateGame
+CreatorPanelView --> IGameListActions : onOpenGameList (PU25)
 GameDefinitionView --> IGameDefinitionActions
-GameDefinitionView --> ICreatorPanelActions
-GameDefinitionView --> IScenarioEditorActions
-GameDefinitionView --> ISensorDefinitionActions
 GameDefinitionView --> GameDefinitionViewModel
+GameDefinitionView --> IScenarioEditorActions : onOpenScenarioEditor (PU56)
+GameDefinitionView --> IActionDefinitionActions : onAddAction (PU51)
+GameDefinitionView --> ICreatorPanelActions : "Anuluj"
 GameParametersPanel --> IGameDefinitionActions
 GameParametersPanel --> GameDefinitionViewModel
 ParametersSavedMessageDialog --> IGameDefinitionActions
 IncorrectDataMessageDialog --> IGameDefinitionActions
-GameSavedMessageDialog --> IGameListActions
-GameSubmittedMessageDialog --> ICreatorPanelActions
 SaveErrorMessageDialog --> IGameDefinitionActions
 LoadErrorMessageDialog --> IGameDefinitionActions
-
-interface IGameDefinitionWindows <<interface>> {
-    + showGameDefinitionView()
-    + showGameParametersView()
-    + showParametersSavedMessageDialog()
-    + showIncorrectDataMessageDialog()
-    + showGameSavedMessageDialog()
-    + showGameSubmittedMessageDialog()
-    + showSaveErrorMessageDialog()
-    + showLoadErrorMessageDialog()
-}
-
-class GameDefinitionWindows {
-    + showGameDefinitionView()
-    + showGameParametersView()
-    + showParametersSavedMessageDialog()
-    + showIncorrectDataMessageDialog()
-    + showGameSavedMessageDialog()
-    + showGameSubmittedMessageDialog()
-    + showSaveErrorMessageDialog()
-    + showLoadErrorMessageDialog()
-}
-
-GameDefinitionWindows .u.|> IGameDefinitionWindows
-
-GameDefinitionWindows --> GameDefinitionView
-GameDefinitionWindows --> GameParametersPanel
-GameDefinitionWindows --> ParametersSavedMessageDialog
-GameDefinitionWindows --> IncorrectDataMessageDialog
-GameDefinitionWindows --> GameSavedMessageDialog
-GameDefinitionWindows --> GameSubmittedMessageDialog
-GameDefinitionWindows --> SaveErrorMessageDialog
-GameDefinitionWindows --> LoadErrorMessageDialog
-
-note bottom of IGameListActions
-    Przejścia do innych przypadków użycia widok woła
-    bezpośrednio na ich prezenterach, z pominięciem
-    useGameDefinition. Akcje z PU25, PU50 i PU56.
-end note
+GameSavedMessageDialog --> IGameListActions : onOpenGameList (PU25)
+GameSubmittedMessageDialog --> ICreatorPanelActions : onOpenCreatorPanel
 
 note right of GameDefinitionView
     Ten sam widok dla nowej gry (/creator/games/new)
@@ -144,7 +88,8 @@ note right of GameDefinitionView
     "Edytuj scenariusz gry" (PU56) i "Zdefiniuj akcję" (PU51)
     są aktywne po pierwszym zapisie parametrów.
     "Dodaj nowy czujnik" (PU50) i "Edytuj mapę gry" (PU60)
-    są nieaktywne do czasu implementacji tych przypadków użycia.
+    są nieaktywne do czasu implementacji tych PU.
+    Przejścia do innych PU widok woła na ich prezenterach.
 end note
 @enduml
 ```

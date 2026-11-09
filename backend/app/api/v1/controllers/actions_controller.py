@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
@@ -7,6 +8,21 @@ from app.schemas.actions import ActionSchema, ActionCreateSchema
 from app.services.actions_service import ActionsService, IActionsService
 
 from app.db.database import get_db
+
+
+class IActionsApi(ABC):
+    @abstractmethod
+    def create_action(self, metadata: ActionCreateSchema) -> ActionSchema: ...
+
+    @abstractmethod
+    def get_action(self, action_id: str) -> ActionSchema: ...
+
+    @abstractmethod
+    def get_action_types(self) -> list[str]: ...
+
+    @abstractmethod
+    def get_effect_kind(self) -> list[str]: ...
+
 
 router = APIRouter(prefix="/actions", tags=["actions"])
 

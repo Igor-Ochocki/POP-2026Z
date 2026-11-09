@@ -1,40 +1,53 @@
-@startuml
-class CalendarView {
-show()
+<div hidden>
+
+```
+@startuml calendar-view
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam roundcorner 4
+skinparam linetype polyline
+skinparam nodesep 30
+skinparam ranksep 40
+hide empty members
+
+title PU1 Wyświetlanie kalendarza - widok
+
+class Layout <<View>> {
+    + onCalendarMenuClick()
 }
 
-interface ICalendarActions <<interface>> {
-onShowCalendar()
-onChangeMonth(month :Date)
-onBack()
+class CalendarView <<View>> {
+    + onRetryClick()
+    + onBackClick()
 }
 
-ICalendarActions <-u- CalendarView
-
-class Layout {
-onCalendarMenuClick()
+class Calendar <<Component>> {
+    + onMonthChange(month: Date)
 }
 
-ICalendarActions <-u- Layout : "Kalendarz" (onShowCalendar)
+class CalendarWindows
+interface ICalendarWindows <<interface>>
+interface ICalendarActions <<interface>>
+class CalendarViewModel <<State>>
 
-CalendarView --> CalendarEventDTO
+CalendarWindows .u.|> ICalendarWindows
+CalendarWindows --> CalendarView
 
-class CalendarEventDTO <<DTO>> {
-id :string
-title :string
-datetime :Date
-}
+Layout --> ICalendarActions : "Kalendarz" - onShowCalendar
+CalendarView *-- Calendar
+CalendarView --> ICalendarActions
+CalendarView --> CalendarViewModel
+Calendar --> ICalendarActions : onChangeMonth
 
-interface ICalendarWindows <<interface>> {
-showCalendarView()
-}
-
-class CalendarWindows {
-showCalendarView()
-}
-
-CalendarWindows .d.|> ICalendarWindows
-CalendarWindows --u-> CalendarView
+note right of Calendar
+    FullCalendar (widok miesiąca) - przy zmianie
+    miesiąca zgłasza jego pierwszy dzień.
+    "Dodaj wydarzenie" jest nieaktywne do czasu PU39.
+end note
 @enduml
+```
+
+</div>
 
 ![](rendered/calendar-view.svg)

@@ -28,7 +28,7 @@ async function fetchEditorData(gameId: string) {
   const userId = env.devUserId;
   const [activeGame, scenario] = await Promise.all([
     apiClient.games.getGame(gameId, userId),
-    apiClient.scenario.loadScenario(gameId, userId),
+    apiClient.scenarios.loadScenario(gameId, userId),
   ]);
   return { activeGame, scenario };
 }

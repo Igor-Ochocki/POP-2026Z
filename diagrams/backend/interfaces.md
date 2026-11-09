@@ -6,20 +6,21 @@ skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
 skinparam shadowing false
 skinparam roundcorner 4
-skinparam nodesep 26
-skinparam ranksep 34
 skinparam linetype polyline
+skinparam nodesep 30
+skinparam ranksep 40
+hide empty members
 
-title Specyfikacja interfejsów (backend)
+title Backend - schematy (DTO) API i wyjątki (wspólne dla wszystkich PU)
 
-package "Data Transfer Schemas (Pydantic Models)" {
+package "Gry (PU49, PU25)" as P_Games {
     class GameCreateSchema <<BaseModel>> {
-        + title: str
-        + description: str
-        + min_players: int
-        + max_players: int
-        + duration_minutes: int
-        + requires_invitation: bool = false
+        + title: str [1..200]
+        + description: str [1..1000]
+        + min_players: int [1..100]
+        + max_players: int [1..100]
+        + duration_minutes: int [1..10080]
+        + requires_invitation: bool = False
         + tags: list[str]
     }
 
@@ -32,26 +33,21 @@ package "Data Transfer Schemas (Pydantic Models)" {
         + duration_minutes: int
         + requires_invitation: bool
         + tags: list[str]
-        + status: ReservationStatus
+        + status: str
     }
 
-    class ActionCreateSchema <<BaseModel>> {
+    note bottom of GameCreateSchema
+        Walidacja: min_players <= max_players.
+        Kategoria gry trafia do tags[0].
+    end note
+}
+
+package "Scenariusz i zadania (PU56, PU57)" as P_Scenario {
+    class ScenarioDetailSchema <<BaseModel>> {
+        + scenario_id: str
         + game_id: str
-        + name: str
-        + action_type: str
-        + outcome_type: str
-        + outcome_value: str
-    }
-
-    class TaskCreateSchema <<BaseModel>> {
-        + title: str
-        + narrative: str
-        + interaction_type: str
-        + interaction_target_id: str | None = None
-        + required_player_level: int = 1
-        + time_limit_minutes: int | None = None
-        + reward_type: str
-        + reward_value: str
+        + tasks: list[TaskSchema]
+        + victory_conditions: list[str]
     }
 
     class TaskSchema <<BaseModel>> {
@@ -66,22 +62,55 @@ package "Data Transfer Schemas (Pydantic Models)" {
         + reward_value: str
     }
 
-    class ScenarioDetailSchema <<BaseModel>> {
-        + scenario_id: str
-        + game_id: str
-        + tasks: list[TaskSchema]
-        + victory_conditions: list[str]
+    class TaskCreateSchema <<BaseModel>> <<planned>> {
+        + title: str
+        + narrative: str
+        + interaction_type: str
+        + interaction_target_id: str | None = None
+        + required_player_level: int = 1
+        + time_limit_minutes: int | None = None
+        + reward_type: str
+        + reward_value: str
     }
 
+    ScenarioDetailSchema *-- "*" TaskSchema
+
+    note bottom of TaskCreateSchema
+        Backend PU57 w przygotowaniu.
+    end note
+}
+
+package "Akcje (PU51)" as P_Actions {
+    class ActionCreateSchema <<BaseModel>> {
+        + game_id: str [1..36]
+        + name: str [1..100]
+        + action_type: ActionType
+        + outcome_type: EffectKind
+        + outcome_value: str [1..200]
+    }
+
+    class ActionSchema <<BaseModel>> {
+        + action_id: str
+        + game_id: str
+        + name: str
+        + action_type: str
+        + outcome_type: str
+        + outcome_value: str
+    }
+}
+
+package "Kalendarz (PU1)" as P_Calendar {
     class CalendarEventSchema <<BaseModel>> {
         + id: str
         + title: str
         + datetime: datetime
     }
+}
 
+package "Rezerwacje (PU2)" as P_Reservations {
     class ReservationCreateSchema <<BaseModel>> {
         + slot_id: str
-        + participant_count: int
+        + participant_count: int > 0
     }
 
     class ReservationSummarySchema <<BaseModel>> {
@@ -96,50 +125,42 @@ package "Data Transfer Schemas (Pydantic Models)" {
     }
 }
 
-package "Services (Application Business Logic)" {
-    class GamesService {
-        - db_session: Session
-        + save_game(dto: GameCreateSchema, as_draft: bool): GameResponseSchema
-        + submit_to_reviewer(game_id: str): bool
+package "Wyjątki (core/exceptions)" as P_Errors {
+    class AppError <<Exception>> {
+        + status_code = 400
+    }
+    class ForbiddenError <<Exception>> {
+        + status_code = 403
+    }
+    class NotFoundError <<Exception>> {
+        + status_code = 404
+    }
+    class ConflictError <<Exception>> {
+        + status_code = 409
     }
 
-    class ActionsService {
-        - db_session: Session
-        + get_action_types(): list[str]
-        + create_action(dto: ActionCreateSchema): str
-    }
+    ForbiddenError -u-|> AppError
+    NotFoundError -u-|> AppError
+    ConflictError -u-|> AppError
 
-    class ScenariosService {
-        - db_session: Session
-        + load_scenario(game_id: str, user_id: str): ScenarioDetailSchema
-        + add_task(game_id: str, dto: TaskCreateSchema): bool
-    }
-
-    class CalendarService {
-        - db_session: Session
-        + get_events(month: date): list[CalendarEventSchema]
-    }
-
-    class ReservationsService {
-        - db_session: Session
-        - payment_service: IPaymentService
-        - message_service: IMessageService
-        + create_reservation(user_id: str, dto: ReservationCreateSchema): ReservationSummarySchema
-        + cancel_reservation(user_id: str, reservation_id: str): bool
-        + mark_payment_completed(user_id: str, reservation_id: str): ReservationSummarySchema
-    }
+    note bottom of AppError
+        Jeden handler (register_exception_handlers)
+        zamienia AppError na odpowiedź {detail} ze status_code.
+        Błędy walidacji schematów zwraca FastAPI jako 422.
+    end note
 }
 
-GamesService ..> GameCreateSchema : consumes
-GamesService ..> GameResponseSchema : produces
-ActionsService ..> ActionCreateSchema : consumes
-ScenariosService ..> ScenarioDetailSchema : produces
-ScenarioDetailSchema *-- TaskSchema
-ScenariosService ..> TaskCreateSchema : consumes
-CalendarService ..> CalendarEventSchema : produces
-ReservationsService ..> ReservationCreateSchema : consumes
-ReservationsService ..> ReservationSummarySchema : produces
+P_Games -[hidden]r- P_Scenario
+P_Scenario -[hidden]r- P_Actions
+P_Games -[hidden]d- P_Calendar
+P_Calendar -[hidden]r- P_Reservations
+P_Reservations -[hidden]r- P_Errors
 
+note as N_Enums
+    Enumy (ActionType, EffectKind, ReservationStatus, GameStatus)
+    i encje bazy danych: data-model.md.
+    Schematy są w snake_case - frontend mapuje je na DTO w camelCase.
+end note
 @enduml
 ```
 

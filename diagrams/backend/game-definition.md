@@ -1,37 +1,27 @@
 <div hidden>
 
 ```
-
-@startuml game-definition-backend
+@startuml game-definition
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
 skinparam shadowing false
 skinparam roundcorner 4
-skinparam nodesep 26
-skinparam ranksep 34
 skinparam linetype polyline
+skinparam nodesep 30
+skinparam ranksep 40
+hide empty members
 
 title PU49 Zdefiniowanie gry - backend
 
-interface GamesApi <<interface>>\n<< /api/v1/games >> {
-    + <<GET /{id} >>\n\tget_game(game_id: str, user_id: str): GameResponseSchema
-    + <<POST / >>\n\tsave_game(user_id: str, dto: GameCreateSchema, as_draft: bool): GameResponseSchema
-    + <<PUT /{id} >>\n\tedit_game(game_id: str, user_id: str, dto: GameCreateSchema, as_draft: bool): GameResponseSchema
-    + <<POST /{id}/submit >>\n\tsubmit_to_reviewer(game_id: str, user_id: str): bool
-}
-
-note right of GamesApi {
-    user_id używany do sprawdzenia
-    czy użytkownik ma dostęp do zasobu
-    lub przypisania go jako autora
+interface IGamesApi <<interface>>\n<< /api/v1/games >> {
+    + <<GET /{game_id} >>\n\tget_game(game_id: str, user_id: str): GameResponseSchema
+    + <<POST / >>\n\tsave_game(user_id: str, metadata: GameCreateSchema, as_draft: bool = True): GameResponseSchema
+    + <<PUT /{game_id} >>\n\tedit_game(game_id: str, user_id: str, metadata: GameCreateSchema, as_draft: bool = True): GameResponseSchema
+    + <<POST /{game_id}/submit >>\n\tsubmit_to_reviewer(game_id: str, user_id: str): bool
 }
 
 class GamesController <<Controller>> {
     - games_service: IGamesService
-    + get_game(game_id: str, user_id: str): GameResponseSchema
-    + save_game(user_id: str, dto: GameCreateSchema, as_draft: bool): GameResponseSchema
-    + edit_game(game_id: str, user_id: str, dto: GameCreateSchema, as_draft: bool): GameResponseSchema
-    + submit_to_reviewer(game_id: str, user_id: str): bool
 }
 
 interface IGamesService <<interface>> {
@@ -41,83 +31,36 @@ interface IGamesService <<interface>> {
     + submit_to_reviewer(game_id: str, user_id: str): bool
 }
 
-class GamesService {
+class GamesService <<Service>> {
     - db_session: Session
-    + get_game(game_id: str, user_id: str): GameResponseSchema
-    + save_game(user_id: str, dto: GameCreateSchema, as_draft: bool): GameResponseSchema
-    + edit_game(game_id: str, user_id: str, dto: GameCreateSchema, as_draft: bool): GameResponseSchema
-    + submit_to_reviewer(game_id: str, user_id: str): bool
+    - _map_to_response(game: Game): GameResponseSchema
 }
 
-package "Schemas" {
-    class GameCreateSchema <<BaseModel>> {
-        + title: str
-        + description: str
-        + min_players: int
-        + max_players: int
-        + duration_minutes: int
-        + requires_invitation: bool
-        + tags: list[str]
-    }
-    
-    class GameResponseSchema <<BaseModel>> {
-        + game_id: str
-        + title: str
-        + description: str
-        + min_players: int
-        + max_players: int
-        + duration_minutes: int
-        + requires_invitation: bool
-        + tags: list[str]
-        + status: str
-    }
-}
+class Game <<Base>>
+class GameCreateSchema <<BaseModel>>
+class GameResponseSchema <<BaseModel>>
+class NotFoundError <<Exception>>
+class ConflictError <<Exception>>
 
-package "Models (Db)" as models {
-    class Game <<Base>> {
-        + id: str
-        + title: str
-        + description: str
-        + min_players: int
-        + max_players: int
-        + duration_minutes: int
-        + requires_invitation: bool
-        + tags: list[str]
-        + status: GameStatus
-        + author_id: str
-    }
-}
-
-package "Enums"{
-    enum GameStatus {
-        Draft
-        Submitted
-        Rejected
-        Approved
-    }
-    
-    enum GameCategory {
-        Fantasy
-        Science Fiction
-        Historyczna
-        Kryminalna
-        Horror
-        Przygodowa
-    }
-    
-    note right of GameCategory
-        Kategoria jest zapisywana
-        jako pierwszy element: tags[0]
-    end note
-}
-
-GamesService .up.|> IGamesService
-GamesController .up.|> GamesApi
-
-GamesService -right-> Game
-
+GamesController .u.|> IGamesApi
 GamesController --> IGamesService
+GamesService .u.|> IGamesService
+GamesService --> Game
+GamesService ..> GameCreateSchema
+GamesService ..> GameResponseSchema
+GamesService ..> NotFoundError : gra nie istnieje\nalbo jest cudza
+GamesService ..> ConflictError : ponowne wysłanie,\nedycja zatwierdzonej
 
+note right of IGamesApi
+    user_id (query) - autor gry albo sprawdzenie dostępu,
+    do czasu logowania wysyłany przez frontend z ENV.
+    as_draft = True -> status Draft, False -> Submitted.
+end note
+
+note bottom of Game
+    Schematy: interfaces.md, encje: data-model.md
+end note
+@enduml
 ```
 
 </div>

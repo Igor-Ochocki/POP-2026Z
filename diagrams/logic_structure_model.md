@@ -6,101 +6,185 @@ skinparam componentStyle uml2
 skinparam packageStyle rectangle
 skinparam shadowing false
 skinparam roundcorner 4
-skinparam nodesep 28
-skinparam ranksep 38
+skinparam linetype ortho
+skinparam nodesep 40
+skinparam ranksep 60
+
+title Model struktury logicznej - diagram komponentów
+left to right direction
 skinparam linetype polyline
 
-title Model struktury logicznej - iteracja 1
+package "Frontend (React + TypeScript, SPA)" as FE {
 
-package "View (React Components)" as V {
-    component [GameDefinitionView] as V_GameDefinition
-    component [CalendarView] as V_Calendar
+    package "View (komponenty React)" as V {
+        component [Layout] as V_Layout
+        component [CreatorPanelView] as V_Creator
+        component [GameDefinitionView] as V_GameDef
+        component [GameListView] as V_GameList
+        component [ScenarioEditorView] as V_Scenario
+        component [NewTaskView] as V_NewTask
+        component [ActionDefinitionView] as V_Action
+        component [CalendarView] as V_Calendar
+    }
 
-    interface "IGameDefinitionActions" as IV_Definition
-    interface "ICalendarActions" as IV_Calendar
+    package "Presenter (hooki React)" as P {
+        component [useCreatorPanel] as P_Creator
+        component [useGameDefinition] as P_GameDef
+        component [useGameList] as P_GameList
+        component [useScenarioEditor] as P_Scenario
+        component [useNewTask] as P_NewTask
+        component [useActionDefinition] as P_Action
+        component [useCalendar] as P_Calendar
 
-    V_GameDefinition -down- IV_Definition
-    V_Calendar -down- IV_Calendar
+        () "ICreatorPanelActions" as I_Creator
+        () "IGameDefinitionActions" as I_GameDef
+        () "IGameListActions" as I_GameList
+        () "IScenarioEditorActions" as I_Scenario
+        () "INewTaskActions" as I_NewTask
+        () "IActionDefinitionActions" as I_Action
+        () "ICalendarActions" as I_Calendar
+
+        P_Creator - I_Creator
+        P_GameDef - I_GameDef
+        P_GameList - I_GameList
+        P_Scenario - I_Scenario
+        P_NewTask - I_NewTask
+        P_Action - I_Action
+        P_Calendar - I_Calendar
+    }
+
+    package "API proxy (Axios)" as A {
+        component [apiClient] as A_Client
+        component [gamesApi] as A_Games
+        component [scenariosApi] as A_Scenario
+        component [actionsApi] as A_Actions
+        component [calendarApi] as A_Calendar
+        component [httpClient] as A_Http
+
+        () "IGamesApi" as IA_Games
+        () "IScenariosApi" as IA_Scenario
+        () "IActionsApi" as IA_Actions
+        () "ICalendarApi" as IA_Calendar
+
+        A_Games - IA_Games
+        A_Scenario - IA_Scenario
+        A_Actions - IA_Actions
+        A_Calendar - IA_Calendar
+
+        A_Client *-- A_Games
+        A_Client *-- A_Scenario
+        A_Client *-- A_Actions
+        A_Client *-- A_Calendar
+        A_Games --> A_Http
+        A_Scenario --> A_Http
+        A_Actions --> A_Http
+        A_Calendar --> A_Http
+    }
 }
 
-package "Presenter (App Logic - React Hooks)" as P {
-    component [GameDefinitionPresenter\n(useGameDefinition Hook)\nowns GameDefinitionViewModel] as P_Definition
-    component [CalendarPresenter\n(useCalendar Hook)\nowns CalendarViewModel] as P_Calendar
+package "Backend (FastAPI)" as BE {
+    package "Controllers (/api/v1)" as C {
+        component [GamesController] as C_Games
+        component [ScenariosController] as C_Scenarios
+        component [ActionsController] as C_Actions
+        component [CalendarController] as C_Calendar
+        component [ReservationsController] as C_Reservations
 
-    P_Definition -up-( IV_Definition : <<binds state & events>>
-    P_Calendar -up-( IV_Calendar : <<binds state & events>>
+        () "IGamesApi\n/games" as R_Games
+        () "IScenariosApi\n/games/{id}/scenario" as R_Scenarios
+        () "IActionsApi\n/actions" as R_Actions
+        () "ICalendarApi\n/calendar" as R_Calendar
+        () "IReservationsApi\n/reservations" as R_Reservations
+
+        C_Games - R_Games
+        C_Scenarios - R_Scenarios
+        C_Actions - R_Actions
+        C_Calendar - R_Calendar
+        C_Reservations - R_Reservations
+    }
+
+    package "Services (logika aplikacji)" as S {
+        component [GamesService] as S_Games
+        component [ScenariosService] as S_Scenarios
+        component [ActionsService] as S_Actions
+        component [CalendarService] as S_Calendar
+        component [ReservationsService] as S_Reservations
+        component [PaymentService] as S_Payment
+        component [MessageService] as S_Message
+
+        () "IGamesService" as IS_Games
+        () "IScenariosService" as IS_Scenarios
+        () "IActionsService" as IS_Actions
+        () "ICalendarService" as IS_Calendar
+        () "IReservationsService" as IS_Reservations
+        () "IPaymentService" as IS_Payment
+        () "IMessageService" as IS_Message
+
+        S_Games - IS_Games
+        S_Scenarios - IS_Scenarios
+        S_Actions - IS_Actions
+        S_Calendar - IS_Calendar
+        S_Reservations - IS_Reservations
+        S_Payment - IS_Payment
+        S_Message - IS_Message
+    }
+
+    component [Models (SQLAlchemy ORM)] as M_Orm
 }
 
-package "API Proxy (Axios)" as A {
-    component [apiClient\n(unified API facade)] as A_Client
-    component [gamesApi] as A_Games
-    component [actionsApi] as A_Actions
-    component [scenariosApi] as A_Scenarios
-    component [reservationsApi] as A_Reservations
-    component [httpClient\n(single Axios instance)] as A_Http
+database "SQLite" as DB
 
-    A_Client *-down- A_Games
-    A_Client *-down- A_Actions
-    A_Client *-down- A_Scenarios
-    A_Client *-down- A_Reservations
+' View -> Presenter (własny PU; przejścia między PU - diagramy widoków)
+V_Creator --( I_Creator
+V_GameDef --( I_GameDef
+V_GameList --( I_GameList
+V_Scenario --( I_Scenario
+V_NewTask --( I_NewTask
+V_Action --( I_Action
+V_Calendar --( I_Calendar
+V_Layout --( I_Calendar
 
-    A_Games -down-> A_Http
-    A_Actions -down-> A_Http
-    A_Scenarios -down-> A_Http
-    A_Reservations -down-> A_Http
-}
+' Presenter -> API proxy
+P_GameDef --( IA_Games
+P_GameList --( IA_Games
+P_Scenario --( IA_Games
+P_Scenario --( IA_Scenario
+P_NewTask --( IA_Scenario
+P_Action --( IA_Actions
+P_Calendar --( IA_Calendar
 
-P_Definition -down-> A_Client : apiClient.games.*\napiClient.actions.*\napiClient.scenarios.*
-P_Calendar -down-> A_Client : apiClient.reservations.*
+' API proxy -> Backend (HTTP/REST, JSON)
+A_Http --( R_Games
+A_Http --( R_Scenarios
+A_Http --( R_Actions
+A_Http --( R_Calendar
 
-package "Model (FastAPI)" as M {
-    component [GamesController\n(/api/v1/games)] as C_Games
-    component [ActionsController\n(/api/v1/actions)] as C_Actions
-    component [ScenariosController\n(/api/v1/scenarios)] as C_Scenarios
-    component [CalendarController\n(/api/v1/reservations)] as C_Calendar
+' Controller -> Service
+C_Games --( IS_Games
+C_Scenarios --( IS_Scenarios
+C_Actions --( IS_Actions
+C_Calendar --( IS_Calendar
+C_Reservations --( IS_Reservations
+S_Reservations --( IS_Payment
+S_Reservations --( IS_Message
 
-    component [GamesService] as M_Games
-    component [ActionsService] as M_Actions
-    component [ScenariosService] as M_Scenarios
-    component [CalendarService] as M_Calendar
+S_Games --> M_Orm
+S_Scenarios --> M_Orm
+S_Actions --> M_Orm
+S_Calendar --> M_Orm
+S_Reservations --> M_Orm
+S_Payment --> M_Orm
+S_Message --> M_Orm
+M_Orm --> DB : SQLAlchemy Session
 
-    C_Games -down-> M_Games
-    C_Actions -down-> M_Actions
-    C_Scenarios -down-> M_Scenarios
-    C_Calendar -down-> M_Calendar
-}
-
-A_Http -down-> C_Games : <<HTTP/REST>>\nPOST/PUT
-A_Http -down-> C_Actions : <<HTTP/REST>>\nPOST/GET
-A_Http -down-> C_Scenarios : <<HTTP/REST>>\nPOST/GET
-A_Http -down-> C_Calendar : <<HTTP/REST>>\nPOST/GET
-
-package "Data" as D {
-    database [SQLite DBMS] as DB_Sqlite
-}
-
-M_Games -down-> DB_Sqlite : port: DB Access (SQLAlchemy ORM)
-M_Actions -down-> DB_Sqlite : port: DB Access (SQLAlchemy ORM)
-M_Scenarios -down-> DB_Sqlite : port: DB Access (SQLAlchemy ORM)
-M_Calendar -down-> DB_Sqlite : port: DB Access (SQLAlchemy ORM)
-
-V -[hidden]down-> P
-P -[hidden]down-> A
-A -[hidden]down-> M
-M -[hidden]down-> D
-
-V_GameDefinition -[hidden]right-> V_Calendar
-P_Definition -[hidden]right-> P_Calendar
-A_Games -[hidden]right-> A_Actions
-A_Actions -[hidden]right-> A_Scenarios
-A_Scenarios -[hidden]right-> A_Reservations
-C_Games -[hidden]right-> C_Actions
-C_Actions -[hidden]right-> C_Scenarios
-C_Scenarios -[hidden]right-> C_Calendar
-M_Games -[hidden]right-> M_Actions
-M_Actions -[hidden]right-> M_Scenarios
-M_Scenarios -[hidden]right-> M_Calendar
-
+note as N_Arch
+    Widoki wołają też prezentery innych PU przy przejściach
+    między przypadkami użycia (szczegóły: diagramy widoków).
+    httpClient -> kontrolery: HTTP/REST, JSON (/api/v1).
+    IReservationsApi (PU2) nie ma jeszcze konsumenta po stronie frontendu.
+    Backend PU25 (GET /games, /games/tags) i PU57 (POST /games/{id}/scenario/tasks)
+    są w przygotowaniu - frontend już z nich korzysta.
+end note
 @enduml
 ```
 

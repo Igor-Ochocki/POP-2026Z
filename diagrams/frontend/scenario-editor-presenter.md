@@ -7,13 +7,11 @@ skinparam packageStyle rectangle
 skinparam shadowing false
 skinparam roundcorner 4
 skinparam linetype polyline
+skinparam nodesep 30
+skinparam ranksep 40
+hide empty members
 
 title PU56 Wyświetlenie scenariusza gry w edytorze - presenter
-
-class useScenarioEditor <<Hook>> {
-    + onOpenScenarioEditor(gameId: string)
-    + onReloadScenario()
-}
 
 interface IScenarioEditorActions <<interface>> {
     + onOpenScenarioEditor(gameId: string)
@@ -24,12 +22,8 @@ interface IScenarioEditorWindows <<interface>> {
     + showScenarioEditorView(gameId: string)
 }
 
-interface IScenarioApi <<interface>> {
-    + loadScenario(gameId: string, userId: string): Promise<ScenarioDetailDTO>
-}
-
-interface IGamesApi <<interface>> {
-    + getGame(gameId: string, userId: string): Promise<GameResponseDTO>
+class useScenarioEditor <<Hook>> {
+    - fetchEditorData(gameId: string): Promise<{activeGame, scenario}>
 }
 
 class ScenarioEditorViewModel <<State>> {
@@ -40,32 +34,29 @@ class ScenarioEditorViewModel <<State>> {
     + errorMessage: string | null
 }
 
-class ScenarioDetailDTO <<DTO>> {
-    + scenarioId: string
-    + gameId: string
-    + tasks: TaskDTO[*]
-    + victoryConditions: string[*]
-}
+interface IScenariosApi <<interface>>
+interface IGamesApi <<interface>>
+class GameMetadataDTO <<DTO>>
+class ScenarioDetailDTO <<DTO>>
 
 useScenarioEditor .u.|> IScenarioEditorActions
 useScenarioEditor -u-> IScenarioEditorWindows
-useScenarioEditor --> IScenarioApi : apiClient.scenario
-useScenarioEditor --> IGamesApi : apiClient.games
 useScenarioEditor *-- "1" ScenarioEditorViewModel : state
-ScenarioEditorViewModel ..> ScenarioDetailDTO
-IScenarioApi ..> ScenarioDetailDTO
+ScenarioEditorViewModel ..> GameMetadataDTO : activeGame
+ScenarioEditorViewModel ..> ScenarioDetailDTO : scenario
+useScenarioEditor --> IScenariosApi : apiClient.scenarios\nloadScenario
+useScenarioEditor --> IGamesApi : apiClient.games\ngetGame
 
-note bottom of useScenarioEditor
-    onOpenScenarioEditor(gameId) przechodzi do edytora (showScenarioEditorView).
+note right of useScenarioEditor
+    onOpenScenarioEditor(gameId) przechodzi do edytora
+    (/creator/games/{gameId}/scenario).
     Gra i scenariusz są wczytywane tylko na trasie edytora,
-    więc widoki innych PU wołające onOpenScenarioEditor nie wywołują API.
-    onReloadScenario ponawia wczytanie po błędzie.
+    więc widoki innych PU wołające onOpenScenarioEditor
+    nie wywołują API. onReloadScenario ponawia wczytanie.
 end note
 
-note right of ScenarioEditorViewModel
-    activeGame pobierane przez GET /games/{id} (IGamesApi.getGame),
-    scenariusz przez GET /games/{id}/scenario. userId z ENV (VITE_DEV_USER_ID).
-    TaskDTO: types/task.ts.
+note bottom of IScenariosApi
+    DTO i porty API: interfaces.md
 end note
 @enduml
 ```

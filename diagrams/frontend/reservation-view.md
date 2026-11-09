@@ -1,27 +1,27 @@
 <div hidden>
 
 ```
-
 @startuml reservation-view
-
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
 skinparam shadowing false
 skinparam roundcorner 4
-skinparam nodesep 26
-skinparam ranksep 34
 skinparam linetype polyline
+skinparam nodesep 30
+skinparam ranksep 40
+hide empty members
 
-title PU2 - Game Time Reservation - View
+title PU2 Rezerwacja czasu dla gry - widok (planowany, bez implementacji)
 
-class ReservationView {
-    + render()
-}
+class ReservationView <<View>>
 
-class ReservationPanel {
+class ReservationPanel <<View>> {
+    + onParticipantCountChange(value: number)
     + onSubmitReservationClick()
     + onConfirmClick()
     + onCancelClick()
+    + onPayLaterClick()
+    + onPayNowClick()
 }
 
 class MessageDialog {
@@ -29,43 +29,32 @@ class MessageDialog {
     + onOkClick()
 }
 
-interface IReservationsActions <<interface>> {
-    + onOpenReservation(slot: CalendarEventDTO | null)
-    + onChangeParameter(field: string, value: unknown)
-    + onSubmitReservation()
-    + onConfirmReservation()
-    + onCancelReservation()
-    + onPayLater()
-    + onMessageDialogConfirm()
+class ConfirmDialog {
+    + show(title: string, message: string)
+    + onConfirmClick()
+    + onCancelClick()
 }
 
-interface IPaymentActions <<interface>> {
-    + onStartPayment(reservationId: string)
-}
+class ReservationWindows
+interface IReservationWindows <<interface>>
+interface IReservationActions <<interface>>
+class ReservationViewModel <<State>>
+interface IPaymentActions <<interface>>
+class CalendarView <<View>>
 
-interface IReservationsWindows <<interface>> {
-    + showReservationView()
-    + showMessageDialog(title: string, message: string)
-}
+ReservationWindows .u.|> IReservationWindows
+ReservationWindows --> ReservationView
+ReservationWindows --> ConfirmDialog
+ReservationWindows --> MessageDialog
 
-class ReservationsWindows {
-    + showReservationView()
-    + showMessageDialog(title: string, message: string)
-}
-
-ReservationsWindows .u.|> IReservationsWindows
-
-ReservationView --> ReservationPanel : displays
-ReservationView --> MessageDialog : displays
-ReservationView ..> IPaymentActions : starts payment
-
-ReservationPanel ..> IReservationsActions : dispatches actions
-MessageDialog ..> IReservationsActions : confirms
-
-ReservationsWindows --> ReservationView
-
+CalendarView --> IReservationActions : wybór terminu - onOpenReservation (PU1)
+ReservationView *-- ReservationPanel
+ReservationView --> ReservationViewModel
+ReservationPanel --> IReservationActions
+ConfirmDialog --> IReservationActions : onConfirmReservation
+MessageDialog --> IReservationActions
+ReservationPanel --> IPaymentActions : "Zapłać teraz" (PU61)
 @enduml
-
 ```
 
 </div>
