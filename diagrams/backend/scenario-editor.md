@@ -43,7 +43,7 @@ package "Schemas" {
         + title: str
         + narrative: str
         + interaction_type: str
-        + interaction_target_id: str
+        + interaction_target_id: str | None
         + required_player_level: int
         + time_limit_minutes: int | None
         + reward_type: str
@@ -69,7 +69,7 @@ package "Models (Db)" as models {
         + title: str
         + narrative: str
         + interaction_type: str
-        + interaction_target_id: str
+        + interaction_target_id: str | None
         + required_player_level: int
         + time_limit_minutes: int | None
         + reward_type: str
@@ -89,6 +89,7 @@ Scenario "1" --> "*" Task
 
 note bottom of ScenariosService
     load_scenario: gra nieistniejąca lub cudza -> NotFoundError (404).
+    Zadania z PU57 trafiają pod ten sam prefiks: POST /{game_id}/scenario/tasks.
     Gra bez scenariusza dostaje pusty scenariusz (get-or-create).
 end note
 

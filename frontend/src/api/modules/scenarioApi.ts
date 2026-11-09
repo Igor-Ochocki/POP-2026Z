@@ -22,10 +22,11 @@ const toCreatePayload = (dto: TaskCreateDTO): TaskCreatePayload => ({
 });
 
 export const createScenarioApi = (http: AxiosInstance) => ({
-  addTask: async (gameId: string, task: TaskCreateDTO) => {
+  addTask: async (gameId: string, userId: string, task: TaskCreateDTO) => {
     const res = await http.post(
-      '/scenario/task/' + gameId,
+      `/games/${gameId}/scenario/tasks`,
       toCreatePayload(task),
+      { params: { user_id: userId } },
     );
     return res.data;
   },

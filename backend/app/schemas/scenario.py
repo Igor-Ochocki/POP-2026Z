@@ -6,7 +6,7 @@ class TaskSchema(BaseModel):
     title: str
     narrative: str
     interaction_type: str
-    interaction_target_id: str
+    interaction_target_id: str | None
     required_player_level: int
     time_limit_minutes: int | None
     reward_type: str

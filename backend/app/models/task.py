@@ -21,7 +21,8 @@ class Task(Base):
     title: Mapped[str] = mapped_column(String)
     narrative: Mapped[str] = mapped_column(String)
     interaction_type: Mapped[str] = mapped_column(String)
-    interaction_target_id: Mapped[str] = mapped_column(String)
+    # Cel interakcji (np. komnata z PU60) - opcjonalny, dopóki front PU57 go nie wybiera.
+    interaction_target_id: Mapped[str | None] = mapped_column(String, nullable=True)
     required_player_level: Mapped[int] = mapped_column(Integer, default=1)
     time_limit_minutes: Mapped[int | None] = mapped_column(Integer, nullable=True)
     reward_type: Mapped[str] = mapped_column(String)

@@ -47,7 +47,7 @@ package "Data Transfer Schemas (Pydantic Models)" {
         + title: str
         + narrative: str
         + interaction_type: str
-        + interaction_target_id: str
+        + interaction_target_id: str | None = None
         + required_player_level: int = 1
         + time_limit_minutes: int | None = None
         + reward_type: str
@@ -59,7 +59,7 @@ package "Data Transfer Schemas (Pydantic Models)" {
         + title: str
         + narrative: str
         + interaction_type: str
-        + interaction_target_id: str
+        + interaction_target_id: str | None
         + required_player_level: int
         + time_limit_minutes: int | None
         + reward_type: str

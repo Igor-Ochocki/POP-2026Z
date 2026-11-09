@@ -1,5 +1,6 @@
 import { apiClient } from '@api/apiClient';
 import { ApiError } from '@api/apiError';
+import { env } from '@config/env';
 import type {
   INewTaskActions,
   NewTaskViewModel,
@@ -86,7 +87,7 @@ export function useNewTask(): {
 
     onSubmitNewTask: async () => {
       try {
-        await apiClient.scenario.addTask(gameId, {
+        await apiClient.scenario.addTask(gameId, env.devUserId, {
           title: state.title,
           narrative: state.narrative,
           interactionType: state.interactionType,

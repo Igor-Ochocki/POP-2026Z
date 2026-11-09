@@ -13,9 +13,9 @@ export type TaskDTO = {
   title: string;
   narrative: string;
   interactionType: string;
-  interactionTargetId: string;
+  interactionTargetId: string | null;
   requiredPlayerLevel: number;
-  timeLimitMinutes: number;
+  timeLimitMinutes: number | null;
   rewardType: string;
   rewardValue: string;
 };

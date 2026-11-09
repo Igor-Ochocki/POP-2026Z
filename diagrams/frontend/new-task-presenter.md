@@ -30,7 +30,7 @@ useNewTask --> IScenarioApi
 useNewTask -u-> INewTaskWindows
 
 interface IScenarioApi <<interface>> {
-    addTask(gameId :string, task :TaskCreateDTO)
+    addTask(gameId :string, userId :string, task :TaskCreateDTO)
 }
 
 interface INewTaskWindows <<interface>> {
