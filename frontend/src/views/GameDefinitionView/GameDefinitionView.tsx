@@ -120,7 +120,6 @@ export function GameDefinitionView() {
               }
               onClick={actions.onEditParameters}
             />
-            {/* TODO: enable once PU56, PU60 and PU50 are implemented */}
             <ActionTile
               icon={<AutoStoriesOutlinedIcon />}
               title='Edytuj scenariusz gry'
@@ -136,7 +135,7 @@ export function GameDefinitionView() {
                   : undefined
               }
             />
-            {/* TODO: enable once PU60 and PU51 are implemented */}
+            {/* TODO: enable once PU60 is implemented */}
             <ActionTile
               icon={<MapOutlinedIcon />}
               title='Edytuj mapę gry'

@@ -30,21 +30,6 @@ const effectKindLabels: Record<EffectKind, string> = {
   changeLocation: 'zmiana lokacji',
   setFlag: 'ustawienie flagi',
   startMiniGame: 'rozpoczęcie minigry',
-  MOVEMENT: 'ruch',
-  ATTACK: 'atak',
-  USE_ITEM: 'użycie przedmiotu',
-  DIALOGUE: 'dialog',
-  CUSTOM: 'własna',
-  MINI_GAME: 'minigra',
-};
-
-const effectKindLabels: Record<EffectKind, string> = {
-  CHANGE_STAT: 'zmiana statystyki',
-  ADD_ITEM: 'dodanie przedmiotu',
-  REMOVE_ITEM: 'usunięcie przedmiotu',
-  CHANGE_LOCATION: 'zmiana lokacji',
-  SET_FLAG: 'ustawienie flagi',
-  START_MINI_GAME: 'rozpoczęcie minigry',
 };
 
 function keyByLabel<T extends string>(
@@ -95,10 +80,7 @@ export function ActionDefinitionView() {
             actions.onSaveAction();
           }}
         >
-          <PageHeader
-            title='Akcja'
-            subtitle='Interakcje dostępne dla graczy'
-          />
+          <PageHeader title='Akcja' subtitle='Interakcje dostępne dla graczy' />
           <FormSection title='Informacje ogólne'>
             <InputField
               label='Nazwa akcji'

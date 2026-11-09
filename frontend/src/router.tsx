@@ -20,7 +20,7 @@ export const router = createBrowserRouter([
       { path: 'creator/games/new', element: <GameDefinitionView /> },
       {
         path: 'creator/games/:gameId/actions/new',
-        element: <ActionDefinitionView />
+        element: <ActionDefinitionView />,
       },
       {
         path: 'creator/games/:gameId/scenario',
