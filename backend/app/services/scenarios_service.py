@@ -1,18 +1,23 @@
 from abc import ABC, abstractmethod
 
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
+
 
 from app.core.exceptions import NotFoundError
 from app.models.game import Game
 from app.models.scenario import Scenario
 from app.models.task import Task
-from app.schemas.scenario import ScenarioDetailSchema, TaskSchema
+from app.schemas.scenario import CreateTaskDTO, ScenarioDetailSchema, TaskSchema
+from app.core.exceptions import NotFoundError, ConflictError
 
 
 class IScenariosService(ABC):
     @abstractmethod
     def load_scenario(self, game_id: str, user_id: str) -> ScenarioDetailSchema: ...
-
+ 
+    @abstractmethod
+    def add_task(self, game_id: str, user_id: str, create_task_dto: CreateTaskDTO): ...
 
 class ScenariosService(IScenariosService):
     def __init__(self, db_session: Session) -> None:
@@ -55,3 +60,26 @@ class ScenariosService(IScenariosService):
             self.db_session.refresh(scenario)
 
         return self._map_to_response(scenario)
+
+    def add_task(self, game_id: str, user_id: str, create_task_dto: CreateTaskDTO):
+
+        scenario = self.load_scenario(game_id, user_id)
+
+        if scenario is None:
+            raise NotFoundError(f"Scenario not found for game_id: {game_id}, user_id: {user_id}")
+
+
+        task = Task(**create_task_dto.model_dump())
+        task.scenario_id = scenario.scenario_id
+        data = task.__dict__.copy()
+        data.pop('_sa_instance_state', None)
+        print(data)
+        
+        self.db_session.add(task)
+
+        try:
+            self.db_session.commit()
+
+        except IntegrityError as exc:
+            self.db_session.rollback()
+            raise ConflictError("Task violates a database constraint") from exc
