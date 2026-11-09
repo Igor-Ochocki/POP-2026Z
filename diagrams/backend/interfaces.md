@@ -47,9 +47,21 @@ package "Data Transfer Schemas (Pydantic Models)" {
         + title: str
         + narrative: str
         + interaction_type: str
-        + interaction_target_id: str
+        + interaction_target_id: str | None = None
         + required_player_level: int = 1
         + time_limit_minutes: int | None = None
+        + reward_type: str
+        + reward_value: str
+    }
+
+    class TaskSchema <<BaseModel>> {
+        + task_id: str
+        + title: str
+        + narrative: str
+        + interaction_type: str
+        + interaction_target_id: str | None
+        + required_player_level: int
+        + time_limit_minutes: int | None
         + reward_type: str
         + reward_value: str
     }
@@ -57,7 +69,7 @@ package "Data Transfer Schemas (Pydantic Models)" {
     class ScenarioDetailSchema <<BaseModel>> {
         + scenario_id: str
         + game_id: str
-        + tasks: list[TaskCreateSchema]
+        + tasks: list[TaskSchema]
         + victory_conditions: list[str]
     }
 
@@ -104,8 +116,8 @@ package "Services (Application Business Logic)" {
 
     class ScenariosService {
         - db_session: Session
-        + load_scenario(game_id: str): ScenarioDetailSchema
-        + add_task(scenario_id: str, dto: TaskCreateSchema): bool
+        + load_scenario(game_id: str, user_id: str): ScenarioDetailSchema
+        + add_task(game_id: str, dto: TaskCreateSchema): bool
     }
 
     class CalendarService {
@@ -120,6 +132,7 @@ GamesService ..> GameCreateSchema : consumes
 GamesService ..> GameResponseSchema : produces
 ActionsService ..> ActionCreateSchema : consumes
 ScenariosService ..> ScenarioDetailSchema : produces
+ScenarioDetailSchema *-- TaskSchema
 ScenariosService ..> TaskCreateSchema : consumes
 CalendarService ..> TimeSlotSchema : produces
 CalendarService ..> ReservationCreateSchema : consumes
