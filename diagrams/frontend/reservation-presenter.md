@@ -14,7 +14,7 @@ hide empty members
 title PU2 Rezerwacja czasu dla gry - presenter
 
 interface IReservationActions <<interface>> {
-    + onOpenReservation(slot: CalendarEventDTO)
+    + onOpenReservation(slot?: CalendarEventDTO)
     + onChangeParameter(field: string, value: any)
     + onSubmitReservation()
     + onConfirmReservation()
@@ -26,7 +26,7 @@ interface IReservationActions <<interface>> {
 }
 
 interface IReservationWindows <<interface>> {
-    + showReservationView(slot: CalendarEventDTO)
+    + showReservationView(slot?: CalendarEventDTO)
     + showReservationConfirmDialog()
     + showPaymentCompletedMessageDialog()
     + showSlotUnavailableMessageDialog()
@@ -36,6 +36,7 @@ interface IReservationWindows <<interface>> {
 
 class useReservation <<Hook>> {
     - getSelectedSlot(locationState: unknown): CalendarEventDTO | null
+    - loadSlots(slotDate: string)
     - createReservation()
     - startPayment(reservationId: string)
     - cancelReservation()
@@ -43,6 +44,9 @@ class useReservation <<Hook>> {
 
 class ReservationViewModel <<State>> {
     + selectedSlot: CalendarEventDTO | null
+    + canPickSlot: boolean
+    + slotDate: string
+    + availableSlots: CalendarEventDTO[]
     + participantCount: number
     + activeReservation: ReservationSummaryDTO | null
     + isProcessing: boolean

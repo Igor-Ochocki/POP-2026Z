@@ -32,17 +32,6 @@
   border-radius: var(--radius-md);
 }
 
-.reservation-page__empty {
-  display: grid;
-  justify-items: start;
-  gap: 1rem;
-  width: 100%;
-  max-width: 720px;
-  padding: 1.5rem;
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
-}
-
 .reservation-panel {
   display: grid;
   gap: 1rem;

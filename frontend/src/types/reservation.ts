@@ -26,6 +26,11 @@ export interface ReservationSummaryDTO {
 
 export interface ReservationViewModel {
   selectedSlot: CalendarEventDTO | null;
+  // Opened via "Dodaj wydarzenie" - the user picks the slot in the form.
+  canPickSlot: boolean;
+  // YYYY-MM-DD chosen in the form and the slots offered for that day.
+  slotDate: string;
+  availableSlots: CalendarEventDTO[];
   participantCount: number;
   activeReservation: ReservationSummaryDTO | null;
   isProcessing: boolean;
@@ -34,7 +39,7 @@ export interface ReservationViewModel {
 }
 
 export interface IReservationActions {
-  onOpenReservation(slot: CalendarEventDTO): void;
+  onOpenReservation(slot?: CalendarEventDTO): void;
   onChangeParameter(field: string, value: unknown): void;
   onSubmitReservation(): void;
   onConfirmReservation(): void;
@@ -46,7 +51,7 @@ export interface IReservationActions {
 }
 
 export interface IReservationWindows {
-  showReservationView(slot: CalendarEventDTO): void;
+  showReservationView(slot?: CalendarEventDTO): void;
   showReservationConfirmDialog(): void;
   showPaymentCompletedMessageDialog(): void;
   showSlotUnavailableMessageDialog(): void;

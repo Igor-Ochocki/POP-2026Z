@@ -22,6 +22,8 @@ class ReservationView <<View>> {
 }
 
 class ReservationPanel <<View>> {
+    + onSlotDateChange(value: string)
+    + onSlotChange(slotId: string)
     + onParticipantCountChange(value: string)
     + onSubmitReservationClick()
     + onPayNowClick()
@@ -63,7 +65,7 @@ ReservationWindows --> ReservationView
 ReservationWindows --> ConfirmDialog
 ReservationWindows --> MessageDialog
 
-CalendarView --> IReservationActions : wybór terminu - onOpenReservation (PU2)
+CalendarView --> IReservationActions : wybór terminu / "Dodaj wydarzenie" - onOpenReservation (PU2)
 ReservationView *-- ReservationPanel
 ReservationPanel --> CancelReservationConfirmDialog : otwiera (stan lokalny panelu)
 ReservationView --> ReservationViewModel
@@ -77,6 +79,8 @@ ReservationView --> ICalendarActions : "Wróć" - onShowCalendar (PU1)
 ReservationPanel --> ICalendarActions : "Zapłać później" - onShowCalendar (PU1)
 
 note right of ReservationPanel
+    Bez terminu ("Dodaj wydarzenie") formularz pokazuje datę i listę
+    terminów z tego dnia (onChangeParameter slotDate / slotId).
     "Zapłać teraz" -> onStartPayment(reservationId) (mock płatności PU61).
     "Zapłać później" - rezerwacja zostaje nieopłacona (unpaid),
     użytkownik wraca do kalendarza.

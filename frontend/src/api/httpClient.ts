@@ -15,8 +15,13 @@ httpClient.interceptors.response.use(
   (error) => {
     // Common place for global error handling (auth, logging, toasts...).
     if (axios.isAxiosError(error)) {
+      // Backend errors carry a readable message in { detail } (AppError).
+      const detail: unknown = error.response?.data?.detail;
       return Promise.reject(
-        new ApiError(error.response?.status ?? null, error.message),
+        new ApiError(
+          error.response?.status ?? null,
+          typeof detail === 'string' ? detail : error.message,
+        ),
       );
     }
     return Promise.reject(error);

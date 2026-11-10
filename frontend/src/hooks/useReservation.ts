@@ -15,6 +15,9 @@ const RESERVATION_PATH = '/reservations';
 
 const initialState: ReservationViewModel = {
   selectedSlot: null,
+  canPickSlot: false,
+  slotDate: '',
+  availableSlots: [],
   participantCount: 1,
   activeReservation: null,
   isProcessing: false,
@@ -53,13 +56,25 @@ function getSelectedSlot(locationState: unknown): CalendarEventDTO | null {
   return { id: slot.id, title: slot.title, datetime };
 }
 
+// YYYY-MM-DD in local time - toISOString() would shift it to UTC.
+const toDateValue = (date: Date): string =>
+  [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0'),
+  ].join('-');
+
 function createReservationWindows(
   navigate: NavigateFunction,
   setDialogType: (dialogType: ReservationDialogTypes | null) => void,
 ): IReservationWindows {
   return {
+    // No slot opens an empty reservation view ("Dodaj wydarzenie").
     showReservationView: (slot) =>
-      void navigate(RESERVATION_PATH, { state: { selectedSlot: slot } }),
+      void navigate(
+        RESERVATION_PATH,
+        slot ? { state: { selectedSlot: slot } } : undefined,
+      ),
     showReservationConfirmDialog: () => setDialogType('confirmation'),
     showPaymentCompletedMessageDialog: () => setDialogType('paymentCompleted'),
     showSlotUnavailableMessageDialog: () => setDialogType('slotUnavailable'),
@@ -75,11 +90,11 @@ export function useReservation(): {
 } {
   const navigate = useNavigate();
   const location = useLocation();
-  const selectedSlot = getSelectedSlot(location.state);
-  const [state, setState] = useState<ReservationViewModel>(() => ({
-    ...initialState,
-    selectedSlot,
-  }));
+  const [state, setState] = useState<ReservationViewModel>(() => {
+    const selectedSlot = getSelectedSlot(location.state);
+    return { ...initialState, selectedSlot, canPickSlot: !selectedSlot };
+  });
+  const { selectedSlot } = state;
   const windows = createReservationWindows(navigate, (dialogType) =>
     setState((prev) => ({ ...prev, dialogType })),
   );
@@ -121,11 +136,49 @@ export function useReservation(): {
         setState((prev) => ({
           ...prev,
           isProcessing: false,
+          // 400 carries the reason, e.g. participant count outside the game's range.
           errorMessage:
-            'Nie udało się utworzyć rezerwacji. Sprawdź dane i spróbuj ponownie.',
+            error instanceof ApiError && error.status === 400
+              ? error.message
+              : 'Nie udało się utworzyć rezerwacji. Sprawdź dane i spróbuj ponownie.',
         }));
+        windows.hideDialogs();
       }
       return null;
+    }
+  };
+
+  const loadSlots = async (slotDate: string) => {
+    setState((prev) => ({
+      ...prev,
+      slotDate,
+      selectedSlot: null,
+      availableSlots: [],
+      errorMessage: null,
+    }));
+    const [year, month, day] = slotDate.split('-').map(Number);
+    if (!year || !month || !day) return;
+
+    try {
+      const events = await apiClient.calendar.getEvents(
+        new Date(year, month - 1, 1),
+      );
+      const availableSlots = events
+        .filter((event) => toDateValue(event.datetime) === slotDate)
+        .sort((a, b) => a.datetime.getTime() - b.datetime.getTime());
+      // Ignore responses for a date the user has already changed.
+      setState((prev) =>
+        prev.slotDate === slotDate ? { ...prev, availableSlots } : prev,
+      );
+    } catch {
+      setState((prev) =>
+        prev.slotDate === slotDate
+          ? {
+              ...prev,
+              errorMessage: 'Nie udało się wczytać terminów. Spróbuj ponownie.',
+            }
+          : prev,
+      );
     }
   };
 
@@ -188,10 +241,23 @@ export function useReservation(): {
   };
 
   return {
-    state: { ...state, selectedSlot },
+    state,
     actions: {
       onOpenReservation: windows.showReservationView,
       onChangeParameter: (field, value) => {
+        if (field === 'slotDate') {
+          void loadSlots(String(value));
+          return;
+        }
+        if (field === 'slotId') {
+          setState((prev) => ({
+            ...prev,
+            selectedSlot:
+              prev.availableSlots.find((slot) => slot.id === value) ?? null,
+            errorMessage: null,
+          }));
+          return;
+        }
         if (field !== 'participantCount') return;
         const participantCount = Number(value);
         setState((prev) => ({
@@ -206,7 +272,7 @@ export function useReservation(): {
         if (!selectedSlot) {
           setState((prev) => ({
             ...prev,
-            errorMessage: 'Nie wybrano terminu. Wróć do kalendarza.',
+            errorMessage: 'Wybierz termin rezerwacji.',
           }));
           return;
         }
@@ -229,7 +295,7 @@ export function useReservation(): {
         setState((prev) => ({
           ...prev,
           errorMessage:
-            'Ten termin został już zarezerwowany. Wybierz inny termin w kalendarzu.',
+            'Ten termin został już zarezerwowany. Wybierz inny termin.',
         }));
         windows.hideDialogs();
       },

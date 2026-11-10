@@ -46,8 +46,10 @@ export function CalendarView() {
       />
 
       <div className='calendar-page__actions'>
-        {/* TODO: PU39 onAddEvent */}
-        <Button variant='primary' disabled>
+        <Button
+          variant='primary'
+          onClick={() => reservation.actions.onOpenReservation()}
+        >
           Dodaj wydarzenie
         </Button>
       </div>

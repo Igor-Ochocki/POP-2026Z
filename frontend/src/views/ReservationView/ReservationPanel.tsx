@@ -7,7 +7,10 @@ import type {
 import type { CalendarEventDTO } from '@app-types/calendar';
 
 interface ReservationPanelProps {
-  selectedSlot: CalendarEventDTO;
+  selectedSlot: CalendarEventDTO | null;
+  canPickSlot: boolean;
+  slotDate: string;
+  availableSlots: CalendarEventDTO[];
   participantCount: number;
   activeReservation: ReservationSummaryDTO | null;
   isProcessing: boolean;
@@ -27,6 +30,9 @@ const formatDate = (date: Date) =>
     timeStyle: 'short',
   }).format(date);
 
+const formatTime = (date: Date) =>
+  new Intl.DateTimeFormat('pl-PL', { timeStyle: 'short' }).format(date);
+
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat('pl-PL', {
     style: 'currency',
@@ -35,6 +41,9 @@ const formatCurrency = (amount: number) =>
 
 export function ReservationPanel({
   selectedSlot,
+  canPickSlot,
+  slotDate,
+  availableSlots,
   participantCount,
   activeReservation,
   isProcessing,
@@ -86,16 +95,18 @@ export function ReservationPanel({
       aria-labelledby='reservation-panel-title'
     >
       <h2 id='reservation-panel-title'>Rezerwacja terminu</h2>
-      <dl className='reservation-panel__details'>
-        <div>
-          <dt>Gra</dt>
-          <dd>{selectedSlot.title}</dd>
-        </div>
-        <div>
-          <dt>Termin</dt>
-          <dd>{formatDate(selectedSlot.datetime)}</dd>
-        </div>
-      </dl>
+      {selectedSlot && (
+        <dl className='reservation-panel__details'>
+          <div>
+            <dt>Gra</dt>
+            <dd>{selectedSlot.title}</dd>
+          </div>
+          <div>
+            <dt>Termin</dt>
+            <dd>{formatDate(selectedSlot.datetime)}</dd>
+          </div>
+        </dl>
+      )}
 
       {activeReservation ? (
         <div className='reservation-panel__summary' aria-live='polite'>
@@ -144,6 +155,47 @@ export function ReservationPanel({
         </div>
       ) : (
         <form className='reservation-panel__form' onSubmit={handleSubmit}>
+          {canPickSlot && (
+            <>
+              <label className='reservation-panel__field'>
+                <span>Data</span>
+                <input
+                  className='input'
+                  type='date'
+                  required
+                  value={slotDate}
+                  onChange={(event) =>
+                    onChangeParameter('slotDate', event.currentTarget.value)
+                  }
+                />
+              </label>
+              <label className='reservation-panel__field'>
+                <span>Termin</span>
+                <select
+                  className='input'
+                  required
+                  disabled={!slotDate || availableSlots.length === 0}
+                  value={selectedSlot?.id ?? ''}
+                  onChange={(event) =>
+                    onChangeParameter('slotId', event.currentTarget.value)
+                  }
+                >
+                  <option value='' disabled>
+                    {!slotDate
+                      ? 'Najpierw wybierz datę'
+                      : availableSlots.length === 0
+                        ? 'Brak terminów w tym dniu'
+                        : 'Wybierz termin'}
+                  </option>
+                  {availableSlots.map((slot) => (
+                    <option key={slot.id} value={slot.id}>
+                      {formatTime(slot.datetime)} – {slot.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </>
+          )}
           <label className='reservation-panel__field'>
             <span>Liczba uczestników</span>
             <input
@@ -158,7 +210,7 @@ export function ReservationPanel({
               }
             />
           </label>
-          <Button type='submit' disabled={isProcessing}>
+          <Button type='submit' disabled={isProcessing || !selectedSlot}>
             Zarezerwuj termin
           </Button>
         </form>
@@ -180,7 +232,7 @@ export function ReservationPanel({
         <p>
           {confirmCancellation
             ? 'Termin zostanie zwolniony, a rezerwacja anulowana.'
-            : `Czy potwierdzasz rezerwację terminu „${selectedSlot.title}” dla ${participantCount} uczestników?`}
+            : `Czy potwierdzasz rezerwację terminu „${selectedSlot?.title ?? ''}” dla ${participantCount} uczestników?`}
         </p>
         <div className='reservation-panel__actions'>
           <Button

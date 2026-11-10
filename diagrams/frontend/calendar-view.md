@@ -41,12 +41,12 @@ CalendarView --> CalendarViewModel
 Calendar --> ICalendarActions : onChangeMonth
 
 interface IReservationActions <<interface>>
-CalendarView --> IReservationActions : wybór terminu - onOpenReservation (PU2)
+CalendarView --> IReservationActions : wybór terminu / "Dodaj wydarzenie" - onOpenReservation (PU2)
 
 note right of Calendar
     FullCalendar (widok miesiąca) - przy zmianie
     miesiąca zgłasza jego pierwszy dzień.
-    "Dodaj wydarzenie" jest nieaktywne do czasu PU39.
+    "Dodaj wydarzenie" otwiera pusty widok rezerwacji.
 end note
 @enduml
 ```

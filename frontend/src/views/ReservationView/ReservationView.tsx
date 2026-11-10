@@ -48,28 +48,22 @@ export function ReservationView() {
         </p>
       )}
 
-      {state.selectedSlot ? (
-        <ReservationPanel
-          selectedSlot={state.selectedSlot}
-          participantCount={state.participantCount}
-          activeReservation={state.activeReservation}
-          isProcessing={state.isProcessing}
-          dialogOpen={state.dialogType === 'confirmation'}
-          onChangeParameter={actions.onChangeParameter}
-          onSubmitReservation={actions.onSubmitReservation}
-          onConfirmReservation={actions.onConfirmReservation}
-          onCancelReservation={actions.onCancelReservation}
-          onPayLater={calendar.actions.onShowCalendar}
-          onStartPayment={actions.onStartPayment}
-        />
-      ) : (
-        <section className='reservation-page__empty'>
-          <p>Nie wybrano terminu. Wróć do kalendarza i kliknij wydarzenie.</p>
-          <Button onClick={calendar.actions.onShowCalendar}>
-            Otwórz kalendarz
-          </Button>
-        </section>
-      )}
+      <ReservationPanel
+        selectedSlot={state.selectedSlot}
+        canPickSlot={state.canPickSlot}
+        slotDate={state.slotDate}
+        availableSlots={state.availableSlots}
+        participantCount={state.participantCount}
+        activeReservation={state.activeReservation}
+        isProcessing={state.isProcessing}
+        dialogOpen={state.dialogType === 'confirmation'}
+        onChangeParameter={actions.onChangeParameter}
+        onSubmitReservation={actions.onSubmitReservation}
+        onConfirmReservation={actions.onConfirmReservation}
+        onCancelReservation={actions.onCancelReservation}
+        onPayLater={calendar.actions.onShowCalendar}
+        onStartPayment={actions.onStartPayment}
+      />
 
       {message && (
         <MessageDialog
