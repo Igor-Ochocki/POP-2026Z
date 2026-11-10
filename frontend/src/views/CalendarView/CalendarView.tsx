@@ -2,10 +2,12 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import Button from '@components/Button/Button';
 import Calendar from '@components/Calendar/Calendar';
 import { useCalendar } from '@hooks/useCalendar';
+import { useReservations } from '@hooks/useReservations';
 import './CalendarView.css';
 
 export function CalendarView() {
   const { state, actions } = useCalendar();
+  const reservations = useReservations();
 
   return (
     <main className='calendar-page'>
@@ -34,7 +36,14 @@ export function CalendarView() {
         </div>
       )}
 
-      <Calendar events={state.events} onMonthChange={actions.onChangeMonth} />
+      <Calendar
+        events={state.events}
+        onMonthChange={actions.onChangeMonth}
+        onEventClick={(eventId) => {
+          const slot = state.events.find((event) => event.id === eventId);
+          if (slot) reservations.actions.onOpenReservation(slot);
+        }}
+      />
 
       <div className='calendar-page__actions'>
         {/* TODO: PU39 onAddEvent */}

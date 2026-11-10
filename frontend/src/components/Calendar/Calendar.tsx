@@ -14,6 +14,7 @@ interface CalendarProps {
   events: CalendarEventDTO[];
   // First day of the month currently shown - also fired on the first render.
   onMonthChange: (month: Date) => void;
+  onEventClick: (eventId: string) => void;
 }
 
 function getDayCellClass({ isOther, isToday }: DayCellInfo): string {
@@ -23,7 +24,11 @@ function getDayCellClass({ isOther, isToday }: DayCellInfo): string {
   return classes.join(' ');
 }
 
-export default function Calendar({ events, onMonthChange }: CalendarProps) {
+export default function Calendar({
+  events,
+  onMonthChange,
+  onEventClick,
+}: CalendarProps) {
   return (
     <div className='calendar'>
       <FullCalendar
@@ -40,6 +45,7 @@ export default function Calendar({ events, onMonthChange }: CalendarProps) {
           title,
           start: datetime,
         }))}
+        eventClick={(info) => onEventClick(info.event.id)}
         datesSet={(info: DatesSetInfo) => onMonthChange(info.view.currentStart)}
         toolbarClass='calendar-toolbar'
         toolbarTitleClass='calendar-title'

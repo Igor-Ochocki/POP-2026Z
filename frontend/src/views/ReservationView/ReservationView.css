@@ -1,0 +1,142 @@
+.reservation-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem 1rem;
+  min-height: 100%;
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+.reservation-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 720px;
+}
+
+.reservation-page__header h1 {
+  margin: 0;
+  font: var(--font-title);
+}
+
+.reservation-page__error {
+  width: 100%;
+  max-width: 720px;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  color: var(--color-error);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+}
+
+.reservation-page__empty {
+  display: grid;
+  justify-items: start;
+  gap: 1rem;
+  width: 100%;
+  max-width: 720px;
+  padding: 1.5rem;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+}
+
+.reservation-panel {
+  display: grid;
+  gap: 1rem;
+  width: 100%;
+  max-width: 720px;
+  padding: 1.5rem;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.reservation-panel h2,
+.reservation-panel h3 {
+  margin: 0;
+}
+
+.reservation-panel__details {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.reservation-panel__details div {
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.3fr) 1fr;
+  gap: 1rem;
+}
+
+.reservation-panel__details dt {
+  color: var(--color-text-dim);
+}
+
+.reservation-panel__details dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.reservation-panel__form,
+.reservation-panel__summary {
+  display: grid;
+  gap: 1rem;
+}
+
+.reservation-panel__field {
+  display: grid;
+  gap: 0.25rem;
+  max-width: 20rem;
+}
+
+.reservation-panel__summary p {
+  margin: 0;
+}
+
+.reservation-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.reservation-panel__dialog {
+  width: min(32rem, calc(100vw - 2rem));
+  padding: 1.5rem;
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: none;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.reservation-panel__dialog::backdrop {
+  background: rgb(0 0 0 / 45%);
+}
+
+.reservation-panel__dialog[open] {
+  display: grid;
+  gap: 1rem;
+}
+
+.reservation-panel__dialog h2,
+.reservation-panel__dialog p {
+  margin: 0;
+}
+
+@media (max-width: 520px) {
+  .reservation-page__header {
+    align-items: flex-start;
+  }
+
+  .reservation-panel__details div {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+
+  .reservation-panel__actions {
+    flex-direction: column;
+  }
+}

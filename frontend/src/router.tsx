@@ -9,6 +9,7 @@ import { NotFoundView } from '@views/NotFoundView/NotFoundView';
 import { GameListView } from '@views/GameListView/GameListView';
 import { NewTaskView } from '@views/NewTaskView/NewTaskView';
 import { ScenarioEditorView } from '@views/ScenarioEditorView/ScenarioEditorView';
+import { ReservationView } from '@views/ReservationView/ReservationView';
 
 export const router = createBrowserRouter([
   {
@@ -17,6 +18,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <HomeView /> },
       { path: 'calendar', element: <CalendarView /> },
+      { path: 'reservations', element: <ReservationView /> },
       { path: 'creator', element: <CreatorPanelView /> },
       { path: 'creator/games', element: <GameListView /> },
       // :gameId is 'new' for a game that has not been saved yet.
