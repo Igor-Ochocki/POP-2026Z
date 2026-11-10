@@ -73,7 +73,7 @@ end note
 
 note bottom of IScenariosApi
     DTO i porty API: interfaces.md.
-    Backend PU57 (POST /games/{id}/scenario/tasks) w przygotowaniu.
+    Backend PU57 (POST /games/{id}/scenario/tasks): backend/new-task.md.
 end note
 @enduml
 ```

@@ -24,9 +24,13 @@ box "Frontend" #F4F8FF
     participant "IGamesApi" as IAPI <<interface>>
     participant "gamesApi" as API <<API>>
 end box
-box "Backend (w przygotowaniu)" #FFF8EE
+box "Backend" #FFF8EE
     participant "IGamesApi\n/api/v1/games" as REST <<interface>>
+    participant "GamesController" as C <<Controller>>
+    participant "IGamesService" as IS <<interface>>
+    participant "GamesService" as S <<Service>>
 end box
+database "SQLite" as DB
 
 == Otwarcie listy gier ==
 U -> VC : "Lista gier"
@@ -39,13 +43,21 @@ par tagi do filtrowania
     P -> IAPI : getGameTags()
     IAPI -> API : getGameTags()
     API -> REST : GET /games/tags
-    REST --> API : string[*]
+    REST -> C : get_game_tags()
+    C -> IS : get_game_tags()
+    IS -> S : get_game_tags()
+    S -> DB : SELECT games.tags
+    S --> API : 200 list[str]
     API --> P : string[*]
-else pierwsza strona gier
+else pierwsza strona gier twórcy
     P -> IAPI : getGames(userId, [], 10, 0)
     IAPI -> API : getGames(userId, [], 10, 0)
     API -> REST : GET /games?user_id&limit=10&offset=0
-    REST --> API : GameResponseSchema[*]
+    REST -> C : get_games(user_id, tags, limit, offset)
+    C -> IS : get_games(user_id, tags, limit, offset)
+    IS -> S : get_games(user_id, tags, limit, offset)
+    S -> DB : SELECT games WHERE author_id = user_id ORDER BY title
+    S --> API : 200 list[GameResponseSchema]
     API --> P : GameMetadataDTO[*]
 end
 
@@ -78,8 +90,12 @@ opt filtrowanie po tagach
     IA -> P : onFilterSubmit(tags)
     P -> IAPI : getGames(userId, tags, 10, 0)
     IAPI -> API : getGames(...)
-    API -> REST : GET /games?user_id&tags=..&limit=10&offset=0
-    REST --> API : GameResponseSchema[*]
+    API -> REST : GET /games?user_id&tags=a&tags=b&limit=10&offset=0
+    REST -> C : get_games(...)
+    C -> IS : get_games(...)
+    IS -> S : get_games(...)
+    S -> DB : SELECT games autora
+    S --> API : 200 gry z wszystkimi tagami
     API --> P : GameMetadataDTO[*]
     V --> U : przefiltrowana lista
 end
@@ -91,7 +107,10 @@ opt kolejna strona
     P -> IAPI : getGames(userId, appliedTags, 10, games.length)
     IAPI -> API : getGames(...)
     API -> REST : GET /games?user_id&limit=10&offset=n
-    REST --> API : GameResponseSchema[*]
+    REST -> C : get_games(...)
+    C -> IS : get_games(...)
+    IS -> S : get_games(...)
+    S --> API : 200 kolejna strona
     API --> P : GameMetadataDTO[*]
     V --> U : lista z dołączoną stroną
 end
@@ -101,11 +120,6 @@ opt wybór gry - edycja
     V -> IG : onOpenGame(gameId)
     ref over IG : PU49 Zdefiniowanie gry - definicja wybranej gry
 end
-
-note over REST
-    Backend PU25 (GET /games, GET /games/tags)
-    jest w przygotowaniu.
-end note
 @enduml
 ```
 

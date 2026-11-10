@@ -66,7 +66,7 @@ end note
 
 note bottom of IGamesApi
     DTO i porty API: interfaces.md.
-    Backend PU25 (GET /games, GET /games/tags) w przygotowaniu.
+    Backend PU25 (GET /games, GET /games/tags): backend/game-list.md.
 end note
 @enduml
 ```

@@ -23,9 +23,13 @@ box "Frontend" #F4F8FF
     participant "IScenariosApi" as IAPI <<interface>>
     participant "scenariosApi" as API <<API>>
 end box
-box "Backend (w przygotowaniu)" #FFF8EE
+box "Backend" #FFF8EE
     participant "IScenariosApi\n/api/v1/games/{id}/scenario" as REST <<interface>>
+    participant "ScenariosController" as C <<Controller>>
+    participant "IScenariosService" as IS <<interface>>
+    participant "ScenariosService" as S <<Service>>
 end box
+database "SQLite" as DB
 
 note over U, VS
     Warunek początkowy: w edytorze wyświetlony
@@ -50,20 +54,22 @@ alt Kroki 4-6: zapis zadania
     U -> V : "Zapisz i zamknij"
     V -> IA : onSubmitNewTask()
     IA -> P : onSubmitNewTask()
-    alt Scenariusz alternatywny 1: brak wymaganych pól (sprawdzenie przed wysłaniem)
+    alt Alternatywny 1: brak wymaganych pól (sprawdzenie przed wysłaniem)
         P -> IW : showIncorrectDataMessageDialog()
         IW --> U : "Podane dane zadania są błędne" (powrót do kroku 3)
     else dane kompletne
         P -> IAPI : addTask(gameId, userId, task)
         IAPI -> API : addTask(gameId, userId, task)
         API -> REST : POST /games/{gameId}/scenario/tasks?user_id
-        note right of REST
-            Backend PU57 w przygotowaniu -
-            walidacja i zapis zadania po stronie serwera.
-        end note
+        REST -> C : add_task(game_id, user_id, dto)
+        C -> IS : add_task(game_id, user_id, dto)
+        IS -> S : add_task(game_id, user_id, dto)
+        S -> DB : SELECT games, scenarios, tasks
         alt Kroki 5-6: zapis udany
-            REST --> API : 201
-            API --> P : odpowiedź
+            S -> DB : INSERT tasks (position = liczba zadań)
+            S --> C : TaskSchema
+            C --> API : 201 TaskSchema
+            API --> P : TaskDTO
             P -> IW : showNewTaskSuccessMessageDialog()
             IW --> U : "Nowe zadanie zostało dodane."
             U -> V : "OK"
@@ -71,13 +77,13 @@ alt Kroki 4-6: zapis zadania
             IA -> P : onNewTaskSuccessMessageDialogConfirm()
             P --> VS : powrót do edytora
             ref over VS : PU56 - ponowne wczytanie scenariusza
-        else Scenariusz alternatywny 1: dane niepoprawne (422)
-            REST --> API : 422
+        else Alternatywny 1: dane niepoprawne (walidacja schematu)
+            C --> API : 422
             API --> P : ApiError(422)
             P -> IW : showIncorrectDataMessageDialog()
             IW --> U : "Podane dane zadania są błędne" (powrót do kroku 3)
-        else Scenariusz alternatywny 2: konflikt powiązań (409)
-            REST --> API : 409
+        else Alternatywny 2: konflikt powiązań (obiekt interakcji już użyty)
+            S --> API : 409 (ConflictError)
             API --> P : ApiError(409)
             P -> IW : showConflictMessageDialog()
             IW --> U : ostrzeżenie o konflikcie powiązań
@@ -86,13 +92,13 @@ alt Kroki 4-6: zapis zadania
             IA -> P : onConflictMessageDialogConfirm()
             P -> IW : hideDialogs()
             note right of U : wybór innego obiektu interakcji,\npowrót do kroku 3
-        else inny błąd (np. 404, brak połączenia)
+        else inny błąd (gra nie istnieje albo cudza - 404, brak połączenia)
             API --> P : ApiError
             P -> IW : showSaveErrorMessageDialog()
             IW --> U : "Nie udało się zapisać zadania. Spróbuj ponownie."
         end
     end
-else Scenariusz alternatywny 3: anulowanie
+else Alternatywny 3: anulowanie
     U -> V : "Anuluj"
     V -> IA : onCancelNewTask()
     IA -> P : onCancelNewTask()

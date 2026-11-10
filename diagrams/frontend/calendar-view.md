@@ -40,6 +40,9 @@ CalendarView --> ICalendarActions
 CalendarView --> CalendarViewModel
 Calendar --> ICalendarActions : onChangeMonth
 
+interface IReservationActions <<interface>>
+CalendarView --> IReservationActions : wybór terminu - onOpenReservation (PU2)
+
 note right of Calendar
     FullCalendar (widok miesiąca) - przy zmianie
     miesiąca zgłasza jego pierwszy dzień.

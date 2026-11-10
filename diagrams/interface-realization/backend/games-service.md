@@ -125,3 +125,50 @@ end note
 </div>
 
 ![](rendered/games-service-submit-to-reviewer.svg)
+
+<div hidden>
+
+```
+@startuml games-service-get-games
+skinparam shadowing false
+skinparam roundcorner 4
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+skinparam maxMessageSize 260
+skinparam ParticipantPadding 8
+hide footbox
+autonumber
+
+title IGamesService.get_games / get_game_tags - realizacja interfejsu (PU25)
+
+participant "GamesController" as C <<Controller>>
+participant "IGamesService" as I <<interface>>
+participant ":GamesService" as S
+participant "db_session: Session" as DB
+
+C -> I : get_games(user_id, tags, limit, offset)
+I -> S : get_games(user_id, tags, limit, offset)
+S -> DB : scalars(select(Game)\n.where(author_id == user_id)\n.order_by(title))
+DB --> S : Game[*]
+opt podano tagi
+    S -> S : zostawia gry, których tags zawierają wszystkie podane
+end
+S -> S : wycinek [offset : offset + limit]
+loop każda gra
+    S -> S : _map_to_response(game)
+end
+S --> C : list[GameResponseSchema]
+
+== get_game_tags ==
+C -> I : get_game_tags()
+I -> S : get_game_tags()
+S -> DB : scalars(select(Game.tags))
+DB --> S : list[list[str]]
+S -> S : suma zbiorów, sortowanie
+S --> C : list[str]
+@enduml
+```
+
+</div>
+
+![](rendered/games-service-get-games.svg)

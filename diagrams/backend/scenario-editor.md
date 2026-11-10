@@ -51,7 +51,7 @@ note right of ScenariosService
     przy pierwszym odczycie (get-or-create).
     victory_conditions - placeholder (pusta lista) do PU58.
     Zadania (PU57) trafią pod ten sam prefiks:
-    POST /{game_id}/scenario/tasks - w przygotowaniu.
+    POST /{game_id}/scenario/tasks - backend/new-task.md.
 end note
 
 note bottom of Task

@@ -76,7 +76,8 @@ package "Scenariusz i zadania (PU56, PU57)" as P_Scenario {
     ScenarioDetailSchema *-- "*" TaskSchema
 
     note bottom of TaskCreateSchema
-        Backend PU57 w przygotowaniu.
+        Aktualna wersja w new-task.md (PU57),
+        przeniesienie po scaleniu backendu PU57.
     end note
 }
 

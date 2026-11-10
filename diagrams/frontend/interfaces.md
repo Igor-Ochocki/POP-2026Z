@@ -88,7 +88,7 @@ package "Scenariusz i zadania (PU56, PU57)" as P_Scenario {
 
     interface IScenariosApi <<interface>> {
         + loadScenario(gameId: string, userId: string): Promise<ScenarioDetailDTO>
-        + addTask(gameId: string, userId: string, task: TaskCreateDTO): Promise<unknown>
+        + addTask(gameId: string, userId: string, task: TaskCreateDTO): Promise<TaskDTO>
     }
 
     ScenarioDetailDTO *-- "*" TaskDTO
@@ -152,7 +152,7 @@ package "Kalendarz (PU1)" as P_Calendar {
     ICalendarApi ..> CalendarEventDTO
 }
 
-package "Rezerwacje (PU2) - planowane" as P_Reservations <<planned>> {
+package "Rezerwacje (PU2)" as P_Reservations {
     class ReservationCreateDTO <<DTO>> {
         + slotId: string
         + participantCount: number
@@ -178,6 +178,7 @@ package "Rezerwacje (PU2) - planowane" as P_Reservations <<planned>> {
     interface IReservationsApi <<interface>> {
         + createReservation(userId: string, dto: ReservationCreateDTO): Promise<ReservationSummaryDTO>
         + cancelReservation(reservationId: string, userId: string): Promise<boolean>
+        + markPaymentCompleted(reservationId: string, userId: string): Promise<ReservationSummaryDTO>
     }
 
     ReservationSummaryDTO ..> ReservationStatus
@@ -190,6 +191,7 @@ package "Klient API" as P_Client {
         + games: IGamesApi
         + scenarios: IScenariosApi
         + actions: IActionsApi
+        + reservations: IReservationsApi
         + calendar: ICalendarApi
     }
 
@@ -208,13 +210,13 @@ package "Klient API" as P_Client {
 apiClient --> IGamesApi
 apiClient --> IScenariosApi
 apiClient --> IActionsApi
+apiClient --> IReservationsApi
 apiClient --> ICalendarApi
 
 note bottom of P_Client
     Hooki (prezentery) wołają backend wyłącznie przez apiClient.<moduł>.<metoda>().
     Moduły API mapują camelCase (DTO) <-> snake_case (schematy backendu).
     userId to parametr user_id - do czasu logowania brany z ENV (VITE_DEV_USER_ID).
-    Moduł rezerwacji (IReservationsApi) nie jest jeszcze zaimplementowany.
 end note
 @enduml
 ```

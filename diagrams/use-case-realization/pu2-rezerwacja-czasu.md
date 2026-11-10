@@ -14,13 +14,13 @@ autonumber
 title PU2 Rezerwacja czasu dla gry - realizacja przypadku użycia (komponenty i interfejsy)
 
 actor "Organizator zewnętrzny" as U
-box "Frontend (planowany - projekt z PR #72)" #F4F8FF
+box "Frontend" #F4F8FF
     participant "CalendarView" as VC <<View>>
     participant "ReservationView" as V <<View>>
     participant "IReservationActions" as IA <<interface>>
     participant "useReservation" as P <<Hook>>
     participant "IReservationWindows" as IW <<interface>>
-    participant "IPaymentActions" as IPAY <<interface>>
+    participant "ICalendarActions" as ICAL <<interface>>
     participant "IReservationsApi" as IAPI <<interface>>
     participant "reservationsApi" as API <<API>>
 end box
@@ -34,11 +34,12 @@ end box
 database "SQLite" as DB
 
 == Wybór terminu w kalendarzu (PU1) ==
-U -> VC : wybór wolnego terminu
+U -> VC : kliknięcie terminu
 VC -> IA : onOpenReservation(slot)
 IA -> P : onOpenReservation(slot)
-P -> IW : showReservationView()
-IW --> U : formularz rezerwacji
+P -> IW : showReservationView(slot)
+IW --> V : /reservations + termin w danych nawigacji
+V --> U : formularz rezerwacji (gra, termin)
 
 U -> V : liczba uczestników
 V -> IA : onChangeParameter(participantCount, value)
@@ -46,14 +47,18 @@ IA -> P : onChangeParameter(participantCount, value)
 U -> V : "Zarezerwuj"
 V -> IA : onSubmitReservation()
 IA -> P : onSubmitReservation()
-P -> IW : showReservationConfirmDialog()
-IW --> U : potwierdzenie rezerwacji
+alt liczba uczestników < 1
+    P --> V : stan: errorMessage
+else
+    P -> IW : showReservationConfirmDialog()
+    IW --> U : potwierdzenie rezerwacji
+end
 
 == Utworzenie rezerwacji ==
 U -> V : "Potwierdź"
 V -> IA : onConfirmReservation()
 IA -> P : onConfirmReservation()
-P -> IAPI : createReservation(userId, dto)
+P -> IAPI : createReservation(userId, {slotId, participantCount})
 IAPI -> API : createReservation(userId, dto)
 API -> REST : POST /reservations?user_id
 REST -> C : create_reservation(user_id, dto)
@@ -68,24 +73,43 @@ alt termin wolny
     API --> P : ReservationSummaryDTO
     P --> V : stan: activeReservation
     V --> U : podsumowanie i koszt rezerwacji
-else termin zajęty (409) albo liczba uczestników poza zakresem gry (400)
-    C --> API : 409 / 400
-    API --> P : ApiError
+else termin zajęty (409)
+    C --> API : 409
+    API --> P : ApiError(409)
     P -> IW : showSlotUnavailableMessageDialog()
-    IW --> U : komunikat o niedostępnym terminie
+    IW --> U : komunikat o zajętym terminie
+    U -> V : "OK"
+    V -> IA : onSlotUnavailableMessageDialogConfirm()
+    IA -> P : onSlotUnavailableMessageDialogConfirm()
+else inny błąd (400 - liczba uczestników poza zakresem gry, 404)
+    API --> P : ApiError
+    P --> V : stan: errorMessage
 end
 
 == Płatność ==
-alt zapłać później
-    U -> V : "Zapłać później"
-    V -> IA : onPayLater()
-    IA -> P : onPayLater()
-else zapłać teraz
+alt zapłać teraz (mock płatności PU61)
     U -> V : "Zapłać teraz"
-    V -> IPAY : onStartPayment(reservationId)
-    ref over IPAY, DB : PU61 Płatność - w iteracji 1 mock:\nPOST /reservations/{id}/payment -> mark_payment_completed\n-> IPaymentService.process_payment, IMessageService.send_reservation_confirmation
+    V -> IA : onStartPayment(reservationId)
+    IA -> P : onStartPayment(reservationId)
+    P -> IAPI : markPaymentCompleted(reservationId, userId)
+    IAPI -> API : markPaymentCompleted(reservationId, userId)
+    API -> REST : POST /reservations/{id}/payment?user_id
+    REST -> C : mark_payment_completed(user_id, reservation_id)
+    C -> IS : mark_payment_completed(user_id, reservation_id)
+    IS -> S : mark_payment_completed(user_id, reservation_id)
+    S -> IPM : process_payment, send_reservation_confirmation
+    IPM -> DB : INSERT payments, messages
+    S -> DB : UPDATE reservations (confirmed, is_paid)
+    S --> API : 200 ReservationSummarySchema
+    API --> P : ReservationSummaryDTO
+    P -> IW : showPaymentCompletedMessageDialog()
+    IW --> U : potwierdzenie płatności
+else zapłać później
+    U -> V : "Zapłać później"
+    V -> ICAL : onShowCalendar()
+    ICAL --> U : kalendarz (rezerwacja zostaje nieopłacona)
 else cofnięcie rezerwacji
-    U -> V : "Anuluj"
+    U -> V : "Anuluj rezerwację", potwierdzenie
     V -> IA : onCancelReservation()
     IA -> P : onCancelReservation()
     P -> IAPI : cancelReservation(reservationId, userId)
@@ -100,11 +124,6 @@ else cofnięcie rezerwacji
     P -> IW : showReservationCancelledMessageDialog()
     IW --> U : komunikat o anulowaniu rezerwacji
 end
-
-note over VC, API
-    Frontend PU2 nie jest jeszcze zaimplementowany - lifeline'y frontendu
-    pochodzą z projektu (diagramy reservation-*). Backend jest gotowy.
-end note
 @enduml
 ```
 
