@@ -7,18 +7,11 @@ skinparam packageStyle rectangle
 skinparam shadowing false
 skinparam roundcorner 4
 skinparam linetype polyline
+skinparam nodesep 30
+skinparam ranksep 40
+hide empty members
 
 title PU51 Zdefiniowanie akcji - presenter
-
-class useActionDefinition <<Hook>> {
-    + onAddAction(gameId: string)
-    + onChangeParameter(field: string, value: any)
-    + onSaveAction()
-    + onIncompleteActionDataMessageDialogConfirm()
-    + onActionSaveErrorMessageDialogConfirm()
-    - toCreateDTO(gameId: string, form: ActionForm): ActionCreateDTO | null
-    - saveAction(action: ActionCreateDTO)
-}
 
 interface IActionDefinitionActions <<interface>> {
     + onAddAction(gameId: string)
@@ -36,8 +29,9 @@ interface IActionDefinitionWindows <<interface>> {
     + hideDialogs()
 }
 
-interface IActionsApi <<interface>> {
-    + createAction(action: ActionCreateDTO): Promise<ActionDTO>
+class useActionDefinition <<Hook>> {
+    - toCreateDTO(gameId: string, form: ActionForm): ActionCreateDTO | null
+    - saveAction(action: ActionCreateDTO)
 }
 
 class ActionDefinitionViewModel <<State>> {
@@ -54,61 +48,37 @@ class ActionForm {
     + outcomeValue: string
 }
 
-class ActionCreateDTO <<DTO>> {
-    + gameId: string
-    + name: string
-    + actionType: ActionType
-    + outcomeType: EffectKind
-    + outcomeValue: string
-}
-
-class ActionDTO <<DTO>> {
-    + actionId: string
-}
-
-enum ActionType {
-    movement
-    attack
-    useItem
-    dialogue
-    custom
-    miniGame
-}
-
-enum EffectKind {
-    changeStat
-    addItem
-    removeItem
-    changeLocation
-    setFlag
-    startMiniGame
-}
-
 enum ActionDefinitionDialogTypes {
     incompleteData
     actionSaved
     saveError
 }
 
+interface IActionsApi <<interface>>
+class ActionCreateDTO <<DTO>>
+enum ActionType
+enum EffectKind
+
 useActionDefinition .u.|> IActionDefinitionActions
 useActionDefinition -u-> IActionDefinitionWindows
-useActionDefinition --> IActionsApi : apiClient.actions
 useActionDefinition *-- "1" ActionDefinitionViewModel : state
 ActionDefinitionViewModel *-- "1" ActionForm : form
-ActionDTO -u-|> ActionCreateDTO
-IActionsApi ..> ActionCreateDTO
-IActionsApi ..> ActionDTO
+ActionDefinitionViewModel ..> ActionDefinitionDialogTypes
+ActionForm ..> ActionType
+ActionForm ..> EffectKind
+useActionDefinition ..> ActionCreateDTO
+useActionDefinition --> IActionsApi : apiClient.actions\ncreateAction
 
-note bottom of useActionDefinition
+note right of useActionDefinition
     onSaveAction: niepełny formularz albo 422 z backendu
     -> showIncompleteActionDataMessageDialog,
     inny błąd -> showActionSaveErrorMessageDialog.
+    Hook nie wywołuje API przy montowaniu, więc
+    GameDefinitionView może go użyć dla kafelka.
 end note
 
-note right of IActionsApi
-    DTO odpowiadają ActionCreateSchema i ActionSchema z backendu,
-    mapowanie camelCase <-> snake_case w actionsApi.
-    Wartości enumów takie jak na backendzie.
+note bottom of IActionsApi
+    DTO, enumy i porty API: interfaces.md
 end note
 @enduml
 ```

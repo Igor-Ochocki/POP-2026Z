@@ -108,7 +108,7 @@ export function useNewTask(): {
         return;
       }
       try {
-        await apiClient.scenario.addTask(gameId, env.devUserId, {
+        await apiClient.scenarios.addTask(gameId, env.devUserId, {
           title: state.title,
           narrative: state.narrative,
           interactionType: state.interactionType,

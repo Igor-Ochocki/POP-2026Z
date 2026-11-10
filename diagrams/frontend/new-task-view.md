@@ -1,82 +1,69 @@
+<div hidden>
+
 ```
-@startuml
-class NewTaskView {
-    show()
-    onClick()
+@startuml new-task-view
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam roundcorner 4
+skinparam linetype polyline
+skinparam nodesep 30
+skinparam ranksep 40
+hide empty members
+
+title PU57 Projektowanie zadania w scenariuszu gry - widok
+
+class NewTaskView <<View>> {
+    + onFieldChange(field: string, value: string | number)
+    + onSaveAndCloseClick()
+    + onCancelClick()
 }
 
-class ConfirmationDialog {
-    show()
-    onClick()
+class ConfirmDialog {
+    + show(title: string, message: string)
+    + onConfirmClick()
+    + onCancelClick()
 }
 
 class MessageDialog {
-    show()
-    onClick()
+    + show(title: string, message: string)
+    + onOkClick()
 }
 
 class CancelNewTaskConfirmationDialog
-CancelNewTaskConfirmationDialog -u-|> ConfirmationDialog
-
-class ConflictMessageDialog
-class IncorrectDataMessageDialog
 class NewTaskSuccessMessageDialog
+class IncorrectDataMessageDialog
+class ConflictMessageDialog
 class SaveErrorMessageDialog
 
-ConflictMessageDialog -u-|> MessageDialog
-IncorrectDataMessageDialog -u-|> MessageDialog
+CancelNewTaskConfirmationDialog -u-|> ConfirmDialog
 NewTaskSuccessMessageDialog -u-|> MessageDialog
+IncorrectDataMessageDialog -u-|> MessageDialog
+ConflictMessageDialog -u-|> MessageDialog
 SaveErrorMessageDialog -u-|> MessageDialog
 
-interface INewTaskActions <<interface>> {
-    onNewTaskSelect()
-    onSubmitNewTask()
-    onCancelNewTask()
-    onCancelNewTaskConfirm()
-    onCancelNewTaskCancel()
-    onNewTaskSuccessMessageDialogConfirm()
-    onIncorrectDataMessageDialogConfirm()
-    onConflictMessageDialogConfirm()
-    onSaveErrorMessageDialogConfirm()
-    onChangeParameter(field: string, value: string | number)
-}
+class NewTaskWindows
+interface INewTaskWindows <<interface>>
+interface INewTaskActions <<interface>>
+class NewTaskViewModel <<State>>
+class ScenarioEditorView <<View>>
 
-INewTaskActions <-u- CancelNewTaskConfirmationDialog
-INewTaskActions <-u- ConflictMessageDialog
-INewTaskActions <-u- IncorrectDataMessageDialog
-INewTaskActions <-u- NewTaskSuccessMessageDialog
-INewTaskActions <-u- SaveErrorMessageDialog
-INewTaskActions <-u- NewTaskView
+NewTaskWindows .u.|> INewTaskWindows
+NewTaskWindows --> NewTaskView
+NewTaskWindows --> ConfirmDialog
+NewTaskWindows --> MessageDialog
 
-NewTaskWindows --u-> CancelNewTaskConfirmationDialog
-NewTaskWindows --u-> ConflictMessageDialog
-NewTaskWindows --u-> IncorrectDataMessageDialog
-NewTaskWindows --u-> NewTaskSuccessMessageDialog
-NewTaskWindows --u-> SaveErrorMessageDialog
-NewTaskWindows --u-> NewTaskView
-
-interface INewTaskWindows <<interface>> {
-    showNewTaskView()
-    showCancelNewTaskConfirmationDialog()
-    showConflictMessageDialog()
-    showIncorrectDataMessageDialog()
-    showNewTaskSuccessMessageDialog()
-    showSaveErrorMessageDialog()
-    hideDialogs()
-}
-
-class NewTaskWindows {
-    showNewTaskView()
-    showCancelNewTaskConfirmationDialog()
-    showConflictMessageDialog()
-    showIncorrectDataMessageDialog()
-    showNewTaskSuccessMessageDialog()
-    showSaveErrorMessageDialog()
-    hideDialogs()
-}
-
-NewTaskWindows .d.|> INewTaskWindows
+ScenarioEditorView --> INewTaskActions : onNewTaskSelect
+NewTaskView --> INewTaskActions
+NewTaskView --> NewTaskViewModel
+CancelNewTaskConfirmationDialog --> INewTaskActions
+NewTaskSuccessMessageDialog --> INewTaskActions
+IncorrectDataMessageDialog --> INewTaskActions
+ConflictMessageDialog --> INewTaskActions
+SaveErrorMessageDialog --> INewTaskActions
 @enduml
 ```
+
+</div>
 
 ![](rendered/new-task-view.svg)

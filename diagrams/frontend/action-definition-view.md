@@ -7,15 +7,13 @@ skinparam packageStyle rectangle
 skinparam shadowing false
 skinparam roundcorner 4
 skinparam linetype polyline
+skinparam nodesep 30
+skinparam ranksep 40
+hide empty members
 
 title PU51 Zdefiniowanie akcji - widok
 
-class GameDefinitionView {
-    + onDefineActionClick()
-}
-
-class ActionDefinitionView {
-    + show(form: ActionForm, isSubmitting: boolean)
+class ActionDefinitionView <<View>> {
     + onFieldChange(field: string, value: string)
     + onSaveAndCloseClick()
     + onCancelClick()
@@ -26,43 +24,34 @@ class MessageDialog {
     + onOkClick()
 }
 
-interface IActionDefinitionActions <<interface>> {
-    + onAddAction(gameId: string)
-    + onChangeParameter(field: string, value: any)
-    + onSaveAction()
-    + onIncompleteActionDataMessageDialogConfirm()
-    + onActionSaveErrorMessageDialogConfirm()
-}
+class ActionSavedMessageDialog
+class IncompleteActionDataMessageDialog
+class ActionSaveErrorMessageDialog
 
-interface IActionDefinitionWindows <<interface>> {
-    + showActionDefinitionView(gameId: string)
-    + showActionSavedMessageDialog()
-    + showIncompleteActionDataMessageDialog()
-    + showActionSaveErrorMessageDialog()
-    + hideDialogs()
-}
-
-interface IGameDefinitionActions <<interface>> {
-    + onOpenGame(gameId: string)
-}
+ActionSavedMessageDialog -u-|> MessageDialog
+IncompleteActionDataMessageDialog -u-|> MessageDialog
+ActionSaveErrorMessageDialog -u-|> MessageDialog
 
 class ActionDefinitionWindows
+interface IActionDefinitionWindows <<interface>>
+interface IActionDefinitionActions <<interface>>
+class ActionDefinitionViewModel <<State>>
+interface IGameDefinitionActions <<interface>>
 
 ActionDefinitionWindows .u.|> IActionDefinitionWindows
 ActionDefinitionWindows --> ActionDefinitionView
 ActionDefinitionWindows --> MessageDialog
 
-GameDefinitionView --> IActionDefinitionActions : "Zdefiniuj akcję"
 ActionDefinitionView --> IActionDefinitionActions
-MessageDialog --> IActionDefinitionActions : błędy
-ActionDefinitionView --> IGameDefinitionActions : "Anuluj" (PU49)
-MessageDialog --> IGameDefinitionActions : "Sukces" (PU49)
+ActionDefinitionView --> ActionDefinitionViewModel
+IncompleteActionDataMessageDialog --> IActionDefinitionActions
+ActionSaveErrorMessageDialog --> IActionDefinitionActions
+ActionDefinitionView --> IGameDefinitionActions : "Anuluj" - onOpenGame (PU49)
+ActionSavedMessageDialog --> IGameDefinitionActions : onOpenGame (PU49)
 
-GameDefinitionView ..> ActionDefinitionView : "Zdefiniuj akcję"
-
-note right of GameDefinitionView
+note bottom of ActionDefinitionView
     Po zapisie akcji albo anulowaniu widok wraca
-    do definicji tej samej gry (onOpenGame).
+    do definicji tej samej gry (PU49).
 end note
 @enduml
 ```

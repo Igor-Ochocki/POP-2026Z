@@ -9,7 +9,7 @@ from app.schemas.scenario import ScenarioDetailSchema
 from app.services.scenarios_service import IScenariosService, ScenariosService
 
 
-class ScenariosApi(ABC):
+class IScenariosApi(ABC):
     @abstractmethod
     def load_scenario(self, game_id: str, user_id: str) -> ScenarioDetailSchema: ...
 

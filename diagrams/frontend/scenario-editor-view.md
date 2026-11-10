@@ -7,51 +7,34 @@ skinparam packageStyle rectangle
 skinparam shadowing false
 skinparam roundcorner 4
 skinparam linetype polyline
+skinparam nodesep 30
+skinparam ranksep 40
+hide empty members
 
 title PU56 Wyświetlenie scenariusza gry w edytorze - widok
 
-class GameDefinitionView {
-    + onEditScenarioClick()
-}
-
-class ScenarioEditorView {
-    + show(game: GameMetadataDTO, scenario: ScenarioDetailDTO)
+class ScenarioEditorView <<View>> {
     + onRetryClick()
     + onAddTaskClick()
     + onCloseClick()
 }
 
-class NewTaskView
-
-interface IScenarioEditorActions <<interface>> {
-    + onOpenScenarioEditor(gameId: string)
-    + onReloadScenario()
-}
-
-interface INewTaskActions <<interface>> {
-    + onNewTaskSelect()
-}
-
-interface IGameDefinitionActions <<interface>> {
-    + onOpenGame(gameId: string)
-}
-
-interface IScenarioEditorWindows <<interface>> {
-    + showScenarioEditorView(gameId: string)
-}
-
 class ScenarioEditorWindows
-
-GameDefinitionView --> IScenarioEditorActions : onOpenScenarioEditor
-ScenarioEditorView --> IScenarioEditorActions : onReloadScenario
-ScenarioEditorView --> INewTaskActions : "Dodaj zadanie" (PU57)
-ScenarioEditorView --> IGameDefinitionActions : "Zamknij" (PU49)
+interface IScenarioEditorWindows <<interface>>
+interface IScenarioEditorActions <<interface>>
+class ScenarioEditorViewModel <<State>>
+interface INewTaskActions <<interface>>
+interface IGameDefinitionActions <<interface>>
+class GameDefinitionView <<View>>
 
 ScenarioEditorWindows .u.|> IScenarioEditorWindows
 ScenarioEditorWindows --> ScenarioEditorView
 
-ScenarioEditorView ..> NewTaskView
-ScenarioEditorView ..> GameDefinitionView
+GameDefinitionView --> IScenarioEditorActions : onOpenScenarioEditor
+ScenarioEditorView --> IScenarioEditorActions : onReloadScenario
+ScenarioEditorView --> ScenarioEditorViewModel
+ScenarioEditorView --> INewTaskActions : "Dodaj zadanie" - onNewTaskSelect (PU57)
+ScenarioEditorView --> IGameDefinitionActions : "Zamknij" - onOpenGame (PU49)
 
 note right of ScenarioEditorView
     Lista zadań, lista warunków zwycięstwa i metadane

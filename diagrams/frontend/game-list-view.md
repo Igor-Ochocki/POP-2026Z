@@ -1,49 +1,53 @@
+<div hidden>
+
 ```
-@startuml
+@startuml game-list-view
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam roundcorner 4
+skinparam linetype polyline
+skinparam nodesep 30
+skinparam ranksep 40
+hide empty members
 
-interface IGameListWindows <<interface>> {
-    +showGameListView(navigationState: GameListNavigationState)
-    +showGameFilterDialog()
+title PU25 Wyświetlenie listy gier przez twórcę - widok
+
+class GameListView <<View>> {
+    + onSearchChange(value: string)
+    + onFilterClick()
+    + onShowMoreClick()
+    + onRetryClick()
+    + onGameClick(gameId: string)
 }
 
-interface IGameListActions <<interface>> {
-    +onChangeParameter(field: string, value: any)
-    +onFilterSubmit(filterTags: string[*])
-    +onListReload()
-    +onShowMore()
-    +onOpenGameList()
-    +onOpenFilterDialog()
+class GameFilterDialog <<View>> {
+    + onTagToggle(tag: string)
+    + onApplyClick()
 }
 
-class GameListWindows {
-    +showGameListView(navigationState: GameListNavigationState)
-    +showGameFilterDialog()
-}
+class GameListWindows
+interface IGameListWindows <<interface>>
+interface IGameListActions <<interface>>
+class GameListViewModel <<State>>
+interface IGameDefinitionActions <<interface>>
 
-class GameListView {
-    +show()
-    +onClick()
-}
-
-class GameFilterDialog {
-    +show()
-    +onClick()
-}
-
-GameListWindows ..|> IGameListWindows
-GameListWindows -u-> GameListView
-GameListWindows -u-> GameFilterDialog
+GameListWindows .u.|> IGameListWindows
+GameListWindows --> GameListView
+GameListWindows --> GameFilterDialog
 
 GameListView --> IGameListActions
+GameListView --> GameListViewModel
+GameFilterDialog --> IGameListActions : onFilterSubmit
+GameListView --> IGameDefinitionActions : onOpenGame (PU49)
 
-interface IGameDefinitionActions <<interface>> {
-    +onOpenGame(gameId: string)
-}
-
-GameListView --> IGameDefinitionActions : wybór gry (PU49)
-GameFilterDialog --> IGameListActions
-
+note bottom of GameListView
+    Wyszukiwanie po tytule filtruje pobrane gry w widoku.
+    Wybór gry otwiera jej definicję (PU49).
+end note
 @enduml
 ```
+
+</div>
 
 ![](rendered/game-list-view.svg)

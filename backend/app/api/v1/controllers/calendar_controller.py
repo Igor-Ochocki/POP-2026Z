@@ -10,7 +10,7 @@ from app.schemas.calendar import CalendarEventSchema
 from app.services.calendar_service import CalendarService, ICalendarService
 
 
-class CalendarApi(ABC):
+class ICalendarApi(ABC):
     @abstractmethod
     def get_events(self, month: date) -> list[CalendarEventSchema]: ...
 

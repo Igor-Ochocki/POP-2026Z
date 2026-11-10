@@ -1,112 +1,91 @@
 <div hidden>
 
 ```
-
 @startuml reservation-presenter
-
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
 skinparam shadowing false
 skinparam roundcorner 4
-skinparam nodesep 26
-skinparam ranksep 34
 skinparam linetype polyline
+skinparam nodesep 30
+skinparam ranksep 40
+hide empty members
 
-title PU2 - Game Time Reservation - Presenter
+title PU2 Rezerwacja czasu dla gry - presenter
 
-class useReservations <<Hook>> {
-    + onOpenReservation(slot: CalendarEventDTO | null)
-    + onChangeParameter(field: string, value: unknown)
+interface IReservationActions <<interface>> {
+    + onOpenReservation(slot: CalendarEventDTO)
+    + onChangeParameter(field: string, value: any)
     + onSubmitReservation()
     + onConfirmReservation()
     + onCancelReservation()
-    + onPayLater()
-    + onPaymentCompletedMessageDialogConfirm()
-    + onSlotUnavailableMessageDialogConfirm()
-    + onReservationCancelledMessageDialogConfirm()
-    - createReservation()
-    - cancelReservation()
-}
-
-interface IReservationsActions <<interface>> {
-    + onOpenReservation(slot: CalendarEventDTO | null)
-    + onChangeParameter(field: string, value: unknown)
-    + onSubmitReservation()
-    + onConfirmReservation()
-    + onCancelReservation()
-    + onPayLater()
+    + onStartPayment(reservationId: string)
     + onPaymentCompletedMessageDialogConfirm()
     + onSlotUnavailableMessageDialogConfirm()
     + onReservationCancelledMessageDialogConfirm()
 }
 
-interface IReservationsWindows <<interface>> {
-    + showReservationView()
+interface IReservationWindows <<interface>> {
+    + showReservationView(slot: CalendarEventDTO)
     + showReservationConfirmDialog()
     + showPaymentCompletedMessageDialog()
     + showSlotUnavailableMessageDialog()
     + showReservationCancelledMessageDialog()
+    + hideDialogs()
+}
+
+class useReservation <<Hook>> {
+    - getSelectedSlot(locationState: unknown): CalendarEventDTO | null
+    - createReservation()
+    - startPayment(reservationId: string)
+    - cancelReservation()
 }
 
 class ReservationViewModel <<State>> {
     + selectedSlot: CalendarEventDTO | null
     + participantCount: number
     + activeReservation: ReservationSummaryDTO | null
-    + paymentUrl: string | null
     + isProcessing: boolean
-    + dialogType: ReservationDialogType | null
+    + dialogType: ReservationDialogTypes | null
     + errorMessage: string | null
 }
 
-class ReservationSummaryDTO <<DTO>> {
-    + reservationId: string
-    + slotId: string
-    + gameId: string
-    + organizerId: string
-    + participantCount: number
-    + totalCost: number
-    + status: ReservationStatus
-    + isPaid: boolean
-}
-
-enum ReservationDialogType {
+enum ReservationDialogTypes {
     confirmation
     paymentCompleted
     slotUnavailable
     reservationCancelled
 }
 
-interface IReservationsApi <<interface>> {
-    + createReservation(userId: string, dto: ReservationCreateDTO): Promise<ReservationSummaryDTO>
-    + cancelReservation(reservationId: string, userId: string): Promise<boolean>
-}
+interface IReservationsApi <<interface>>
+class CalendarEventDTO <<DTO>>
+class ReservationSummaryDTO <<DTO>>
+class ReservationCreateDTO <<DTO>>
 
-class ReservationCreateDTO <<DTO>> {
-    + slotId: string
-    + participantCount: number
-}
+useReservation .u.|> IReservationActions
+useReservation -u-> IReservationWindows
+useReservation *-- "1" ReservationViewModel : state
+ReservationViewModel ..> ReservationDialogTypes
+ReservationViewModel ..> CalendarEventDTO : selectedSlot
+ReservationViewModel ..> ReservationSummaryDTO : activeReservation
+useReservation ..> ReservationCreateDTO
+useReservation --> IReservationsApi : apiClient.reservations\ncreateReservation, cancelReservation,\nmarkPaymentCompleted
 
-class CalendarEventDTO <<PU1 DTO>>
+note right of useReservation
+    Trasa /reservations - wybrany termin przychodzi w danych nawigacji
+    (showReservationView(slot)); bez terminu widok prosi o powrót do kalendarza.
+    Hook nie wywołuje API przy montowaniu, więc CalendarView może go użyć
+    do onOpenReservation.
+    onSubmitReservation: liczba uczestników >= 1, inaczej errorMessage.
+    onConfirmReservation: createReservation; 409 -> showSlotUnavailableMessageDialog,
+    inny błąd (np. 400 - liczba spoza zakresu gry) -> errorMessage.
+    onStartPayment: mock płatności (POST /reservations/{id}/payment).
+end note
 
-enum ReservationStatus {
-    Unpaid
-    Confirmed
-    Cancelled
-}
-
-useReservations .u.|> IReservationsActions
-useReservations -u-> IReservationsWindows
-useReservations --> IReservationsApi : reservationsApi
-useReservations *-- "1" ReservationViewModel : owns state
-
-ReservationViewModel ..> CalendarEventDTO
-ReservationViewModel ..> ReservationSummaryDTO
-
-IReservationsApi ..> ReservationCreateDTO
-IReservationsApi ..> ReservationSummaryDTO
-
+note bottom of IReservationsApi
+    DTO i porty API: interfaces.md
+end note
 @enduml
-
 ```
 
 </div>

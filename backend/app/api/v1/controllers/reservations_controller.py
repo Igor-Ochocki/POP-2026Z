@@ -11,7 +11,7 @@ from app.services.payment_service import PaymentService
 from app.services.reservations_service import IReservationsService, ReservationsService
 
 
-class ReservationsApi(ABC):
+class IReservationsApi(ABC):
     @abstractmethod
     def create_reservation(self, user_id: str, dto: ReservationCreateSchema) -> ReservationSummarySchema: ...
 

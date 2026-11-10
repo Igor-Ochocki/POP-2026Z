@@ -9,7 +9,7 @@ from app.schemas.game import GameCreateSchema, GameResponseSchema
 from app.services.games_service import GamesService, IGamesService
 
 
-class GamesApi(ABC):
+class IGamesApi(ABC):
     @abstractmethod
     def get_game(self, game_id: str, user_id: str) -> GameResponseSchema: ...
 

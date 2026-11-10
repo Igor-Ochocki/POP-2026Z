@@ -62,11 +62,17 @@ const fromScenarioPayload = (
   victoryConditions: scenario.victory_conditions,
 });
 
-export const createScenarioApi = (http: AxiosInstance) => ({
-  loadScenario: async (
+export interface IScenariosApi {
+  loadScenario(gameId: string, userId: string): Promise<ScenarioDetailDTO>;
+  addTask(
     gameId: string,
     userId: string,
-  ): Promise<ScenarioDetailDTO> => {
+    task: TaskCreateDTO,
+  ): Promise<unknown>;
+}
+
+export const createScenariosApi = (http: AxiosInstance): IScenariosApi => ({
+  loadScenario: async (gameId, userId) => {
     const { data } = await http.get<ScenarioResponsePayload>(
       `/games/${gameId}/scenario`,
       { params: { user_id: userId } },
@@ -74,7 +80,7 @@ export const createScenarioApi = (http: AxiosInstance) => ({
     return fromScenarioPayload(data);
   },
 
-  addTask: async (gameId: string, userId: string, task: TaskCreateDTO) => {
+  addTask: async (gameId, userId, task) => {
     const res = await http.post(
       `/games/${gameId}/scenario/tasks`,
       toCreatePayload(task),
@@ -83,5 +89,3 @@ export const createScenarioApi = (http: AxiosInstance) => ({
     return res.data;
   },
 });
-
-export type ScenariosApi = ReturnType<typeof createScenarioApi>;

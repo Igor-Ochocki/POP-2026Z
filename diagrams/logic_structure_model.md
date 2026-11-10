@@ -5,105 +5,81 @@
 skinparam componentStyle uml2
 skinparam packageStyle rectangle
 skinparam shadowing false
-skinparam roundcorner 4
-skinparam nodesep 28
-skinparam ranksep 38
-skinparam linetype polyline
-
-title Model struktury logicznej - iteracja 1
-
-package "View (React Components)" as V {
-    component [GameDefinitionView] as V_GameDefinition
-    component [CalendarView] as V_Calendar
-
-    interface "IGameDefinitionActions" as IV_Definition
-    interface "ICalendarActions" as IV_Calendar
-
-    V_GameDefinition -down- IV_Definition
-    V_Calendar -down- IV_Calendar
+skinparam roundcorner 6
+skinparam linetype ortho
+skinparam nodesep 60
+skinparam ranksep 50
+skinparam defaultTextAlignment center
+skinparam package {
+    BackgroundColor #FAFAFA
+    BorderColor #888888
+}
+skinparam component {
+    BackgroundColor #EEF4FF
+    BorderColor #4A6FA5
+}
+skinparam interface {
+    BackgroundColor #FFFFFF
+    BorderColor #4A6FA5
+}
+skinparam database {
+    BackgroundColor #FFF6E5
+    BorderColor #B7791F
 }
 
-package "Presenter (App Logic - React Hooks)" as P {
-    component [GameDefinitionPresenter\n(useGameDefinition Hook)\nowns GameDefinitionViewModel] as P_Definition
-    component [CalendarPresenter\n(useCalendar Hook)\nowns CalendarViewModel] as P_Calendar
+title Model struktury logicznej - przegląd warstw
 
-    P_Definition -up-( IV_Definition : <<binds state & events>>
-    P_Calendar -up-( IV_Calendar : <<binds state & events>>
+package "Frontend (React SPA)" as FE {
+    component "View\n(XxxView)" as V
+    component "Presenter\n(useXxx)" as P
+    component "API proxy\n(xxxApi + apiClient)" as A
+    () "IXxxActions" as IA
+    () "IXxxWindows" as IW
+    () "IXxxApi" as IAPI
+
+    P - IA
+    V - IW
+    A - IAPI
+    V --( IA
+    P --( IW
+    P --( IAPI
 }
 
-package "API Proxy (Axios)" as A {
-    component [apiClient\n(unified API facade)] as A_Client
-    component [gamesApi] as A_Games
-    component [actionsApi] as A_Actions
-    component [scenariosApi] as A_Scenarios
-    component [reservationsApi] as A_Reservations
-    component [httpClient\n(single Axios instance)] as A_Http
+package "Backend (FastAPI)" as BE {
+    component "Controller\n(XxxController)" as C
+    component "Service\n(XxxService)" as S
+    component "Model\n(SQLAlchemy ORM)" as M
+    () "IXxxApi\n(REST /api/v1)" as IREST
+    () "IXxxService" as IS
 
-    A_Client *-down- A_Games
-    A_Client *-down- A_Actions
-    A_Client *-down- A_Scenarios
-    A_Client *-down- A_Reservations
-
-    A_Games -down-> A_Http
-    A_Actions -down-> A_Http
-    A_Scenarios -down-> A_Http
-    A_Reservations -down-> A_Http
+    C - IREST
+    S - IS
+    C --( IS
+    S --> M
 }
 
-P_Definition -down-> A_Client : apiClient.games.*\napiClient.actions.*\napiClient.scenarios.*
-P_Calendar -down-> A_Client : apiClient.reservations.*
+database "SQLite" as DB
 
-package "Model (FastAPI)" as M {
-    component [GamesController\n(/api/v1/games)] as C_Games
-    component [ActionsController\n(/api/v1/actions)] as C_Actions
-    component [ScenariosController\n(/api/v1/scenarios)] as C_Scenarios
-    component [CalendarController\n(/api/v1/reservations)] as C_Calendar
+A --( IREST : HTTP / JSON
+M --> DB
 
-    component [GamesService] as M_Games
-    component [ActionsService] as M_Actions
-    component [ScenariosService] as M_Scenarios
-    component [CalendarService] as M_Calendar
+note right of FE
+    Widok woła akcje prezentera (IXxxActions),
+    prezenter zmienia widoki i dialogi przez IXxxWindows.
+    Przejścia między PU: widok woła prezenter innego PU.
+    Moduły API mapują DTO (camelCase) <-> schematy (snake_case).
+end note
 
-    C_Games -down-> M_Games
-    C_Actions -down-> M_Actions
-    C_Scenarios -down-> M_Scenarios
-    C_Calendar -down-> M_Calendar
-}
-
-A_Http -down-> C_Games : <<HTTP/REST>>\nPOST/PUT
-A_Http -down-> C_Actions : <<HTTP/REST>>\nPOST/GET
-A_Http -down-> C_Scenarios : <<HTTP/REST>>\nPOST/GET
-A_Http -down-> C_Calendar : <<HTTP/REST>>\nPOST/GET
-
-package "Data" as D {
-    database [SQLite DBMS] as DB_Sqlite
-}
-
-M_Games -down-> DB_Sqlite : port: DB Access (SQLAlchemy ORM)
-M_Actions -down-> DB_Sqlite : port: DB Access (SQLAlchemy ORM)
-M_Scenarios -down-> DB_Sqlite : port: DB Access (SQLAlchemy ORM)
-M_Calendar -down-> DB_Sqlite : port: DB Access (SQLAlchemy ORM)
-
-V -[hidden]down-> P
-P -[hidden]down-> A
-A -[hidden]down-> M
-M -[hidden]down-> D
-
-V_GameDefinition -[hidden]right-> V_Calendar
-P_Definition -[hidden]right-> P_Calendar
-A_Games -[hidden]right-> A_Actions
-A_Actions -[hidden]right-> A_Scenarios
-A_Scenarios -[hidden]right-> A_Reservations
-C_Games -[hidden]right-> C_Actions
-C_Actions -[hidden]right-> C_Scenarios
-C_Scenarios -[hidden]right-> C_Calendar
-M_Games -[hidden]right-> M_Actions
-M_Actions -[hidden]right-> M_Scenarios
-M_Scenarios -[hidden]right-> M_Calendar
-
+note right of BE
+    Porty REST mają te same nazwy co porty API frontendu
+    (IGamesApi, IScenariosApi, IActionsApi, ICalendarApi, IReservationsApi).
+    Błędy domenowe (AppError) mapuje jeden handler.
+end note
 @enduml
 ```
 
 </div>
 
 ![](rendered/logic_structure_model.svg)
+
+Szczegóły warstw: [frontend](logic_structure_frontend.md), [backend](logic_structure_backend.md).
