@@ -110,3 +110,109 @@ def test_get_scenario_endpoint_not_found(client: TestClient) -> None:
     response = client.get("/api/v1/games/non-existent-id/scenario", params={"user_id": TEST_USER_ID})
 
     assert response.status_code == 404
+
+
+# --- Add task tests ---
+
+def _task_payload() -> dict:
+    return {
+        "title": "Find the key",
+        "narrative": "Search the room for a hidden key.",
+        "interaction_type": "qr",
+        "interaction_target_id": "target-1",
+        "required_player_level": 1,
+        "time_limit_minutes": 10,
+        "reward_type": "points",
+        "reward_value": "10",
+    }
+
+
+def test_add_task_endpoint_responds(client: TestClient, db_session: Session) -> None:
+    """The endpoint responds with 200 and the task is saved."""
+    game_id = create_game(db_session)
+    # load_scenario auto-creates the scenario on first call
+    ScenariosService(db_session).load_scenario(game_id, TEST_USER_ID)
+
+    response = client.post(
+        f"/api/v1/games/{game_id}/scenario/tasks",
+        params={"user_id": TEST_USER_ID},
+        json=_task_payload(),
+    )
+
+    assert response.status_code == 200
+    # Verify the task was saved by fetching the scenario
+    get_response = client.get(
+        f"/api/v1/games/{game_id}/scenario",
+        params={"user_id": TEST_USER_ID},
+    )
+    assert get_response.status_code == 200
+    scenario = get_response.json()
+    assert len(scenario["tasks"]) == 1
+    assert scenario["tasks"][0]["title"] == "Find the key"
+    assert scenario["tasks"][0]["narrative"] == "Search the room for a hidden key."
+
+
+def test_add_task_task_appears_in_scenario(client: TestClient, db_session: Session) -> None:
+    """After adding a task, it can be obtained from the scenario."""
+    game_id = create_game(db_session)
+    ScenariosService(db_session).load_scenario(game_id, TEST_USER_ID)
+
+    client.post(
+        f"/api/v1/games/{game_id}/scenario/tasks",
+        params={"user_id": TEST_USER_ID},
+        json=_task_payload(),
+    )
+
+    get_response = client.get(
+        f"/api/v1/games/{game_id}/scenario",
+        params={"user_id": TEST_USER_ID},
+    )
+    assert get_response.status_code == 200
+    scenario = get_response.json()
+    assert len(scenario["tasks"]) == 1
+    assert scenario["tasks"][0]["title"] == "Find the key"
+
+
+def test_add_task_game_not_found(client: TestClient) -> None:
+    """Returns 404 when the game does not exist."""
+    response = client.post(
+        "/api/v1/games/non-existent-game/scenario/tasks",
+        params={"user_id": TEST_USER_ID},
+        json=_task_payload(),
+    )
+
+    assert response.status_code == 404
+
+
+def test_add_task_scenario_does_not_exist_yet(client: TestClient, db_session: Session) -> None:
+    """If the game exists but has no scenario yet, the scenario is auto-created and the task is added."""
+    game_id = create_game(db_session)
+    # Do NOT call load_scenario — scenario does not exist yet
+
+    response = client.post(
+        f"/api/v1/games/{game_id}/scenario/tasks",
+        params={"user_id": TEST_USER_ID},
+        json=_task_payload(),
+    )
+
+    assert response.status_code == 200
+    # Verify the task is visible via the scenario endpoint
+    get_response = client.get(
+        f"/api/v1/games/{game_id}/scenario",
+        params={"user_id": TEST_USER_ID},
+    )
+    assert get_response.status_code == 200
+    assert len(get_response.json()["tasks"]) == 1
+
+
+def test_add_task_user_not_creator(client: TestClient, db_session: Session) -> None:
+    """Returns 404 when the user is not the game's creator."""
+    game_id = create_game(db_session)
+
+    response = client.post(
+        f"/api/v1/games/{game_id}/scenario/tasks",
+        params={"user_id": "other-user"},
+        json=_task_payload(),
+    )
+
+    assert response.status_code == 404
