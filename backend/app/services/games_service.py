@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 
 from app.core.exceptions import ConflictError, NotFoundError
 from app.models.game import Game, GameStatus
@@ -20,6 +21,20 @@ class IGamesService(ABC):
     @abstractmethod
     def edit_game(self, game_id: str, user_id: str, dto: GameCreateSchema, as_draft: bool) -> GameResponseSchema: ...
 
+    @abstractmethod
+    def get_authored_games(
+        self,
+        user_id: str,
+        tags: list[str] = [],
+        limit: int = 10,
+        offset: int = 0
+    ) -> list[Game]: ...
+
+    @abstractmethod
+    def get_game_tags(
+        self,
+    #    user_id: str,
+    ) -> list[str]: ...
 
 class GamesService(IGamesService):
     def __init__(self, db_session: Session) -> None:
@@ -104,3 +119,42 @@ class GamesService(IGamesService):
         self.db_session.refresh(game)
 
         return self._map_to_response(game)
+
+
+    def get_authored_games(
+        self,
+        user_id: str,
+        tags: list[str] = [],
+        limit: int = 10,
+        offset: int = 0
+    ) -> list[Game]:
+        query = self.db_session.query(Game).filter(Game.author_id == user_id)
+
+        games = query.all()
+        
+        if tags:
+            tag_set = set(tags)
+            games = [g for g in games if g.tags and tag_set.issubset(set(g.tags))]
+        
+        games = games[offset : offset + limit]
+        return [self._map_to_response(g) for g in games]
+
+    def get_game_tags(
+        self,
+    #    user_id: str,
+    ) -> list[str]:
+        
+        results = (
+            self.db_session.query(Game.tags)
+  #          .filter(Game.author_id == user_id)
+            .distinct()
+            .all()
+        )
+
+        all_tags = []
+        for tags_array in results:
+            all_tags.extend(tags_array[0]) 
+
+        return list(set(all_tags))
+
+
