@@ -1,10 +1,11 @@
 ```plantuml
 @startuml
-interface ScenariosAPI <<interface>>\n<< /api/v1/scenario >> {
-    + <<POST /task/{gameId} >>\n\taddTask(gameId: string, task: TaskDTO)>
+interface ScenariosAPI <<interface>>\n<< /api/v1/games >> {
+    + <<POST {gameId}/scenario/tasks >>\n\taddTask(user_id: str, task: CreateTaskDTO)>
 }
 
 class ScenariosApiController <<Controller>> implements ScenariosAPI {
+    - scenario_service: IScenarioService
     + addTask(gameId: string, task: TaskDTO)
 }
 
@@ -21,7 +22,7 @@ class ScenariosService implements IScenariosService{
 
 
 package "Schemas" {
-    class TaskCreateSchema <<BaseModel>> {
+    class CreateTaskDTO <<BaseModel>> {
         + title: str
         + narrative: str
         + interaction_type: str
@@ -49,7 +50,7 @@ class Task <<Base>> {
 
 }
 
-ScenariosService -->TaskCreateSchema
+ScenariosService --> CreateTaskDTO
 ScenariosApiController --> IScenariosService
 ScenariosService --> Task
 @enduml
