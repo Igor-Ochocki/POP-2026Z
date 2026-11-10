@@ -78,7 +78,7 @@ export function useNewTask(): {
     narrative: '',
     rewardType: '',
     rewardValue: '',
-    requiredPlayerLevel: 0,
+    requiredPlayerLevel: 1,
     interactionType: '',
     timeLimitMinutes: null,
     cancelNewTaskConfirmationDialogOpen: false,

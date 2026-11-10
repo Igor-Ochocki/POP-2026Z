@@ -68,7 +68,7 @@ export interface IScenariosApi {
     gameId: string,
     userId: string,
     task: TaskCreateDTO,
-  ): Promise<unknown>;
+  ): Promise<TaskDTO>;
 }
 
 export const createScenariosApi = (http: AxiosInstance): IScenariosApi => ({
@@ -81,11 +81,11 @@ export const createScenariosApi = (http: AxiosInstance): IScenariosApi => ({
   },
 
   addTask: async (gameId, userId, task) => {
-    const res = await http.post(
+    const { data } = await http.post<TaskResponsePayload>(
       `/games/${gameId}/scenario/tasks`,
       toCreatePayload(task),
       { params: { user_id: userId } },
     );
-    return res.data;
+    return fromTaskPayload(data);
   },
 });

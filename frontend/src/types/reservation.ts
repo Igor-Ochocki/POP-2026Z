@@ -2,7 +2,7 @@ import type { CalendarEventDTO } from '@app-types/calendar';
 
 export type ReservationStatus = 'unpaid' | 'confirmed' | 'cancelled';
 
-export type ReservationDialogType =
+export type ReservationDialogTypes =
   | 'confirmation'
   | 'paymentCompleted'
   | 'slotUnavailable'
@@ -28,30 +28,28 @@ export interface ReservationViewModel {
   selectedSlot: CalendarEventDTO | null;
   participantCount: number;
   activeReservation: ReservationSummaryDTO | null;
-  paymentUrl: string | null;
   isProcessing: boolean;
-  dialogType: ReservationDialogType | null;
+  dialogType: ReservationDialogTypes | null;
   errorMessage: string | null;
 }
 
-export interface IReservationsActions {
-  onOpenReservation(slot: CalendarEventDTO | null): void;
+export interface IReservationActions {
+  onOpenReservation(slot: CalendarEventDTO): void;
   onChangeParameter(field: string, value: unknown): void;
   onSubmitReservation(): void;
   onConfirmReservation(): void;
   onCancelReservation(): void;
-  onPayLater(): void;
   onPaymentCompletedMessageDialogConfirm(): void;
   onSlotUnavailableMessageDialogConfirm(): void;
   onReservationCancelledMessageDialogConfirm(): void;
   onStartPayment(reservationId: string): void;
-  onBack(): void;
 }
 
-export interface IReservationsWindows {
-  showReservationView(slot: CalendarEventDTO | null): void;
+export interface IReservationWindows {
+  showReservationView(slot: CalendarEventDTO): void;
   showReservationConfirmDialog(): void;
   showPaymentCompletedMessageDialog(): void;
   showSlotUnavailableMessageDialog(): void;
   showReservationCancelledMessageDialog(): void;
+  hideDialogs(): void;
 }

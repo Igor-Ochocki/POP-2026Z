@@ -1,8 +1,9 @@
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import Button from '@components/Button/Button';
 import MessageDialog from '@components/MessageDialog/MessageDialog';
-import ReservationPanel from '@components/ReservationPanel/ReservationPanel';
-import { useReservations } from '@hooks/useReservations';
+import { useCalendar } from '@hooks/useCalendar';
+import { useReservation } from '@hooks/useReservation';
+import { ReservationPanel } from './ReservationPanel';
 import './ReservationView.css';
 
 const dialogContent = {
@@ -21,7 +22,8 @@ const dialogContent = {
 } as const;
 
 export function ReservationView() {
-  const { state, actions } = useReservations();
+  const { state, actions } = useReservation();
+  const calendar = useCalendar();
   const message =
     state.dialogType && state.dialogType !== 'confirmation'
       ? dialogContent[state.dialogType]
@@ -34,7 +36,7 @@ export function ReservationView() {
         <Button
           variant='secondary'
           aria-label='Powrót do kalendarza'
-          onClick={actions.onBack}
+          onClick={calendar.actions.onShowCalendar}
         >
           <ChevronLeftIcon fontSize='large' />
         </Button>
@@ -57,13 +59,15 @@ export function ReservationView() {
           onSubmitReservation={actions.onSubmitReservation}
           onConfirmReservation={actions.onConfirmReservation}
           onCancelReservation={actions.onCancelReservation}
-          onPayLater={actions.onPayLater}
+          onPayLater={calendar.actions.onShowCalendar}
           onStartPayment={actions.onStartPayment}
         />
       ) : (
         <section className='reservation-page__empty'>
           <p>Nie wybrano terminu. Wróć do kalendarza i kliknij wydarzenie.</p>
-          <Button onClick={actions.onBack}>Otwórz kalendarz</Button>
+          <Button onClick={calendar.actions.onShowCalendar}>
+            Otwórz kalendarz
+          </Button>
         </section>
       )}
 

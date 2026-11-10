@@ -31,16 +31,7 @@ class ScenariosService <<Service>> {
     - _map_task(task: Task): TaskSchema
 }
 
-class TaskCreateSchema <<BaseModel>> {
-    + title: str [1..200]
-    + narrative: str [1..2000]
-    + interaction_type: str
-    + interaction_target_id: str | None = None
-    + required_player_level: int >= 1 = 1
-    + time_limit_minutes: int > 0 | None = None
-    + reward_type: str
-    + reward_value: str
-}
+class TaskCreateSchema <<BaseModel>>
 
 class Game <<Base>>
 class Scenario <<Base>>
@@ -75,8 +66,7 @@ note right of ScenariosService
 end note
 
 note bottom of Task
-    Schematy: interfaces.md, encje: data-model.md.
-    TaskCreateSchema po implementacji przenosi Architekt do interfaces.md.
+    Schematy: interfaces.md, encje: data-model.md
 end note
 @enduml
 ```

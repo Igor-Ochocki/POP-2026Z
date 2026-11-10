@@ -5,16 +5,17 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
-from app.schemas.scenario import ScenarioDetailSchema, CreateTaskDTO, TaskSchema
+from app.schemas.scenario import ScenarioDetailSchema, TaskCreateSchema, TaskSchema
 from app.services.scenarios_service import IScenariosService, ScenariosService
 
 
 class IScenariosApi(ABC):
     @abstractmethod
     def load_scenario(self, game_id: str, user_id: str) -> ScenarioDetailSchema: ...
-    
+
     @abstractmethod
-    def add_task(self, game_id: str, user_id: str): ...
+    def add_task(self, game_id: str, user_id: str, dto: TaskCreateSchema) -> TaskSchema: ...
+
 
 router = APIRouter(prefix="/games", tags=["scenario"])
 
@@ -32,12 +33,11 @@ def load_scenario(
     return service.load_scenario(game_id, user_id)
 
 
-
-@router.post("/{game_id}/scenario/tasks")
+@router.post("/{game_id}/scenario/tasks", response_model=TaskSchema, status_code=201)
 def add_task(
     game_id: str,
     user_id: str,
-    create_task_dto: CreateTaskDTO,
+    dto: TaskCreateSchema,
     service: Annotated[IScenariosService, Depends(get_scenarios_service)],
-):
-    return service.add_task(game_id, user_id, create_task_dto)
+) -> TaskSchema:
+    return service.add_task(game_id, user_id, dto)

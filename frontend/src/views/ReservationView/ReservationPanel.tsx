@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Button from '@components/Button/Button';
 import type {
-  IReservationsActions,
+  IReservationActions,
   ReservationSummaryDTO,
 } from '@app-types/reservation';
 import type { CalendarEventDTO } from '@app-types/calendar';
@@ -12,12 +12,13 @@ interface ReservationPanelProps {
   activeReservation: ReservationSummaryDTO | null;
   isProcessing: boolean;
   dialogOpen: boolean;
-  onChangeParameter: IReservationsActions['onChangeParameter'];
-  onSubmitReservation: IReservationsActions['onSubmitReservation'];
-  onConfirmReservation: IReservationsActions['onConfirmReservation'];
-  onCancelReservation: IReservationsActions['onCancelReservation'];
-  onPayLater: IReservationsActions['onPayLater'];
-  onStartPayment: IReservationsActions['onStartPayment'];
+  onChangeParameter: IReservationActions['onChangeParameter'];
+  onSubmitReservation: IReservationActions['onSubmitReservation'];
+  onConfirmReservation: IReservationActions['onConfirmReservation'];
+  onCancelReservation: IReservationActions['onCancelReservation'];
+  // "Zapłać później" - powrót do kalendarza przez prezenter PU1.
+  onPayLater: () => void;
+  onStartPayment: IReservationActions['onStartPayment'];
 }
 
 const formatDate = (date: Date) =>
@@ -32,7 +33,7 @@ const formatCurrency = (amount: number) =>
     currency: 'PLN',
   }).format(amount);
 
-export default function ReservationPanel({
+export function ReservationPanel({
   selectedSlot,
   participantCount,
   activeReservation,

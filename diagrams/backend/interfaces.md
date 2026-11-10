@@ -62,23 +62,19 @@ package "Scenariusz i zadania (PU56, PU57)" as P_Scenario {
         + reward_value: str
     }
 
-    class TaskCreateSchema <<BaseModel>> <<planned>> {
-        + title: str
-        + narrative: str
+    class TaskCreateSchema <<BaseModel>> {
+        + title: str [1..200]
+        + narrative: str [1..2000]
         + interaction_type: str
         + interaction_target_id: str | None = None
-        + required_player_level: int = 1
-        + time_limit_minutes: int | None = None
+        + required_player_level: int >= 1 = 1
+        + time_limit_minutes: int > 0 | None = None
         + reward_type: str
         + reward_value: str
     }
 
     ScenarioDetailSchema *-- "*" TaskSchema
 
-    note bottom of TaskCreateSchema
-        Aktualna wersja w new-task.md (PU57),
-        przeniesienie po scaleniu backendu PU57.
-    end note
 }
 
 package "Akcje (PU51)" as P_Actions {

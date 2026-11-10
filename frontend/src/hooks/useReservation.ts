@@ -5,20 +5,18 @@ import { apiClient } from '@api/apiClient';
 import { env } from '@config/env';
 import type { CalendarEventDTO } from '@app-types/calendar';
 import type {
-  IReservationsActions,
-  IReservationsWindows,
-  ReservationDialogType,
+  IReservationActions,
+  IReservationWindows,
+  ReservationDialogTypes,
   ReservationViewModel,
 } from '@app-types/reservation';
 
 const RESERVATION_PATH = '/reservations';
-const CALENDAR_PATH = '/calendar';
 
 const initialState: ReservationViewModel = {
   selectedSlot: null,
   participantCount: 1,
   activeReservation: null,
-  paymentUrl: null,
   isProcessing: false,
   dialogType: null,
   errorMessage: null,
@@ -55,10 +53,10 @@ function getSelectedSlot(locationState: unknown): CalendarEventDTO | null {
   return { id: slot.id, title: slot.title, datetime };
 }
 
-function createReservationsWindows(
+function createReservationWindows(
   navigate: NavigateFunction,
-  setDialogType: (dialogType: ReservationDialogType | null) => void,
-): IReservationsWindows {
+  setDialogType: (dialogType: ReservationDialogTypes | null) => void,
+): IReservationWindows {
   return {
     showReservationView: (slot) =>
       void navigate(RESERVATION_PATH, { state: { selectedSlot: slot } }),
@@ -67,12 +65,13 @@ function createReservationsWindows(
     showSlotUnavailableMessageDialog: () => setDialogType('slotUnavailable'),
     showReservationCancelledMessageDialog: () =>
       setDialogType('reservationCancelled'),
+    hideDialogs: () => setDialogType(null),
   };
 }
 
-export function useReservations(): {
+export function useReservation(): {
   state: ReservationViewModel;
-  actions: IReservationsActions;
+  actions: IReservationActions;
 } {
   const navigate = useNavigate();
   const location = useLocation();
@@ -81,7 +80,7 @@ export function useReservations(): {
     ...initialState,
     selectedSlot,
   }));
-  const windows = createReservationsWindows(navigate, (dialogType) =>
+  const windows = createReservationWindows(navigate, (dialogType) =>
     setState((prev) => ({ ...prev, dialogType })),
   );
 
@@ -110,9 +109,9 @@ export function useReservations(): {
       setState((prev) => ({
         ...prev,
         activeReservation: reservation,
-        dialogType: null,
         isProcessing: false,
       }));
+      windows.hideDialogs();
       return reservation;
     } catch (error) {
       if (error instanceof ApiError && error.status === 409) {
@@ -155,7 +154,7 @@ export function useReservations(): {
 
   const onCancelReservation = async () => {
     if (!state.activeReservation) {
-      setState((prev) => ({ ...prev, dialogType: null }));
+      windows.hideDialogs();
       return;
     }
 
@@ -225,20 +224,17 @@ export function useReservations(): {
       },
       onConfirmReservation: () => void createReservation(),
       onCancelReservation: () => void onCancelReservation(),
-      onPayLater: () => void navigate(CALENDAR_PATH),
-      onPaymentCompletedMessageDialogConfirm: () =>
-        setState((prev) => ({ ...prev, dialogType: null })),
-      onSlotUnavailableMessageDialogConfirm: () =>
+      onPaymentCompletedMessageDialogConfirm: windows.hideDialogs,
+      onSlotUnavailableMessageDialogConfirm: () => {
         setState((prev) => ({
           ...prev,
-          dialogType: null,
           errorMessage:
             'Ten termin został już zarezerwowany. Wybierz inny termin w kalendarzu.',
-        })),
-      onReservationCancelledMessageDialogConfirm: () =>
-        setState((prev) => ({ ...prev, dialogType: null })),
+        }));
+        windows.hideDialogs();
+      },
+      onReservationCancelledMessageDialogConfirm: windows.hideDialogs,
       onStartPayment: (reservationId) => void onStartPayment(reservationId),
-      onBack: () => void navigate(CALENDAR_PATH),
     },
   };
 }

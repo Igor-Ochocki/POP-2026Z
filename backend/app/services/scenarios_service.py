@@ -1,23 +1,21 @@
 from abc import ABC, abstractmethod
 
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
 
-
-from app.core.exceptions import NotFoundError
+from app.core.exceptions import ConflictError, NotFoundError
 from app.models.game import Game
 from app.models.scenario import Scenario
 from app.models.task import Task
-from app.schemas.scenario import CreateTaskDTO, ScenarioDetailSchema, TaskSchema
-from app.core.exceptions import NotFoundError, ConflictError
+from app.schemas.scenario import ScenarioDetailSchema, TaskCreateSchema, TaskSchema
 
 
 class IScenariosService(ABC):
     @abstractmethod
     def load_scenario(self, game_id: str, user_id: str) -> ScenarioDetailSchema: ...
- 
+
     @abstractmethod
-    def add_task(self, game_id: str, user_id: str, create_task_dto: CreateTaskDTO): ...
+    def add_task(self, game_id: str, user_id: str, dto: TaskCreateSchema) -> TaskSchema: ...
+
 
 class ScenariosService(IScenariosService):
     def __init__(self, db_session: Session) -> None:
@@ -46,7 +44,7 @@ class ScenariosService(IScenariosService):
             victory_conditions=[],
         )
 
-    def load_scenario(self, game_id: str, user_id: str) -> ScenarioDetailSchema:
+    def _get_own_scenario(self, game_id: str, user_id: str) -> Scenario:
         game = self.db_session.get(Game, game_id)
         if game is None or game.author_id != user_id:
             raise NotFoundError(f"Game {game_id} not found")
@@ -58,28 +56,21 @@ class ScenariosService(IScenariosService):
             self.db_session.add(scenario)
             self.db_session.commit()
             self.db_session.refresh(scenario)
+        return scenario
 
-        return self._map_to_response(scenario)
+    def load_scenario(self, game_id: str, user_id: str) -> ScenarioDetailSchema:
+        return self._map_to_response(self._get_own_scenario(game_id, user_id))
 
-    def add_task(self, game_id: str, user_id: str, create_task_dto: CreateTaskDTO):
+    def add_task(self, game_id: str, user_id: str, dto: TaskCreateSchema) -> TaskSchema:
+        scenario = self._get_own_scenario(game_id, user_id)
 
-        scenario = self.load_scenario(game_id, user_id)
+        # Scenariusz alternatywny 2 PU57 - obiekt interakcji może mieć tylko jedno zadanie.
+        target_id = dto.interaction_target_id
+        if target_id and any(task.interaction_target_id == target_id for task in scenario.tasks):
+            raise ConflictError(f"Interaction target {target_id} is already linked to another task")
 
-        if scenario is None:
-            raise NotFoundError(f"Scenario not found for game_id: {game_id}, user_id: {user_id}")
-
-
-        task = Task(**create_task_dto.model_dump())
-        task.scenario_id = scenario.scenario_id
-        data = task.__dict__.copy()
-        data.pop('_sa_instance_state', None)
-        print(data)
-        
+        task = Task(scenario_id=scenario.id, position=len(scenario.tasks), **dto.model_dump())
         self.db_session.add(task)
-
-        try:
-            self.db_session.commit()
-
-        except IntegrityError as exc:
-            self.db_session.rollback()
-            raise ConflictError("Task violates a database constraint") from exc
+        self.db_session.commit()
+        self.db_session.refresh(task)
+        return self._map_task(task)

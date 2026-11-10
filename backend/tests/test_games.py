@@ -365,3 +365,86 @@ def test_games_endpoint_submit_to_reviewer_wrong_user(client: TestClient) -> Non
 
     response = client.post(f"/api/v1/games/{game_id}/submit?user_id=other-user")
     assert response.status_code == 404
+
+
+# --- PU25: game list and tags ---
+
+def seed_games(db_session: Session) -> GamesService:
+    service = GamesService(db_session)
+    service.save_game(TEST_USER_ID, make_dto(title="Bravo", tags=["Horror", "Noc"]), as_draft=True)
+    service.save_game(TEST_USER_ID, make_dto(title="Alfa", tags=["Fantasy"]), as_draft=True)
+    service.save_game(TEST_USER_ID, make_dto(title="Charlie", tags=["Horror"]), as_draft=True)
+    service.save_game("other-user", make_dto(title="Obca", tags=["Kryminalna"]), as_draft=True)
+    return service
+
+
+def test_games_service_get_games_only_author_sorted_by_title(db_session: Session) -> None:
+    service = seed_games(db_session)
+
+    result = service.get_games(TEST_USER_ID, [], 10, 0)
+
+    assert [game.title for game in result] == ["Alfa", "Bravo", "Charlie"]
+
+
+def test_games_service_get_games_requires_all_tags(db_session: Session) -> None:
+    service = seed_games(db_session)
+
+    assert [g.title for g in service.get_games(TEST_USER_ID, ["Horror"], 10, 0)] == ["Bravo", "Charlie"]
+    assert [g.title for g in service.get_games(TEST_USER_ID, ["Horror", "Noc"], 10, 0)] == ["Bravo"]
+
+
+def test_games_service_get_games_paginates(db_session: Session) -> None:
+    service = seed_games(db_session)
+
+    first = service.get_games(TEST_USER_ID, [], 2, 0)
+    second = service.get_games(TEST_USER_ID, [], 2, 2)
+
+    assert [g.title for g in first] == ["Alfa", "Bravo"]
+    assert [g.title for g in second] == ["Charlie"]
+
+
+def test_games_service_get_game_tags_unique_sorted(db_session: Session) -> None:
+    service = seed_games(db_session)
+
+    assert service.get_game_tags() == ["Fantasy", "Horror", "Kryminalna", "Noc"]
+
+
+def test_games_endpoint_get_games_with_repeated_tags(client: TestClient, db_session: Session) -> None:
+    seed_games(db_session)
+
+    response = client.get(
+        "/api/v1/games",
+        params=[("user_id", TEST_USER_ID), ("tags", "Horror"), ("tags", "Noc"), ("limit", "10"), ("offset", "0")],
+    )
+
+    assert response.status_code == 200
+    assert [game["title"] for game in response.json()] == ["Bravo"]
+
+
+def test_games_endpoint_get_games_defaults(client: TestClient, db_session: Session) -> None:
+    seed_games(db_session)
+
+    response = client.get("/api/v1/games", params={"user_id": TEST_USER_ID})
+
+    assert response.status_code == 200
+    assert len(response.json()) == 3
+
+
+def test_games_endpoint_get_games_invalid_limit_returns_422(client: TestClient) -> None:
+    response = client.get("/api/v1/games", params={"user_id": TEST_USER_ID, "limit": 0})
+    assert response.status_code == 422
+
+
+def test_games_endpoint_get_games_missing_user_returns_422(client: TestClient) -> None:
+    response = client.get("/api/v1/games")
+    assert response.status_code == 422
+
+
+def test_games_endpoint_tags_route_is_not_a_game_id(client: TestClient, db_session: Session) -> None:
+    seed_games(db_session)
+
+    response = client.get("/api/v1/games/tags")
+
+    assert response.status_code == 200
+    assert response.json() == ["Fantasy", "Horror", "Kryminalna", "Noc"]
+

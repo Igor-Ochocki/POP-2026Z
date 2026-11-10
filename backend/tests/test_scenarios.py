@@ -5,6 +5,7 @@ from app.core.exceptions import NotFoundError
 from app.models.scenario import Scenario
 from app.models.task import Task
 from app.schemas.game import GameCreateSchema
+from app.schemas.scenario import TaskCreateSchema
 from app.services.games_service import GamesService
 from app.services.scenarios_service import ScenariosService
 
@@ -128,7 +129,7 @@ def _task_payload() -> dict:
 
 
 def test_add_task_endpoint_responds(client: TestClient, db_session: Session) -> None:
-    """The endpoint responds with 200 and the task is saved."""
+    """The endpoint responds with 201, returns the task and saves it."""
     game_id = create_game(db_session)
     # load_scenario auto-creates the scenario on first call
     ScenariosService(db_session).load_scenario(game_id, TEST_USER_ID)
@@ -139,7 +140,9 @@ def test_add_task_endpoint_responds(client: TestClient, db_session: Session) -> 
         json=_task_payload(),
     )
 
-    assert response.status_code == 200
+    assert response.status_code == 201
+    assert response.json()["title"] == "Find the key"
+    assert response.json()["task_id"] != ""
     # Verify the task was saved by fetching the scenario
     get_response = client.get(
         f"/api/v1/games/{game_id}/scenario",
@@ -195,7 +198,7 @@ def test_add_task_scenario_does_not_exist_yet(client: TestClient, db_session: Se
         json=_task_payload(),
     )
 
-    assert response.status_code == 200
+    assert response.status_code == 201
     # Verify the task is visible via the scenario endpoint
     get_response = client.get(
         f"/api/v1/games/{game_id}/scenario",
@@ -216,3 +219,67 @@ def test_add_task_user_not_creator(client: TestClient, db_session: Session) -> N
     )
 
     assert response.status_code == 404
+
+
+def test_add_task_missing_required_field_returns_422(client: TestClient, db_session: Session) -> None:
+    """Scenario alternative 1 - missing required fields are rejected without saving."""
+    game_id = create_game(db_session)
+    payload = _task_payload()
+    del payload["title"]
+
+    response = client.post(
+        f"/api/v1/games/{game_id}/scenario/tasks",
+        params={"user_id": TEST_USER_ID},
+        json=payload,
+    )
+
+    assert response.status_code == 422
+    assert ScenariosService(db_session).load_scenario(game_id, TEST_USER_ID).tasks == []
+
+
+def test_add_task_invalid_player_level_returns_422(client: TestClient, db_session: Session) -> None:
+    game_id = create_game(db_session)
+
+    response = client.post(
+        f"/api/v1/games/{game_id}/scenario/tasks",
+        params={"user_id": TEST_USER_ID},
+        json={**_task_payload(), "required_player_level": 0},
+    )
+
+    assert response.status_code == 422
+
+
+def test_add_task_same_interaction_target_returns_409(client: TestClient, db_session: Session) -> None:
+    """Scenario alternative 2 - an interaction target can be linked to one task only."""
+    game_id = create_game(db_session)
+    url = f"/api/v1/games/{game_id}/scenario/tasks"
+    client.post(url, params={"user_id": TEST_USER_ID}, json=_task_payload())
+
+    response = client.post(url, params={"user_id": TEST_USER_ID}, json={**_task_payload(), "title": "Other"})
+
+    assert response.status_code == 409
+
+
+def test_add_task_without_interaction_target_never_conflicts(client: TestClient, db_session: Session) -> None:
+    game_id = create_game(db_session)
+    url = f"/api/v1/games/{game_id}/scenario/tasks"
+    payload = {**_task_payload(), "interaction_target_id": None}
+
+    first = client.post(url, params={"user_id": TEST_USER_ID}, json=payload)
+    second = client.post(url, params={"user_id": TEST_USER_ID}, json=payload)
+
+    assert (first.status_code, second.status_code) == (201, 201)
+
+
+def test_add_task_appends_tasks_in_order(db_session: Session) -> None:
+    game_id = create_game(db_session)
+    service = ScenariosService(db_session)
+    payload = _task_payload()
+    for title, target in (("First", "t-1"), ("Second", "t-2"), ("Third", "t-3")):
+        service.add_task(game_id, TEST_USER_ID, TaskCreateSchema(**{**payload, "title": title, "interaction_target_id": target}))
+    db_session.expire_all()
+
+    tasks = service.load_scenario(game_id, TEST_USER_ID).tasks
+
+    assert [task.title for task in tasks] == ["First", "Second", "Third"]
+

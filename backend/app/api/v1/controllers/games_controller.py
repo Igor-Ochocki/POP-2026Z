@@ -20,10 +20,10 @@ class IGamesApi(ABC):
     def edit_game(self, game_id: str, user_id: str, metadata: GameCreateSchema, as_draft: bool) -> GameResponseSchema: ...
 
     @abstractmethod
-    def get_authored_games(self, user_id: str, tags: list[str], limit: int, offset: int): ...
+    def get_games(self, user_id: str, tags: list[str], limit: int, offset: int) -> list[GameResponseSchema]: ...
 
     @abstractmethod
-    def get_tags(self): ...
+    def get_game_tags(self) -> list[str]: ...
 
     @abstractmethod
     def submit_to_reviewer(self, game_id: str, user_id: str) -> bool: ...
@@ -35,21 +35,23 @@ router = APIRouter(prefix="/games", tags=["games"])
 def get_games_service(db: Annotated[Session, Depends(get_db)]) -> IGamesService:
     return GamesService(db)
 
-@router.get("", response_model=list[GameResponseSchema])
-def get_authored_games(
-    user_id: str, 
-    limit: int, 
-    offset: int,
-    service: Annotated[IGamesService, Depends(get_games_service)],
-    tags: Annotated[list[str], Query()] = [], 
-    ) -> list[GameResponseSchema]:
-    return service.get_authored_games(user_id, tags, limit, offset)
 
-@router.get("/tags", response_model=list[str])
-def get_tags(
-#    user_id: str,
+@router.get("", response_model=list[GameResponseSchema])
+def get_games(
+    user_id: str,
     service: Annotated[IGamesService, Depends(get_games_service)],
-    ) -> list[str]:
+    tags: Annotated[list[str] | None, Query()] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 10,
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> list[GameResponseSchema]:
+    return service.get_games(user_id, tags or [], limit, offset)
+
+
+# Registered before GET /{game_id}, otherwise "tags" would be taken as a game id.
+@router.get("/tags", response_model=list[str])
+def get_game_tags(
+    service: Annotated[IGamesService, Depends(get_games_service)],
+) -> list[str]:
     return service.get_game_tags()
 
 
