@@ -62,5 +62,5 @@ end note
 @enduml
 ```
 
-</div>
+<\div>
 ![](rendered/map-editor-view.svg)
