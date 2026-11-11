@@ -13,28 +13,14 @@ hide empty members
 
 title PU49 Zdefiniowanie gry - widok
 
-class CreatorPanelView <<View>> {
-    + onCreateGameClick()
-    + onGameListClick()
-}
+class CreatorPanelView <<View>>
 
-class GameDefinitionView <<View>> {
-    + onEditParametersClick()
-    + onEditScenarioClick()
-    + onDefineActionClick()
-    + onSaveClick()
-    + onSaveAndSubmitClick()
-    + onCancelClick()
-}
+class GameDefinitionView <<View>>
 
-class GameParametersPanel <<View>> {
-    + onFieldChange(field: string, value: string | boolean)
-    + onSaveClick()
-}
+class GameParametersPanel <<View>>
 
 class MessageDialog {
-    + show(title: string, message: string)
-    + onOkClick()
+    + onClosed()
 }
 
 class ParametersSavedMessageDialog
@@ -72,7 +58,7 @@ GameDefinitionView --> IGameDefinitionActions
 GameDefinitionView --> GameDefinitionViewModel
 GameDefinitionView --> IScenarioEditorActions : onOpenScenarioEditor (PU56)
 GameDefinitionView --> IActionDefinitionActions : onAddAction (PU51)
-GameDefinitionView --> ICreatorPanelActions : "Anuluj"
+GameDefinitionView --> ICreatorPanelActions : onOpenCreatorPanel
 GameParametersPanel --> IGameDefinitionActions
 GameParametersPanel --> GameDefinitionViewModel
 ParametersSavedMessageDialog --> IGameDefinitionActions

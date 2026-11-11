@@ -14,14 +14,11 @@ hide empty members
 title PU51 Zdefiniowanie akcji - widok
 
 class ActionDefinitionView <<View>> {
-    + onFieldChange(field: string, value: string)
-    + onSaveAndCloseClick()
-    + onCancelClick()
+    + onBackToGame()
 }
 
 class MessageDialog {
-    + show(title: string, message: string)
-    + onOkClick()
+    + onClosed()
 }
 
 class ActionSavedMessageDialog
@@ -46,7 +43,7 @@ ActionDefinitionView --> IActionDefinitionActions
 ActionDefinitionView --> ActionDefinitionViewModel
 IncompleteActionDataMessageDialog --> IActionDefinitionActions
 ActionSaveErrorMessageDialog --> IActionDefinitionActions
-ActionDefinitionView --> IGameDefinitionActions : "Anuluj" - onOpenGame (PU49)
+ActionDefinitionView --> IGameDefinitionActions : onOpenGame (PU49)
 ActionSavedMessageDialog --> IGameDefinitionActions : onOpenGame (PU49)
 
 note bottom of ActionDefinitionView

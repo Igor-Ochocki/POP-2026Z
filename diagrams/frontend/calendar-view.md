@@ -13,14 +13,9 @@ hide empty members
 
 title PU1 Wyświetlanie kalendarza - widok
 
-class Layout <<View>> {
-    + onCalendarMenuClick()
-}
+class Layout <<View>>
 
-class CalendarView <<View>> {
-    + onRetryClick()
-    + onBackClick()
-}
+class CalendarView <<View>>
 
 class Calendar <<Component>> {
     + onMonthChange(month: Date)
@@ -34,14 +29,14 @@ class CalendarViewModel <<State>>
 CalendarWindows .u.|> ICalendarWindows
 CalendarWindows --> CalendarView
 
-Layout --> ICalendarActions : "Kalendarz" - onShowCalendar
+Layout --> ICalendarActions : onShowCalendar
 CalendarView *-- Calendar
 CalendarView --> ICalendarActions
 CalendarView --> CalendarViewModel
 Calendar --> ICalendarActions : onChangeMonth
 
 interface IReservationActions <<interface>>
-CalendarView --> IReservationActions : wybór terminu / "Dodaj wydarzenie" - onOpenReservation (PU2)
+CalendarView --> IReservationActions : onOpenReservation (PU2)
 
 note right of Calendar
     FullCalendar (widok miesiąca) - przy zmianie

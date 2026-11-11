@@ -13,11 +13,7 @@ hide empty members
 
 title PU56 Wyświetlenie scenariusza gry w edytorze - widok
 
-class ScenarioEditorView <<View>> {
-    + onRetryClick()
-    + onAddTaskClick()
-    + onCloseClick()
-}
+class ScenarioEditorView <<View>>
 
 class ScenarioEditorWindows
 interface IScenarioEditorWindows <<interface>>
@@ -33,8 +29,8 @@ ScenarioEditorWindows --> ScenarioEditorView
 GameDefinitionView --> IScenarioEditorActions : onOpenScenarioEditor
 ScenarioEditorView --> IScenarioEditorActions : onReloadScenario
 ScenarioEditorView --> ScenarioEditorViewModel
-ScenarioEditorView --> INewTaskActions : "Dodaj zadanie" - onNewTaskSelect (PU57)
-ScenarioEditorView --> IGameDefinitionActions : "Zamknij" - onOpenGame (PU49)
+ScenarioEditorView --> INewTaskActions : onNewTaskSelect (PU57)
+ScenarioEditorView --> IGameDefinitionActions : onOpenGame (PU49)
 
 note right of ScenarioEditorView
     Lista zadań, lista warunków zwycięstwa i metadane

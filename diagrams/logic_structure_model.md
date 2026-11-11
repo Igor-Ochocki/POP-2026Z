@@ -36,6 +36,8 @@ package "Frontend (React SPA)" as FE {
     () "IXxxActions" as IA
     () "IXxxWindows" as IW
     () "IXxxApi" as IAPI
+    component "Local storage\n(localDraftStorage)" as LS
+    () "IXxxDraftStorage" as ILS
 
     P - IA
     V - IW
@@ -43,6 +45,8 @@ package "Frontend (React SPA)" as FE {
     V --( IA
     P --( IW
     P --( IAPI
+    LS - ILS
+    P --( ILS
 }
 
 package "Backend (FastAPI)" as BE {
@@ -68,11 +72,13 @@ note right of FE
     prezenter zmienia widoki i dialogi przez IXxxWindows.
     Przejścia między PU: widok woła prezenter innego PU.
     Moduły API mapują DTO (camelCase) <-> schematy (snake_case).
+    Lokalny szkic w przeglądarce (PU60) - osobny port, nie przez httpClient.
 end note
 
 note right of BE
     Porty REST mają te same nazwy co porty API frontendu
-    (IGamesApi, IScenariosApi, IActionsApi, ICalendarApi, IReservationsApi).
+    (IGamesApi, IScenariosApi, IActionsApi, ICalendarApi, IReservationsApi,
+    IMapsApi, IEventsApi).
     Błędy domenowe (AppError) mapuje jeden handler.
 end note
 @enduml

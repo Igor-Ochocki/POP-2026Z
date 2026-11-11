@@ -13,33 +13,22 @@ hide empty members
 
 title PU2 Rezerwacja czasu dla gry - widok
 
-class CalendarView <<View>> {
-    + onEventClick(eventId: string)
-}
+class CalendarView <<View>>
 
-class ReservationView <<View>> {
-    + onBackClick()
-}
+class ReservationView <<View>>
 
 class ReservationPanel <<View>> {
-    + onSlotDateChange(value: string)
-    + onSlotChange(slotId: string)
-    + onParticipantCountChange(value: string)
-    + onSubmitReservationClick()
-    + onPayNowClick()
-    + onPayLaterClick()
-    + onCancelReservationClick()
+    + handleSubmit(event: FormEvent)
+    + closeDialog()
+    + confirmDialogAction()
 }
 
 class ConfirmDialog {
-    + show(title: string, message: string)
-    + onConfirmClick()
-    + onCancelClick()
+    + onClosed(confirmed: boolean)
 }
 
 class MessageDialog {
-    + show(title: string, message: string)
-    + onOkClick()
+    + onClosed()
 }
 
 class ReservationConfirmDialog
@@ -65,7 +54,7 @@ ReservationWindows --> ReservationView
 ReservationWindows --> ConfirmDialog
 ReservationWindows --> MessageDialog
 
-CalendarView --> IReservationActions : wybór terminu / "Dodaj wydarzenie" - onOpenReservation (PU2)
+CalendarView --> IReservationActions : onOpenReservation (PU2)
 ReservationView *-- ReservationPanel
 ReservationPanel --> CancelReservationConfirmDialog : otwiera (stan lokalny panelu)
 ReservationView --> ReservationViewModel
@@ -75,8 +64,8 @@ CancelReservationConfirmDialog --> IReservationActions : onCancelReservation
 PaymentCompletedMessageDialog --> IReservationActions
 SlotUnavailableMessageDialog --> IReservationActions
 ReservationCancelledMessageDialog --> IReservationActions
-ReservationView --> ICalendarActions : "Wróć" - onShowCalendar (PU1)
-ReservationPanel --> ICalendarActions : "Zapłać później" - onShowCalendar (PU1)
+ReservationView --> ICalendarActions : onShowCalendar (PU1)
+ReservationPanel --> ICalendarActions : onShowCalendar (PU1)
 
 note right of ReservationPanel
     Bez terminu ("Dodaj wydarzenie") formularz pokazuje datę i listę

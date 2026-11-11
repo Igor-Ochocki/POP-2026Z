@@ -13,17 +13,10 @@ hide empty members
 
 title PU25 Wyświetlenie listy gier przez twórcę - widok
 
-class GameListView <<View>> {
-    + onSearchChange(value: string)
-    + onFilterClick()
-    + onShowMoreClick()
-    + onRetryClick()
-    + onGameClick(gameId: string)
-}
+class GameListView <<View>>
 
 class GameFilterDialog <<View>> {
-    + onTagToggle(tag: string)
-    + onApplyClick()
+    + toggleTag(tag: string)
 }
 
 class GameListWindows

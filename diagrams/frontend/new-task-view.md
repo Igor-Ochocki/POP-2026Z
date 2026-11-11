@@ -13,21 +13,14 @@ hide empty members
 
 title PU57 Projektowanie zadania w scenariuszu gry - widok
 
-class NewTaskView <<View>> {
-    + onFieldChange(field: string, value: string | number)
-    + onSaveAndCloseClick()
-    + onCancelClick()
-}
+class NewTaskView <<View>>
 
 class ConfirmDialog {
-    + show(title: string, message: string)
-    + onConfirmClick()
-    + onCancelClick()
+    + onClosed(confirmed: boolean)
 }
 
 class MessageDialog {
-    + show(title: string, message: string)
-    + onOkClick()
+    + onClosed()
 }
 
 class CancelNewTaskConfirmationDialog
