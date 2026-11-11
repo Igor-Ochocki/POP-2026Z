@@ -2,6 +2,8 @@
 
 ```
 
+
+
 @startuml map-editor-view
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
@@ -12,7 +14,7 @@ skinparam nodesep 30
 skinparam ranksep 40
 hide empty members
 
-title PU60 Definicja mapy - Widok (MapEditorView)
+title PU60 Definicja mapy - Widok 
 
 class MapEditorView <<View>> {
     + render()
@@ -37,7 +39,7 @@ class MapEditorWindows
 interface IMapEditorWindows <<interface>>
 interface IMapEditorActions <<interface>>
 interface IGameDefinitionActions <<interface>>
-interface IRoomDefinitionActions <<interface>>
+interface IRoomEditActions <<interface>>
 
 MapEditorWindows .u.|> IMapEditorWindows
 MapEditorWindows --> MapEditorView
@@ -45,7 +47,7 @@ MapEditorWindows --> MessageDialog
 
 MapEditorView --> IMapEditorActions : wywołuje akcje użytkownika
 MapEditorView --> IGameDefinitionActions : onOpenGame (PU49)
-MapEditorView --> IRoomDefinitionActions : onOpenRoomEditor (wejście do komnaty)
+MapEditorView --> IRoomEditActions : onOpenRoomEditor (wejście do komnaty)
 
 MapSavedMessageDialog --> IGameDefinitionActions : onOpenGame (PU49)
 IncorrectMapDataMessageDialog --> IMapEditorActions
@@ -60,6 +62,8 @@ note bottom of MapEditorView
 end note
 
 @enduml
+
+
 ```
 
 <\div>
