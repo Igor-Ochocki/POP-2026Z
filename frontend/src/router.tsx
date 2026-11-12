@@ -10,6 +10,7 @@ import { GameListView } from '@views/GameListView/GameListView';
 import { NewTaskView } from '@views/NewTaskView/NewTaskView';
 import { ScenarioEditorView } from '@views/ScenarioEditorView/ScenarioEditorView';
 import { ReservationView } from '@views/ReservationView/ReservationView';
+import { VictoryConditionView } from '@views/VictoryConditionView/VictoryConditionView';
 
 export const router = createBrowserRouter([
   {
@@ -34,6 +35,10 @@ export const router = createBrowserRouter([
       {
         path: 'creator/games/:gameId/scenario/new-task',
         element: <NewTaskView />,
+      },
+      {
+        path: 'creator/games/:gameId/scenario/victory-condition',
+        element: <VictoryConditionView />,
       },
       { path: '*', element: <NotFoundView /> },
     ],
