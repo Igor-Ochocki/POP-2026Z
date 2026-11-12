@@ -20,6 +20,7 @@ interface IScenarioEditorWindows <<interface>>
 interface IScenarioEditorActions <<interface>>
 class ScenarioEditorViewModel <<State>>
 interface INewTaskActions <<interface>>
+interface IVictoryConditionActions <<interface>>
 interface IGameDefinitionActions <<interface>>
 class GameDefinitionView <<View>>
 
@@ -30,12 +31,12 @@ GameDefinitionView --> IScenarioEditorActions : onOpenScenarioEditor
 ScenarioEditorView --> IScenarioEditorActions : onReloadScenario
 ScenarioEditorView --> ScenarioEditorViewModel
 ScenarioEditorView --> INewTaskActions : onNewTaskSelect (PU57)
+ScenarioEditorView --> IVictoryConditionActions : onVictoryConditionSelect (PU58)
 ScenarioEditorView --> IGameDefinitionActions : onOpenGame (PU49)
 
 note right of ScenarioEditorView
     Lista zadań, lista warunków zwycięstwa i metadane
-    gry to części tego widoku. "Dodaj warunek" jest
-    nieaktywne do czasu PU58.
+    gry to części tego widoku.
 end note
 @enduml
 ```
