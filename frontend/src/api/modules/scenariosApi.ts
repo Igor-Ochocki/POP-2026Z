@@ -1,6 +1,12 @@
 import type { AxiosInstance } from 'axios';
 import type { ScenarioDetailDTO } from '@app-types/scenarioEditor';
 import type { TaskCreateDTO, TaskDTO } from '@app-types/task';
+import type {
+  VictoryConditionCreateDTO,
+  VictoryConditionDTO,
+  VictoryConditionTarget,
+  VictoryConditionType,
+} from '@app-types/victoryCondition';
 
 interface TaskCreatePayload {
   title: string;
@@ -34,11 +40,35 @@ interface TaskResponsePayload {
   reward_value: string;
 }
 
+interface VictoryConditionCreatePayload {
+  name: string;
+  target: VictoryConditionTarget;
+  condition_type: VictoryConditionType;
+  value: string;
+}
+
+const toVictoryConditionCreatePayload = (
+  dto: VictoryConditionCreateDTO,
+): VictoryConditionCreatePayload => ({
+  name: dto.name,
+  target: dto.target,
+  condition_type: dto.conditionType,
+  value: dto.value,
+});
+
+interface VictoryConditionResponsePayload {
+  victory_condition_id: string;
+  name: string;
+  target: VictoryConditionTarget;
+  condition_type: VictoryConditionType;
+  value: string;
+}
+
 interface ScenarioResponsePayload {
   scenario_id: string;
   game_id: string;
   tasks: TaskResponsePayload[];
-  victory_conditions: string[];
+  victory_conditions: VictoryConditionResponsePayload[];
 }
 
 const fromTaskPayload = (task: TaskResponsePayload): TaskDTO => ({
@@ -53,13 +83,25 @@ const fromTaskPayload = (task: TaskResponsePayload): TaskDTO => ({
   rewardValue: task.reward_value,
 });
 
+const fromVictoryConditionPayload = (
+  condition: VictoryConditionResponsePayload,
+): VictoryConditionDTO => ({
+  victoryConditionId: condition.victory_condition_id,
+  name: condition.name,
+  target: condition.target,
+  conditionType: condition.condition_type,
+  value: condition.value,
+});
+
 const fromScenarioPayload = (
   scenario: ScenarioResponsePayload,
 ): ScenarioDetailDTO => ({
   scenarioId: scenario.scenario_id,
   gameId: scenario.game_id,
   tasks: scenario.tasks.map(fromTaskPayload),
-  victoryConditions: scenario.victory_conditions,
+  victoryConditions: scenario.victory_conditions.map(
+    fromVictoryConditionPayload,
+  ),
 });
 
 export interface IScenariosApi {
@@ -69,6 +111,11 @@ export interface IScenariosApi {
     userId: string,
     task: TaskCreateDTO,
   ): Promise<TaskDTO>;
+  addVictoryCondition(
+    gameId: string,
+    userId: string,
+    victoryCondition: VictoryConditionCreateDTO,
+  ): Promise<VictoryConditionDTO>;
 }
 
 export const createScenariosApi = (http: AxiosInstance): IScenariosApi => ({
@@ -87,5 +134,14 @@ export const createScenariosApi = (http: AxiosInstance): IScenariosApi => ({
       { params: { user_id: userId } },
     );
     return fromTaskPayload(data);
+  },
+
+  addVictoryCondition: async (gameId, userId, victoryCondition) => {
+    const { data } = await http.post<VictoryConditionResponsePayload>(
+      `/games/${gameId}/scenario/victory_conditions`,
+      toVictoryConditionCreatePayload(victoryCondition),
+      { params: { user_id: userId } },
+    );
+    return fromVictoryConditionPayload(data);
   },
 });

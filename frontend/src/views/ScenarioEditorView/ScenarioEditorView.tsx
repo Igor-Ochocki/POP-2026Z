@@ -7,8 +7,14 @@ import TextSubheading from '@components/TextSubheading/TextSubheading';
 import { useGameDefinition } from '@hooks/useGameDefinition';
 import { useNewTask } from '@hooks/useNewTask';
 import { useScenarioEditor } from '@hooks/useScenarioEditor';
+import { useVictoryCondition } from '@hooks/useVictoryCondition';
 import { gameStatusLabel } from '@app-types/game';
 import type { TaskDTO } from '@app-types/task';
+import {
+  victoryConditionTargetLabels,
+  victoryConditionTypeLabels,
+  type VictoryConditionDTO,
+} from '@app-types/victoryCondition';
 import './ScenarioEditorView.css';
 
 function describeTask(task: TaskDTO): string {
@@ -19,9 +25,14 @@ function describeTask(task: TaskDTO): string {
   return `Poziom ${task.requiredPlayerLevel} · ${timeLimit} · ${task.rewardType}: ${task.rewardValue}`;
 }
 
+function describeVictoryCondition(condition: VictoryConditionDTO): string {
+  return `${victoryConditionTargetLabels[condition.target]} · ${victoryConditionTypeLabels[condition.conditionType]}: ${condition.value}`;
+}
+
 export function ScenarioEditorView() {
   const { state, actions } = useScenarioEditor();
   const newTask = useNewTask();
+  const victoryCondition = useVictoryCondition();
   const gameDefinition = useGameDefinition();
   const { activeGame, scenario } = state;
 
@@ -85,15 +96,20 @@ export function ScenarioEditorView() {
         <section className='scenario-editor-view__section'>
           <div className='scenario-editor-view__section-heading'>
             <TextSubheading level={2}>Warunki zwycięstwa</TextSubheading>
-            {/* TODO: PU58 onAddVictoryCondition */}
-            <Button disabled>
+            <Button
+              disabled={!scenario}
+              onClick={victoryCondition.actions.onVictoryConditionSelect}
+            >
               <AddCircleOutlinedIcon fontSize='small' /> Dodaj warunek
             </Button>
           </div>
           {scenario?.victoryConditions.length ? (
             <ul className='scenario-editor-view__list'>
-              {scenario.victoryConditions.map((condition, index) => (
-                <li key={`${condition}-${index}`}>{condition}</li>
+              {scenario.victoryConditions.map((condition) => (
+                <li key={condition.victoryConditionId}>
+                  <TextSubheading level={3}>{condition.name}</TextSubheading>
+                  <TextLabel>{describeVictoryCondition(condition)}</TextLabel>
+                </li>
               ))}
             </ul>
           ) : (
