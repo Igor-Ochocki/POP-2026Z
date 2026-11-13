@@ -138,7 +138,7 @@ export const createScenariosApi = (http: AxiosInstance): IScenariosApi => ({
 
   addVictoryCondition: async (gameId, userId, victoryCondition) => {
     const { data } = await http.post<VictoryConditionResponsePayload>(
-      `/games/${gameId}/scenario/victory-conditions`,
+      `/games/${gameId}/scenario/victory_conditions`,
       toVictoryConditionCreatePayload(victoryCondition),
       { params: { user_id: userId } },
     );
