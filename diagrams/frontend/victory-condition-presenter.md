@@ -102,7 +102,7 @@ end note
 note bottom of IScenariosApi
     Nowa metoda: addVictoryCondition(gameId: string, userId: string,
     victoryCondition: VictoryConditionCreateDTO): Promise<VictoryConditionDTO>
-    (POST /games/{id}/scenario/victory-conditions).
+    (POST /games/{id}/scenario/victory_conditions).
     ScenarioDetailDTO.victoryConditions: VictoryConditionDTO[*].
     Pozostałe DTO i porty API: interfaces.md.
 end note
