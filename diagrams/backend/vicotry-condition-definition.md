@@ -37,27 +37,34 @@ class ScenariosService <<Service>> {
 }
 
 class VictoryCondition <<Base>> {
-    id: str
-    scenario_id: str
-    name: str
-    target: VictoryConditionTarget
-    condition_type: VictoryConditionType
-    value: str
+    + id: str
+    + scenario_id: str
+    + name: str
+    + target: VictoryConditionTarget
+    + condition_type: VictoryConditionType
+    + value: str
 }
 
 class VictoryConditionCreateSchema <<BaseModel>> {
-    name: str [1..100]
-    target: VictoryConditionTarget
-    condition_type: VictoryConditionType
-    value: str [1..100]
+    + name: str [1..100]
+    + target: VictoryConditionTarget
+    + condition_type: VictoryConditionType
+    + value: str [1..100]
 }
 
 class VictoryConditionSchema <<BaseModel>> {
-    id: str
-    name: str
-    target: VictoryConditionTarget
-    condition_type: VictoryConditionType
-    value: str
+    + victory_condition_id: str
+    + name: str
+    + target: VictoryConditionTarget
+    + condition_type: VictoryConditionType
+    + value: str
+}
+
+class ScenarioDetailSchema <<BaseModel>> {
+    + scenario_id: str
+    + game_id: str
+    + tasks: list[TaskSchema]
+    + victory_conditions: list[VictoryConditionSchema]
 }
 
 enum VictoryConditionType {
@@ -72,6 +79,11 @@ enum VictoryConditionTarget {
     character
 }
 
+note right of ScenarioDetailSchema {
+    Zmiana typu victory_conditions z list[str]
+    na list[VictoryConditionSchema]
+}
+
 class NotFoundError <<Exception>>
 class ConflictError <<Exception>>
 
@@ -84,6 +96,7 @@ ScenariosService ..> VictoryConditionSchema
 ScenariosService ..> NotFoundError : warunek nie istnieje\nalbo jest cudzy
 ScenariosService ..> ConflictError : warunek tego typu już istnieje
 
+ScenarioDetailSchema *-- "*" VictoryConditionSchema
 
 @enduml
 ```
