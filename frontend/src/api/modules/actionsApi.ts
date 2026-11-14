@@ -8,6 +8,7 @@ import type {
 
 export interface IActionsApi {
   createAction(action: ActionCreateDTO): Promise<ActionDTO>;
+  getAll(gameId: string): Promise<ActionDTO[]>;
 }
 
 // Backend payloads (ActionCreateSchema / ActionSchema) - snake_case stays inside this module.
@@ -47,5 +48,9 @@ export const createActionsApi = (http: AxiosInstance): IActionsApi => ({
       toCreatePayload(action),
     );
     return fromResponsePayload(data);
+  },
+  getAll: async (gameId) => {
+    const { data } = await http.get(`/actions/list/${gameId}`);
+    return data.map(fromResponsePayload);
   },
 });
