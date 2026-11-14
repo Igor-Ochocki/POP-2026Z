@@ -1,5 +1,6 @@
 import AutoStoriesOutlinedIcon from '@mui/icons-material/AutoStoriesOutlined';
 import BoltOutlinedIcon from '@mui/icons-material/BoltOutlined';
+import ListIcon from '@mui/icons-material/List';
 import MapOutlinedIcon from '@mui/icons-material/MapOutlined';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
@@ -27,6 +28,7 @@ import { gameStatusLabel } from '@app-types/game';
 import type { IGameListActions } from '@app-types/gameList';
 import { GameParametersPanel } from './GameParametersPanel';
 import './GameDefinitionView.css';
+import { useDisplayActions } from '@hooks/useDisplayActions';
 
 function describeGame(game: GameMetadataDTO): string {
   return [
@@ -82,6 +84,9 @@ function getDialogs(
 export function GameDefinitionView() {
   const { state, actions } = useGameDefinition();
   const { actions: actionDefinitionActions } = useActionDefinition();
+  const {
+    actions: { onDisplayActionsSelect },
+  } = useDisplayActions();
   const creatorPanel = useCreatorPanel();
   const gameList = useGameList();
   const scenarioEditor = useScenarioEditor();
@@ -169,6 +174,14 @@ export function GameDefinitionView() {
               icon={<SensorsOutlinedIcon />}
               title='Dodaj nowy czujnik'
               description='Czujniki wyzwalające akcje w grze'
+            />
+            <ActionTile
+              icon={<ListIcon />}
+              title='Wyświetl akcje'
+              description='Wyświetl już zdefiniowane akcje'
+              onClick={
+                game?.gameId ? () => onDisplayActionsSelect() : undefined
+              }
             />
           </div>
           <footer className='game-definition-view__footer'>
