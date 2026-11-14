@@ -10,6 +10,40 @@ export type EffectKind =
   | 'setFlag'
   | 'startMiniGame';
 
+export function actionTypeDisplay(actionType: ActionType) {
+  switch (actionType) {
+    case 'movement':
+      return 'ruch';
+    case 'attack':
+      return 'atak';
+    case 'useItem':
+      return 'wykorzystanie przedmiotu';
+    case 'dialogue':
+      return 'dialog';
+    case 'custom':
+      return 'niestandardowa';
+    case 'miniGame':
+      return 'minigra';
+  }
+}
+
+export function effectKindDisplay(effectKind: EffectKind) {
+  switch (effectKind) {
+    case 'changeStat':
+      return 'zmiana statystyki';
+    case 'addItem':
+      return 'dodanie przedmiotu';
+    case 'removeItem':
+      return 'utrata przedmiotu';
+    case 'changeLocation':
+      return 'zmiana położenia';
+    case 'setFlag':
+      return 'ustawienie flagi';
+    case 'startMiniGame':
+      return 'rozpoczęcie minigry';
+  }
+}
+
 export interface ActionCreateDTO {
   gameId: string;
   name: string;
@@ -57,3 +91,15 @@ export interface IActionDefinitionWindows {
   showActionSaveErrorMessageDialog(): void;
   hideDialogs(): void;
 }
+
+export type IDisplayActionsWindows = {
+  showDisplayActionsView: () => void;
+};
+
+export type IDisplayActionsActions = {
+  onDisplayActionsSelect: () => void;
+};
+
+export type DisplayActionsViewModel = {
+  actions: ActionDTO[];
+};
