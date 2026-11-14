@@ -102,4 +102,5 @@ export type IDisplayActionsActions = {
 
 export type DisplayActionsViewModel = {
   actions: ActionDTO[];
+  gameId: string;
 };

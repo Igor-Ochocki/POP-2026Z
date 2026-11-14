@@ -30,7 +30,10 @@ export function useDisplayActions(): {
     gameId,
   );
 
-  const [state, setState] = useState<DisplayActionsViewModel>({ actions: [] });
+  const [state, setState] = useState<DisplayActionsViewModel>({
+    actions: [],
+    gameId,
+  });
 
   useEffect(() => {
     (async () => {

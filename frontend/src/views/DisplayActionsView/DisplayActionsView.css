@@ -1,4 +1,7 @@
 .display-actions-view {
   max-width: 48rem;
   margin: 0 auto;
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
 }
