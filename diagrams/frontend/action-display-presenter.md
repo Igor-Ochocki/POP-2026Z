@@ -1,3 +1,4 @@
+```
 @startuml
 skinparam classAttributeIconSize 0
 skinparam nodesep 30
@@ -15,7 +16,10 @@ interface windows as "IDisplayActionsWindows" <<interface>> {
 class hook as "useDisplayActions" <<Hook>> {
     onDisplayActionsSelect()
 }
-class vm as "DisplayActionsViewModel" <<State>> {}
+class vm as "DisplayActionsViewModel" <<State>> {
+    actions: ActionDTO[]
+    gameId: string
+}
 interface api as "IActionsApi" <<interface>> {}
 
 hook .|> actions
@@ -27,3 +31,6 @@ note bottom of api
 GET /list/{game_id}
 end note
 @enduml
+```
+
+![](./rendered/action-display-presenter.svg)
