@@ -39,3 +39,10 @@ class VictoryConditionType(StrEnum):
 class VictoryConditionTarget(StrEnum):
     FACTION = "faction"
     CHARACTER = "character"
+
+class EventStatus(StrEnum):
+    OPEN = "open"
+    FINISHED = "finished"
+    CANCELLED = "cancelled"
+    RESTRICTED = "restricted"
+
