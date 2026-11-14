@@ -1,7 +1,6 @@
 <div hidden>
 
 ```
-
 @startuml map-editor-presenter
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
@@ -15,9 +14,11 @@ hide empty members
 title PU60 Definicja mapy - prezenter
 
 interface IMapEditorActions <<interface>> {
-    + onRoomChange(roomId: int, data: any)
-    + onTransitionChange(transitionId: int, data: any)
-    + onEditRoom(roomId: int)
+    + onRoomSelected(roomId: int)
+    + onSelectedRoomChange(data: Partial<RoomDTO>)
+    + onPassageSelected(passageId: int)
+    + onSelectedPassageChange(data: Partial<PassageDTO>)
+    + onEditSelectedRoom()
     + onSaveAndExit()
     + onRetryBrowserSave()
     + onContinueWithoutBrowserSave()
@@ -28,7 +29,7 @@ interface IMapEditorActions <<interface>> {
 }
 
 interface IRoomEditActions <<interface>> {
-    + onOpenRoomEditor(roomId: int)
+    + onOpenRoomEditor(roomId: int, width: number, height: number)
 }
 
 interface IMapEditorWindows <<interface>> {
@@ -41,44 +42,51 @@ interface IMapEditorWindows <<interface>> {
 }
 
 class useMapEditor <<Hook>> {
-    - handleAutoSaveLocally(map: GameMap) 
-    - saveMapToSystem(map: GameMap)
-    - validateMap(map: GameMap)
+    - handleAutoSaveLocally(map: GameMapDTO)
+    - saveMapToSystem(map: GameMapDTO)
+    - validateMap(map: GameMapDTO)
 }
 
 class MapEditorViewModel <<State>> {
     + gameId: string
-    + map: GameMap
+    + map: GameMapDTO
+    + selectedRoomId: int | null
+    + selectedPassageId: int | null
     + isAutoSaveEnabled: boolean
     + lastSaveTime: Date | null
     + isSubmitting: boolean
     + dialogType: MapEditorDialogTypes | null
 }
 
-class GameMap {
-    + container: MapContainer
-    + chambers: Room[]
-    + transitions: Transition[]
+class GameMapDTO <<DTO>> {
+    + container: MapContainerDTO
+    + chambers: RoomDTO[]
+    + passages: PassageDTO[]
     + isValid: boolean
 }
 
-class MapContainer {
+class MapContainerDTO <<DTO>> {
     + width: number
     + height: number
 }
 
-class Room {
+class RoomDTO <<DTO>> {
     + id: int
     + name: string
-    + width: number 
+    + width: number
     + height: number
-    + position: { x: number, y: number }
+    + position: PositionDTO
 }
 
-class Transition {
+class PassageDTO <<DTO>> {
     + id: int
     + Room1Id: int
     + Room2Id: int
+}
+
+class PositionDTO <<DTO>> {
+    + x: number
+    + y: number
 }
 
 enum MapEditorDialogTypes {
@@ -100,16 +108,18 @@ class MapSaveDTO <<DTO>>
 
 useMapEditor .u.|> IMapEditorActions
 useMapEditor -u-> IMapEditorWindows
-useMapEditor --> IRoomEditActions 
+useMapEditor --> IRoomEditActions
 useMapEditor *-- "1" MapEditorViewModel : state
-MapEditorViewModel *-- "1" GameMap : map
-GameMap *-- "1" MapContainer
-GameMap *-- "*" Room
-GameMap *-- "*" Transition 
+MapEditorViewModel *-- "1" GameMapDTO : map
+GameMapDTO *-- "1" MapContainerDTO
+GameMapDTO *-- "*" RoomDTO
+GameMapDTO *-- "*" PassageDTO
+RoomDTO *-- "1" PositionDTO
 MapEditorViewModel ..> MapEditorDialogTypes
 useMapEditor ..> MapSaveDTO
 useMapEditor --> IMapsApi
-useMapEditor --> IMapDraftStorage 
+useMapEditor --> IMapDraftStorage
+
 
 @enduml
 
