@@ -41,7 +41,7 @@ package "Enums" {
 
 class Event <<Base>>{
   + reserv_id: str
-  + participation_count: int
+  + users_registered: int
   + participants: list[str]
   + event_status: EventStatus
 }
@@ -49,18 +49,18 @@ class Reservation <<Base>>{
   + reserv_id: str
   + slot_id: str
   + game_id: str
-  + max_players: int
+  + participant_count: int
   + is_paid: bool
   + reserv_status: ReservationStatus
 }
 
 class EventSchema <<BaseModel>> {
   + reserv_id: str
-  + participation_count: int
+  + users_registered: int
   + participants: list[str]
   + slot_id: str
   + game_id: str
-  + max_players: int
+  + participant_count: int
   + event_status: str
 }
 
@@ -81,8 +81,8 @@ EventsService ..> EventSchema
 EventsService ..> NotFoundError
 
 note left of EventSchema
-  Schema przekazuje dane, więc 
-  znajduja się w nim wszystkie atrybuty
+  Schemat przekazuje dane, więc 
+  znajdują się w nim wszystkie atrybuty
   z obu modeli, potrzebne do wyświetlenia 
   wydarzenia w widoku
 end note
@@ -97,6 +97,13 @@ note right of Event
   już na wydarzenie
   3. stworzenie Event uzaleznione
   od statusu Reservation = confirmed
+  4. participant_count w Reservation będzie
+  traktowane jako maksymalna ilość graczy
+  na danym wydarzeniu, potrzebna
+  do obliczenia kwoty rezerwacji,
+  natomiast ilość zapisanych do tej pory
+  uczestników wydarzenia będzie
+  przechowywana w atrybucie users_registered
 end note
 
 
