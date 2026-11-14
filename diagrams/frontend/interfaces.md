@@ -129,6 +129,7 @@ package "Akcje (PU51)" as P_Actions {
 
     interface IActionsApi <<interface>> {
         + createAction(action: ActionCreateDTO): Promise<ActionDTO>
+        + getAll(gameId: string): Promise<ActionDTO[]>
     }
 
     ActionDTO -u-|> ActionCreateDTO
