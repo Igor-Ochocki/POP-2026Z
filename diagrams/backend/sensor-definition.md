@@ -1,3 +1,4 @@
+```plantuml
 interface ISensorApi <<interface>> \n<< /api/v1/games >> {
     + <<PUT {game_id}/sensor/add>> add_sensor(game_id: str, room_id: str, positionX: str, positionY: str, data: SensorDTO) : SensorDTO
 }
@@ -47,3 +48,4 @@ SensorService ..> SensorDTO
 SensorService ..> NotFoundException : Gra lub pokój, do którego chcemy dodać czujnik, nie istnieje
 SensorService ..> DataIncorrectException : Niepoprawne dane
 SensorService ..> SaveFailedException : Zapisanie danych nie powiodło się
+```
