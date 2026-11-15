@@ -26,6 +26,10 @@ interface IMapEditorActions <<interface>> {
     + onReturnToEditing()
     + onSaveAsInvalid()
     + onExitWithoutSaving()
+    + onAddRoom()
+    + onRemoveSelectedRoom()
+    + onAddPassage(room1Id: int, room2Id: int)
+    + onRemoveSelectedPassage()
 }
 
 interface IRoomEditActions <<interface>> {
