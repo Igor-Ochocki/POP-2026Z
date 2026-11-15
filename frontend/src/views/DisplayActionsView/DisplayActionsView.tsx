@@ -1,10 +1,10 @@
 import { useDisplayActions } from '@hooks/useDisplayActions';
 import './DisplayActionsView.css';
 import SubtitledList from '@components/SubtitledList/SubtitledList';
-import { actionTypeDisplay, effectKindDisplay } from '@app-types/action';
 import TextLabel from '@components/TextLabel/TextLabel';
 import Button from '@components/Button/Button';
 import { useGameDefinition } from '@hooks/useGameDefinition';
+import { actionTypeLabels, effectKindLabels } from '@app-types/action';
 
 export function DisplayActionsView() {
   const {
@@ -22,17 +22,19 @@ export function DisplayActionsView() {
           items={actions.map(
             ({ actionType, name, outcomeType, outcomeValue }) => ({
               label: name,
-              subtitle: actionTypeDisplay(actionType),
-              text: `efekt: ${effectKindDisplay(outcomeType)} ${outcomeValue}`,
+              subtitle: actionTypeLabels[actionType],
+              text: `efekt: ${effectKindLabels[outcomeType]} ${outcomeValue}`,
             }),
           )}
         />
       ) : (
         <TextLabel>Nie zdefiniowano jeszcze żadnych akcji</TextLabel>
       )}
-      <Button variant='secondary' onClick={() => onOpenGame(gameId)}>
-        Zamknij
-      </Button>
+      <div className='display-actions-view__back'>
+        <Button variant='secondary' onClick={() => onOpenGame(gameId)}>
+          Zamknij
+        </Button>
+      </div>
     </div>
   );
 }
