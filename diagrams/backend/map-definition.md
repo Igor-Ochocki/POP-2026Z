@@ -23,7 +23,7 @@ class Map <<BaseModel>> {
     + name: str
     + description: str
     + rooms: RoomDTO[]
-    + room_connections: RoomConnection[]
+    + passages: PassageDTO[]
 }
 
 class MapDTO {
@@ -31,7 +31,7 @@ class MapDTO {
     + name: str
     + description: str
     + rooms: RoomDTO[]
-    + room_connections: RoomConnection[]
+    + passages: PassageDTO[]
 }
 
 class InventoryItem <<BaseModel>> {
