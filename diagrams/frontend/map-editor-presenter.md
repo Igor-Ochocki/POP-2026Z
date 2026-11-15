@@ -111,7 +111,7 @@ useMapEditor --> IRoomEditActions
 useMapEditor *-- "1" MapEditorViewModel : state
 MapEditorViewModel *-- "1" GameMapDTO : map
 GameMapDTO *-- "1" MapContainerDTO : container
-GameMapDTO *-- "*" RoomDTO : room
+GameMapDTO *-- "*" RoomDTO : rooms
 RoomDTO *-- "*" PassageDTO : passages
 RoomDTO *-- "1" PositionDTO
 PassageDTO *-- "1" PositionDTO
