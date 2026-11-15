@@ -1,6 +1,6 @@
 ```plantuml
 interface ISensorApi <<interface>> \n<< /api/v1/games >> {
-    + <<PUT {game_id}/sensor/add>> add_sensor(game_id: str, user_id: str, room_id: str, positionX: str, positionY: str, data: SensorDTO) : SensorDTO
+    + <<PUT {game_id}/sensor/add>> add_sensor(game_id: str, user_id: str, room_id: str, data: SensorDTO) : SensorDTO
 }
 
 class SensorController implements ISensorApi {
