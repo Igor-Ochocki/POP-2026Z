@@ -34,12 +34,11 @@ interface IRoomEditWindows <<interface>> {
 class useRoomEdit <<Hook>> {
     - loadRoom(gameId: string, roomId: string): Promise<void>
     - validateRoomData(room: RoomDTO, availableItems: { itemId: string, name: string }[*]): boolean
-    - saveRoom(gameId: string, roomId: string, room: RoomDTO): Promise<RoomDTO>
+    - saveRoom(gameId: string, room: RoomDTO): Promise<RoomDTO>
 }
 
 class RoomEditViewModel <<State>> {
     + gameId: string | null
-    + roomId: string | null
     + room: RoomDTO | null
     + availableItems: { itemId: string, name: string }[*]
     + isLoading: boolean
@@ -48,14 +47,21 @@ class RoomEditViewModel <<State>> {
 }
 
 class RoomDTO <<DTO>> {
-    + roomId: string
+    + id: int
     + name: string
-    + description: string
-    + hidden: boolean
-    + zone: string
-    + items: { itemId: string, name: string }[*]
-    + sensorPositions: { x: number, y: number }[*]
-    + qrCodePositions: { x: number, y: number }[*]
+    + width: number
+    + height: number
+}
+
+class PassageDTO <<DTO>> {
+    + id: int
+    + room1Id: int
+    + room2Id: int
+}
+
+class PositionDTO <<DTO>> {
+    + x: number
+    + y: number
 }
 
 enum RoomEditDialogTypes {
@@ -74,6 +80,9 @@ RoomEditViewModel ..> RoomDTO : room
 RoomEditViewModel ..> RoomEditDialogTypes
 useRoomEdit --> IMapsApi : apiClient.maps\ngetRoom, getInventoryItems, updateRoom
 IMapsApi ..> RoomDTO
+RoomDTO *-- "*" PassageDTO : passages
+RoomDTO *-- "1" PositionDTO
+PassageDTO *-- "1" PositionDTO
 
 class Event
 class Interaction
