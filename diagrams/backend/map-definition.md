@@ -19,7 +19,7 @@ class MapService implements IMapService {
 }
 
 class Map <<BaseModel>> {
-    + id: str
+    + id: int
     + name: str
     + description: str
     + rooms: RoomDTO[]
@@ -27,7 +27,7 @@ class Map <<BaseModel>> {
 }
 
 class MapDTO {
-    + id: str
+    + id: int
     + name: str
     + description: str
     + rooms: RoomDTO[]
@@ -35,14 +35,14 @@ class MapDTO {
 }
 
 class InventoryItem <<BaseModel>> {
-    + id: str
+    + id: int
     + name: str
     + total: number
     + available: number
 }
 
 class Room <<BaseModel>> {
-    + id: str
+    + id: int
     + name: str
     + description: str
     + hidden: bool
@@ -53,18 +53,18 @@ class Room <<BaseModel>> {
 }
 
 class Sensor <<BaseModel>> {
-    + id: str
+    + id: int
     + position: Position
 }
 
 class QrCode <<BaseModel>> {
-    + id: str
+    + id: int
     + position: Position
     + content: str
 }
 
 class RoomDTO {
-    + id: str
+    + id: int
     + name: str
     + description: str
     + hidden: bool
@@ -75,27 +75,40 @@ class RoomDTO {
 }
 
 class SensorDTO {
-    + id: str
+    + id: int
     + position: Position
 }
 
 class QrCodeDTO {
-    + id: str
+    + id: int
     + position: Position
 }
 
 class InventoryItemDTO {
-    + id: str
+    + id: int
     + name: str
 }
 
-class Position {
-    + X: number
-    + Y: number
+class Position <<BaseModel>> {
+    + x: number
+    + y: number
 }
 
-class RoomConnection {
-    + room_ids: str[]
+class PositionDTO {
+    + x: number
+    + y: number
+}
+
+class Passage <<BaseModel>> {
+    + id: int
+    + room1Id: int
+    + room2Id: int
+}
+
+class PassageDTO {
+    + id: int
+    + room1Id: int
+    + room2Id: int
 }
 
 class NotFoundException <<Exception>> {
