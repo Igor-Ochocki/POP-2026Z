@@ -29,7 +29,7 @@ interface IMapEditorActions <<interface>> {
 }
 
 interface IRoomEditActions <<interface>> {
-    + onOpenRoomEditor(roomId: int, width: number, height: number)
+    + onOpenRoomEditor(room: RoomDTO)
 }
 
 interface IMapEditorWindows <<interface>> {
@@ -49,9 +49,8 @@ class useMapEditor <<Hook>> {
 
 class MapEditorViewModel <<State>> {
     + gameId: string
-    + map: GameMapDTO
-    + selectedRoomId: int | null
-    + selectedPassageId: int | null
+    + selectedRoomId: number | null
+    + selectedPassageId: number | null
     + isAutoSaveEnabled: boolean
     + lastSaveTime: Date | null
     + isSubmitting: boolean
@@ -59,9 +58,6 @@ class MapEditorViewModel <<State>> {
 }
 
 class GameMapDTO <<DTO>> {
-    + container: MapContainerDTO
-    + chambers: RoomDTO[]
-    + passages: PassageDTO[]
     + isValid: boolean
 }
 
@@ -75,13 +71,12 @@ class RoomDTO <<DTO>> {
     + name: string
     + width: number
     + height: number
-    + position: PositionDTO
 }
 
 class PassageDTO <<DTO>> {
     + id: int
-    + Room1Id: int
-    + Room2Id: int
+    + room1Id: int
+    + room2Id: int
 }
 
 class PositionDTO <<DTO>> {
@@ -111,15 +106,15 @@ useMapEditor -u-> IMapEditorWindows
 useMapEditor --> IRoomEditActions
 useMapEditor *-- "1" MapEditorViewModel : state
 MapEditorViewModel *-- "1" GameMapDTO : map
-GameMapDTO *-- "1" MapContainerDTO
-GameMapDTO *-- "*" RoomDTO
-GameMapDTO *-- "*" PassageDTO
+GameMapDTO *-- "1" MapContainerDTO : container
+GameMapDTO *-- "*" RoomDTO : room
+RoomDTO *-- "*" PassageDTO : passages
 RoomDTO *-- "1" PositionDTO
+PassageDTO *-- "1" PositionDTO
 MapEditorViewModel ..> MapEditorDialogTypes
 useMapEditor ..> MapSaveDTO
 useMapEditor --> IMapsApi
 useMapEditor --> IMapDraftStorage
-
 
 @enduml
 
