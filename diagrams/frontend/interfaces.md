@@ -187,6 +187,25 @@ package "Rezerwacje (PU2)" as P_Reservations {
     IReservationsApi ..> ReservationSummaryDTO
 }
 
+package "Wydarzenia (PU46)" as P_Events {
+    class EventDTO <<DTO>> {
+        + reservId: string
+        + usersRegistered: number
+        + participants: string[*]
+        + slotId: string
+        + gameId: string
+        + participantCount: number
+        + eventStatus: string
+    }
+
+    interface IEventsApi <<interface>> {
+        + getEvent(reservId: string): Promise<EventDTO>
+        + joinEvent(reservId: string, userId: string): Promise<EventDTO>
+    }
+
+    IEventsApi ..> EventDTO
+}
+
 package "Klient API" as P_Client {
     class apiClient <<facade>> {
         + games: IGamesApi
@@ -194,6 +213,7 @@ package "Klient API" as P_Client {
         + actions: IActionsApi
         + reservations: IReservationsApi
         + calendar: ICalendarApi
+        + events: IEventsApi
     }
 
     class httpClient <<AxiosInstance>> {
@@ -213,6 +233,7 @@ apiClient --> IScenariosApi
 apiClient --> IActionsApi
 apiClient --> IReservationsApi
 apiClient --> ICalendarApi
+apiClient --> IEventsApi
 
 note bottom of P_Client
     Hooki (prezentery) wołają backend wyłącznie przez apiClient.<moduł>.<metoda>().
