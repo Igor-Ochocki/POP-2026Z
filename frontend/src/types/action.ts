@@ -10,39 +10,24 @@ export type EffectKind =
   | 'setFlag'
   | 'startMiniGame';
 
-export function actionTypeDisplay(actionType: ActionType) {
-  switch (actionType) {
-    case 'movement':
-      return 'ruch';
-    case 'attack':
-      return 'atak';
-    case 'useItem':
-      return 'wykorzystanie przedmiotu';
-    case 'dialogue':
-      return 'dialog';
-    case 'custom':
-      return 'niestandardowa';
-    case 'miniGame':
-      return 'minigra';
-  }
-}
+export const actionTypeLabels: Record<ActionType, string> = {
+  movement: 'ruch',
+  attack: 'atak',
+  useItem: 'użycie przedmiotu',
+  dialogue: 'dialog',
+  custom: 'własna',
+  miniGame: 'minigra',
+};
 
-export function effectKindDisplay(effectKind: EffectKind) {
-  switch (effectKind) {
-    case 'changeStat':
-      return 'zmiana statystyki';
-    case 'addItem':
-      return 'dodanie przedmiotu';
-    case 'removeItem':
-      return 'utrata przedmiotu';
-    case 'changeLocation':
-      return 'zmiana położenia';
-    case 'setFlag':
-      return 'ustawienie flagi';
-    case 'startMiniGame':
-      return 'rozpoczęcie minigry';
-  }
-}
+export const effectKindLabels: Record<EffectKind, string> = {
+  changeStat: 'zmiana statystyki',
+  addItem: 'dodanie przedmiotu',
+  removeItem: 'usunięcie przedmiotu',
+  changeLocation: 'zmiana lokacji',
+  setFlag: 'ustawienie flagi',
+  startMiniGame: 'rozpoczęcie minigry',
+};
+
 
 export interface ActionCreateDTO {
   gameId: string;
