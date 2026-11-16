@@ -49,8 +49,7 @@ class Room <<Base>> {
   + description: str
   + hidden: bool
   + zone: str
-  + position_x: float
-  + position_y: float
+  + position: Position
   + width: float
   + height: float
 }
@@ -82,8 +81,7 @@ class PlayerMapSchema <<BaseModel>> {
 class PlayerRoomSchema <<BaseModel>> {
   + room_id: str
   + access: RoomAccess
-  + position_x: float
-  + position_y: float
+  + position: PositionSchema
   + width: float
   + height: float
   + name: str | None
@@ -94,6 +92,16 @@ class PassageSchema <<BaseModel>> {
   + passage_id: str
   + room1_id: str
   + room2_id: str
+}
+
+class Position <<Base>> {
+  + x: float
+  + y: float
+}
+
+class PositionSchema <<BaseModel>> {
+  + x: float
+  + y: float
 }
 
 class NotFoundError <<Exception>>
@@ -113,6 +121,8 @@ Map *-- "*" Passage
 PlayerMapSchema *-- "*" PlayerRoomSchema
 PlayerMapSchema *-- "*" PassageSchema
 PlayerRoomSchema --> RoomAccess
+Room --> Position
+PlayerRoomSchema --> PositionSchema
 
 note right of Character
   Postać gracza w danej grze (1 użytkownik = 1 postać na grę).
@@ -132,7 +142,7 @@ end note
 
 note left of Room
   Map, Room i Passage - wspólne z PU60 i PU59 (MapsService).
-  position_x, position_y, width, height - układ komnaty
+  position (Position: x, y - wspólny typ z PU60), width, height - układ komnaty
   na mapie, potrzebny do narysowania zarysu terenu.
 end note
 
