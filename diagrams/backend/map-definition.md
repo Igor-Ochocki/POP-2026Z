@@ -1,7 +1,7 @@
 ```plantuml
 interface IMapApi <<interface>> \n<< /api/v1/games >> {
-    + <<GET {game_id}/map/>> get_map(game_id: str, user_id: str) : MapDTO
-    + <<POST {game_id}/map/edit>> edit_map(game_id: str, user_id: str, data: MapDTO) : MapDTO
+    + <<GET {game_id}/map/>> get_map(game_id: str, user_id: str) : MapSchema
+    + <<POST {game_id}/map/edit>> edit_map(game_id: str, user_id: str, data: MapSchema) : MapSchema
 }
 
 class MapController implements IMapApi {
@@ -9,8 +9,8 @@ class MapController implements IMapApi {
 }
 
 interface IMapService <<interface>> {
-    + get_map(game_id: str, user_id: str) : MapDTO
-    + edit_map(game_id: str, user_id: str, data: MapDTO) : MapDTO
+    + get_map(game_id: str, user_id: str) : MapSchema
+    + edit_map(game_id: str, user_id: str, data: MapSchema) : MapSchema
 }
 
 MapController --> IMapService
@@ -22,16 +22,16 @@ class Map <<BaseModel>> {
     + id: int
     + name: str
     + description: str
-    + rooms: RoomDTO[]
-    + passages: PassageDTO[]
+    + rooms: Room[]
+    + passages: Passage[]
 }
 
-class MapDTO {
+class MapSchema {
     + id: int
     + name: str
     + description: str
-    + rooms: RoomDTO[]
-    + passages: PassageDTO[]
+    + rooms: RoomSchema[]
+    + passages: PassageSchema[]
 }
 
 class InventoryItem <<BaseModel>> {
@@ -63,28 +63,28 @@ class QrCode <<BaseModel>> {
     + content: str
 }
 
-class RoomDTO {
+class RoomSchema {
     + id: int
     + name: str
     + description: str
     + hidden: bool
     + zone: str
-    + items: InventoryItemDTO[]
-    + sensors: SensorDTO[]
-    + qrCodes: QrCodeDTO[]
+    + items: InventoryItemSchema[]
+    + sensors: SensorSchema[]
+    + qrCodes: QrCodeSchema[]
 }
 
-class SensorDTO {
+class SensorSchema {
     + id: int
     + position: Position
 }
 
-class QrCodeDTO {
+class QrCodeSchema {
     + id: int
     + position: Position
 }
 
-class InventoryItemDTO {
+class InventoryItemSchema {
     + id: int
     + name: str
 }
@@ -94,7 +94,7 @@ class Position <<BaseModel>> {
     + y: number
 }
 
-class PositionDTO {
+class PositionSchema {
     + x: number
     + y: number
 }
@@ -105,7 +105,7 @@ class Passage <<BaseModel>> {
     + room2Id: int
 }
 
-class PassageDTO {
+class PassageSchema {
     + id: int
     + room1Id: int
     + room2Id: int
@@ -124,7 +124,7 @@ class SaveFailedException <<Exception>> {
 }
 
 MapService --> Map
-MapService ..> MapDTO
+MapService ..> MapSchema
 MapService ..> NotFoundException : Gra nie istnieje lub twórca nie ma do niej dostępu
 MapService ..> DataIncorrectException : Niepoprawne dane
 MapService ..> SaveFailedException : Zapisanie danych nie powiodło się
