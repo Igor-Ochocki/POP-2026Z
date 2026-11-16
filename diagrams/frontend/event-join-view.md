@@ -40,12 +40,15 @@ AccountBlockedMessageDialog -u-|> MessageDialog
 class EventJoinWindows
 interface IEventJoinWindows <<interface>>
 interface IEventJoinActions <<interface>>
+class EventJoinViewModel <<State>>
 
 EventJoinWindows .u.|> IEventJoinWindows
+EventJoinWindows --> EventListView
 EventJoinWindows --> ConfirmDialog
 EventJoinWindows --> MessageDialog
 
 EventListView --> IEventJoinActions : onOpenEventJoin
+EventListView --> EventJoinViewModel
 EventJoinConfirmDialog --> IEventJoinActions : onConfirmJoin, onCancelJoin
 EventJoinedMessageDialog --> IEventJoinActions
 EventFullMessageDialog --> IEventJoinActions
