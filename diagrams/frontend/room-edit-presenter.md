@@ -40,6 +40,8 @@ class useRoomEdit <<Hook>> {
 class RoomEditViewModel <<State>> {
     + gameId: string | null
     + room: RoomDTO | null
+    + sensors: SensorDTO[*]
+    + qrCodes: QrCodeDTO[*]
     + availableItems: { itemId: string, name: string }[*]
     + isLoading: boolean
     + isSaving: boolean
@@ -51,6 +53,14 @@ class RoomDTO <<DTO>> {
     + name: string
     + width: number
     + height: number
+}
+
+class SensorDTO <<DTO>> {
+    + position: PositionDTO
+}
+
+class QrCodeDTO <<DTO>> {
+    + position: PositionDTO
 }
 
 class PassageDTO <<DTO>> {
@@ -77,12 +87,16 @@ useRoomEdit .u.|> IRoomEditActions
 useRoomEdit -u-> IRoomEditWindows
 useRoomEdit *-- "1" RoomEditViewModel : state
 RoomEditViewModel ..> RoomDTO : room
+RoomEditViewModel ..> SensorDTO : sensors
+RoomEditViewModel ..> QrCodeDTO : qrCodes
 RoomEditViewModel ..> RoomEditDialogTypes
 useRoomEdit --> IMapsApi : apiClient.maps\ngetRoom, getInventoryItems, updateRoom
 IMapsApi ..> RoomDTO
 RoomDTO *-- "*" PassageDTO : passages
 RoomDTO *-- "1" PositionDTO
 PassageDTO *-- "1" PositionDTO
+SensorDTO *-- "1" PositionDTO
+QrCodeDTO *-- "1" PositionDTO
 
 class Event
 class Interaction
