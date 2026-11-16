@@ -1,7 +1,7 @@
 ```plantuml
 interface ISensorApi <<interface>> \n<< /api/v1/games >> {
     + <<GET sensortypes>> get_sensor_types() : str[]
-    + <<PUT {game_id}/sensor/add>> add_sensor(game_id: str, user_id: str, room_id: str, data: SensorDTO) : SensorDTO
+    + <<PUT {game_id}/sensor/add>> add_sensor(game_id: str, user_id: str, room_id: str, data: SensorSchema) : SensorSchema
 }
 
 class SensorController implements ISensorApi {
@@ -10,7 +10,7 @@ class SensorController implements ISensorApi {
 
 interface ISensorService <<interface>> {
     + get_sensor_types() : str[]
-    + add_sensor(game_id: str, user_id: str, room_id: str, data: SensorDTO) : SensorDTO
+    + add_sensor(game_id: str, user_id: str, room_id: str, data: SensorSchema) : SensorSchema
 }
 
 SensorController --> ISensorService
@@ -24,19 +24,24 @@ class Sensor <<BaseModel>> {
     + type: str
     + action: str
     + description: str
-    + position: PositionDTO
+    + position: Position
 }
 
-class SensorDTO {
+class SensorSchema {
     + id: str
     + name: str
     + type: str
     + action: str
     + description: str
-    + position: PositionDTO
+    + position: PositionSchema
 }
 
-class PositionDTO {
+class Position <<BaseModel>> {
+    + x: number
+    + y: number
+}
+
+class PositionSchema {
     + x: number
     + y: number
 }
@@ -54,7 +59,7 @@ class DataIncorrectException <<Exception>> {
 }
 
 SensorService --> Sensor
-SensorService ..> SensorDTO
+SensorService ..> SensorSchema
 SensorService ..> NotFoundException : Gra lub pokój, do którego chcemy dodać czujnik\nnie istnieje lub twórca nie ma dostępu
 ```
 SensorService ..> DataIncorrectException : Niepoprawne dane
