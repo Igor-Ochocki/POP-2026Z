@@ -102,6 +102,7 @@ package "API proxy" as A {
     () "IActionsApi" as IA_Actions
     () "IScenariosApi" as IA_Scenarios
     () "IMapsApi" as IA_Maps
+    () "ISensorsApi" as IA_Sensors
     () "IMapDraftStorage" as IA_Draft
 
     component [calendarApi] as A_Calendar
@@ -111,6 +112,7 @@ package "API proxy" as A {
     component [actionsApi] as A_Actions
     component [scenariosApi] as A_Scenarios
     component [mapsApi] as A_Maps
+    component [sensorsApi] as A_Sensors
     component [localDraftStorage] as A_Draft
     component [httpClient] as A_Http
 
@@ -121,6 +123,7 @@ package "API proxy" as A {
     IA_Actions -- A_Actions
     IA_Scenarios -- A_Scenarios
     IA_Maps -- A_Maps
+    IA_Sensors -- A_Sensors
     IA_Draft -- A_Draft
 
     A_Calendar --> A_Http
@@ -130,6 +133,7 @@ package "API proxy" as A {
     A_Actions --> A_Http
     A_Scenarios --> A_Http
     A_Maps --> A_Http
+    A_Sensors --> A_Http
 }
 
 () "Backend REST\n/api/v1" as REST
@@ -169,12 +173,13 @@ P_Victory --( IA_Scenarios
 P_MapEditor --( IA_Maps
 P_MapEditor --( IA_Draft
 P_RoomEdit --( IA_Maps
+P_Sensor --( IA_Sensors
 P_Sensor --( IA_Maps
 P_Sensor --( IA_Actions
 P_PlayerMap --( IA_Maps
 
 note bottom of A
-    apiClient (fasada) składa moduły: apiClient.calendar, .reservations, .events, .games, .actions, .scenarios, .maps.
+    apiClient (fasada) składa moduły: apiClient.calendar, .reservations, .events, .games, .actions, .scenarios, .maps, .sensors.
     httpClient - jedyna instancja axios, błędy jako ApiError (status + code).
     localDraftStorage - lokalny szkic mapy (PU60): zapis, czas ostatniego zapisu, wyłączenie autozapisu.
 end note
