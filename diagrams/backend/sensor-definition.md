@@ -1,21 +1,35 @@
-```plantuml
-interface ISensorApi <<interface>> \n<< /api/v1/games >> {
-    + <<GET sensortypes>> get_sensor_types() : str[]
-    + <<PUT {game_id}/sensor/add>> add_sensor(game_id: str, user_id: str, room_id: str, data: SensorSchema) : SensorSchema
+<div hidden>
+
+```
+@startuml sensor-definition
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam roundcorner 4
+skinparam linetype polyline
+skinparam nodesep 30
+skinparam ranksep 40
+hide empty members
+
+title PU50 Zdefiniowanie czujnika - backend
+
+interface ISensorsApi <<interface>> \n<< /api/v1/games >> {
+    + <<GET /sensor_types >>\n\tget_sensor_types() : str[]
+    + <<PUT /{game_id}/sensor/add >>\n\tadd_sensor(game_id: str, user_id: str, room_id: str, data: SensorSchema) : SensorSchema
 }
 
-class SensorController implements ISensorApi {
-    - sensor_service: ISensorService
+class SensorsController implements ISensorsApi {
+    - sensors_service: ISensorsService
 }
 
-interface ISensorService <<interface>> {
+interface ISensorsService <<interface>> {
     + get_sensor_types() : str[]
     + add_sensor(game_id: str, user_id: str, room_id: str, data: SensorSchema) : SensorSchema
 }
 
-SensorController --> ISensorService
+SensorsController --> ISensorsService
 
-class SensorService implements ISensorService {
+class SensorsService implements ISensorsService {
 }
 
 class Sensor <<BaseModel>> {
@@ -58,9 +72,15 @@ class DataIncorrectException <<Exception>> {
 
 }
 
-SensorService --> Sensor
-SensorService ..> SensorSchema
-SensorService ..> NotFoundException : Gra lub pokój, do którego chcemy dodać czujnik\nnie istnieje lub twórca nie ma dostępu
+SensorsService --> Sensor
+SensorsService ..> SensorSchema
+SensorsService ..> NotFoundException : Gra lub pokój, do którego chcemy dodać czujnik\nnie istnieje lub twórca nie ma dostępu
+SensorsService ..> DataIncorrectException : Niepoprawne dane
+SensorsService ..> SaveFailedException : Zapisanie danych nie powiodło się
+
+@enduml
 ```
-SensorService ..> DataIncorrectException : Niepoprawne dane
-SensorService ..> SaveFailedException : Zapisanie danych nie powiodło się
+
+</div>
+
+![](rendered/sensor-definition.svg)

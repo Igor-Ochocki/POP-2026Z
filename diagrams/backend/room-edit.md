@@ -1,131 +1,187 @@
-```plantuml
-interface IMapsApi <<interface>> \n<< /api/v1/games >> {
-    + <<GET {game_id}/room/{room_id}>> get_room(game_id: str, room_id: str, user_id: str) : RoomDTO
-    + <<PUT {game_id}/room/{room_id}>> update_room(game_id: str, room_id: str, user_id: str, data: RoomDTO) : RoomDTO
+<div hidden>
+
+```
+@startuml room-edit
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam roundcorner 4
+skinparam linetype polyline
+skinparam nodesep 30
+skinparam ranksep 40
+hide empty members
+
+title PU59 Edycja komnaty - backend
+
+interface IMapsApi <<interface>>\n<< /api/v1/games >> {
+    + <<GET /{game_id}/map/rooms/{room_id} >>\n\tget_room(game_id: str, room_id: int, user_id: str): RoomSchema
+    + <<GET /{game_id}/inventory_items >>\n\tget_inventory_items(game_id: str, user_id: str): list[InventoryItemSchema]
+    + <<PUT /{game_id}/map/rooms/{room_id} >>\n\tupdate_room(game_id: str, room_id: int, user_id: str, dto: RoomSchema): RoomSchema
 }
 
-class MapsController implements IMapsApi {
-    - room_service: IMapsService
+class MapsController <<Controller>> {
+    - maps_service: IMapsService
 }
 
 interface IMapsService <<interface>> {
-    + get_room(game_id: str, room_id: str, user_id: str) : RoomDTO
-    + update_room(game_id: str, room_id: str, user_id: str, data: RoomDTO) : RoomDTO
+    + get_room(game_id: str, room_id: int, user_id: str): RoomSchema
+    + get_inventory_items(game_id: str, user_id: str): list[InventoryItemSchema]
+    + update_room(game_id: str, room_id: int, user_id: str, dto: RoomSchema): RoomSchema
 }
 
+class MapsService <<Service>> {
+    - db_session: Session
+    - _check_items_available(game_id: str, items: list[InventoryItemSchema])
+    - _map_room(room: Room): RoomSchema
+}
+
+class Map <<Base>> {
+    + map_id: str
+    + game_id: str
+    + is_valid: bool
+}
+
+class Room <<Base>> {
+    + id: int
+    + map_id: str
+    + name: str
+    + description: str
+    + hidden: bool
+    + zone: str
+    + position: Position
+    + width: float
+    + height: float
+}
+
+class Passage <<Base>> {
+    + id: int
+    + map_id: str
+    + room1_id: int
+    + room2_id: int
+    + position: Position
+}
+
+class Position <<Base>> {
+    + x: float
+    + y: float
+}
+
+class InventoryItem <<Base>> {
+    + item_id: str
+    + game_id: str
+    + name: str
+    + total: int
+    + available: int
+}
+
+class Sensor <<Base>> {
+    + id: str
+    + room_id: int
+    + position: Position
+}
+
+class QrCode <<Base>> {
+    + id: str
+    + room_id: int
+    + position: Position
+}
+
+class RoomSchema <<BaseModel>> {
+    + id: int
+    + name: str [1..100]
+    + description: str
+    + hidden: bool
+    + zone: str
+    + position: PositionSchema
+    + width: float > 0
+    + height: float > 0
+    + passages: list[PassageSchema]
+    + items: list[InventoryItemSchema]
+    + sensors: list[SensorSchema]
+    + qr_codes: list[QrCodeSchema]
+}
+
+class PassageSchema <<BaseModel>> {
+    + id: int
+    + room1_id: int
+    + room2_id: int
+    + position: PositionSchema
+}
+
+class PositionSchema <<BaseModel>> {
+    + x: float
+    + y: float
+}
+
+class InventoryItemSchema <<BaseModel>> {
+    + item_id: str
+    + name: str
+}
+
+class SensorSchema <<BaseModel>> {
+    + position: PositionSchema
+}
+
+class QrCodeSchema <<BaseModel>> {
+    + position: PositionSchema
+}
+
+class NotFoundError <<Exception>>
+class ConflictError <<Exception>>
+
+MapsController .u.|> IMapsApi
 MapsController --> IMapsService
-
-class MapsService implements IMapsService {
-}
-
-class Room <<BaseModel>> {
-    + id: str
-    + name: str
-    + description: str
-    + hidden: bool
-    + zone: str
-    + items: InventoryItem[]
-    + sensors: Sensor[]
-    + qrCodes: QrCode[]
-}
-
-class InventoryItem <<BaseModel>> {
-    + id: str
-    + name: str
-    + total: number
-    + available: number
-}
-
-class RoomDoor <<BaseModel>> {
-    + id: str
-    + source_room_position: Position
-    + source_room_id: str
-    + target_room_position: Position
-    + target_room_id: str
-    + is_unlocked: bool
-}
-
-class Sensor <<BaseModel>> {
-    + id: str
-    + position: Position
-}
-
-class QrCode <<BaseModel>> {
-    + id: str
-    + position: Position
-    }
-
-class RoomDoorDTO {
-    + id: str
-    + source_room_position: Position
-    + target_room_position: Position
-    + target_room_id: str
-    + is_unlocked: bool
-}
-
-class RoomDTO {
-    + name: str
-    + description: str
-    + hidden: bool
-    + zone: str
-    + items: InventoryItemDTO[]
-    + sensors: SensorDTO[]
-    + qrCodes: QrCodeDTO[]
-    + doors: RoomDoorDTO[]
-}
-
-
-class SensorDTO {
-    + position: Position
-}
-
-class QrCodeDTO {
-    + position: Position
-}
-
-CLASS InventoryItemDTO {
-    + id: str
-    + name: str
-}
-
-class ItemUnavailableException <<Exception>> {
-
-}
-
-class NotFoundException <<Exception>> {
-
-}
-
-class ValidationException <<Exception>> {
-
-}
-
-class UpdateException <<Exception>> {
-
-}
-
+MapsService .u.|> IMapsService
+MapsService --> Map
 MapsService --> Room
-MapsService ..> RoomDTO
-MapsService ..> NotFoundException : Pokój, gra, bądź ekwipunek nie istnieją, lub brak dostępu
-MapsService ..> ValidationException : Wprowadzone dane są niepoprawne
-MapsService ..> UpdateException : Zapisanie danych w bazie danych zakończyło się błędem
-MapsService ..> ItemUnavailableException : Jeden lub więcej dodawanych przedmiotów jest niedostępne
+MapsService --> InventoryItem
+MapsService ..> RoomSchema
+MapsService ..> InventoryItemSchema
+MapsService ..> NotFoundError : gra, mapa albo komnata\nnie istnieje lub jest cudza
+MapsService ..> ConflictError : code = item_unavailable\n(przedmiotu brak w magazynie)
 
-' Relacje wynikające z sygnatur interfejsów
-IMapsApi ..> RoomDTO
-IMapsService ..> RoomDTO
+Map *-- "*" Room
+Map *-- "*" Passage
+Room *-- "*" Sensor
+Room *-- "*" QrCode
+Room "*" o-- "*" InventoryItem : items
+Passage "*" --> "2" Room : room1_id, room2_id
+Room --> Position
+Passage --> Position
 
-' Relacje domeny (BaseModel)
-Room *-- "0..*" InventoryItem
-Room *-- "0..*" Sensor
-Room *-- "0..*" QrCode
-Room "1" -- "0..*" RoomDoor : source / target
-MapsService --> RoomDoor
+RoomSchema *-- "*" PassageSchema
+RoomSchema *-- "*" InventoryItemSchema
+RoomSchema *-- "*" SensorSchema
+RoomSchema *-- "*" QrCodeSchema
+RoomSchema *-- "1" PositionSchema
 
-' Relacje między obiektami DTO
-RoomDTO *-- "0..*" InventoryItemDTO
-RoomDTO *-- "0..*" SensorDTO
-RoomDTO *-- "0..*" QrCodeDTO
-RoomDTO *-- "0..*" RoomDoorDTO
+note right of IMapsApi
+    Kontrakt z frontendem PU59: apiClient.maps.getRoom,
+    getInventoryItems, updateRoom (IMapsApi wspólne z PU60 i PU35).
+    RoomSchema = RoomDTO z PU60 (id, name, width, height, position,
+    passages) + pola edytowane w PU59 (description, hidden, zone,
+    items, sensors, qr_codes). Lista z get_inventory_items to
+    availableItems { itemId, name } w RoomEditViewModel.
+end note
 
+note bottom of MapsService
+    update_room: brak komnaty / cudza gra -> NotFoundError (404);
+    błędne pola -> 422 (walidacja schematu); przedmiot z items
+    niedostępny w magazynie (available = 0) -> ConflictError (409,
+    item_unavailable) -> MissingInventoryItemMessageDialog;
+    inny błąd zapisu -> 500 -> RoomSaveErrorMessageDialog.
+    Błąd w get_room -> RoomLoadErrorMessageDialog.
+end note
+
+note left of Passage
+    Przejście z PU60 (PassageDTO): łączy dwie komnaty
+    w punkcie position - zastępuje wcześniejsze RoomDoor.
+    Map, Room i Passage - wspólne z PU60 i PU35 (MapsService).
+    Pełna definicja czujnika (nazwa, typ, akcja): PU50.
+end note
+@enduml
 ```
+
+</div>
+
+![](rendered/room-edit.svg)

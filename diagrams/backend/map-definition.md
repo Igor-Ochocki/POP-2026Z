@@ -1,21 +1,35 @@
-```plantuml
-interface IMapApi <<interface>> \n<< /api/v1/games >> {
-    + <<GET {game_id}/map/>> get_map(game_id: str, user_id: str) : MapSchema
-    + <<POST {game_id}/map/edit>> edit_map(game_id: str, user_id: str, data: MapSchema) : MapSchema
+<div hidden>
+
+```
+@startuml map-definition
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam roundcorner 4
+skinparam linetype polyline
+skinparam nodesep 30
+skinparam ranksep 40
+hide empty members
+
+title PU60 Definicja mapy gry - backend
+
+interface IMapsApi <<interface>> \n<< /api/v1/games >> {
+    + <<GET /{game_id}/map >>\n\tget_map(game_id: str, user_id: str) : MapSchema
+    + <<POST /{game_id}/map/edit >>\n\tedit_map(game_id: str, user_id: str, data: MapSchema) : MapSchema
 }
 
-class MapController implements IMapApi {
-    - map_service: IMapService
+class MapsController implements IMapsApi {
+    - maps_service: IMapsService
 }
 
-interface IMapService <<interface>> {
+interface IMapsService <<interface>> {
     + get_map(game_id: str, user_id: str) : MapSchema
     + edit_map(game_id: str, user_id: str, data: MapSchema) : MapSchema
 }
 
-MapController --> IMapService
+MapsController --> IMapsService
 
-class MapService implements IMapService {
+class MapsService implements IMapsService {
 }
 
 class Map <<BaseModel>> {
@@ -123,9 +137,15 @@ class SaveFailedException <<Exception>> {
 
 }
 
-MapService --> Map
-MapService ..> MapSchema
-MapService ..> NotFoundException : Gra nie istnieje lub twórca nie ma do niej dostępu
-MapService ..> DataIncorrectException : Niepoprawne dane
-MapService ..> SaveFailedException : Zapisanie danych nie powiodło się
+MapsService --> Map
+MapsService ..> MapSchema
+MapsService ..> NotFoundException : Gra nie istnieje lub twórca nie ma do niej dostępu
+MapsService ..> DataIncorrectException : Niepoprawne dane
+MapsService ..> SaveFailedException : Zapisanie danych nie powiodło się
+
+@enduml
 ```
+
+</div>
+
+![](rendered/map-definition.svg)

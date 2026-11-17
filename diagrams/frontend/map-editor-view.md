@@ -67,5 +67,5 @@ end note
 
 ```
 
-<\div>
+</div>
 ![](rendered/map-editor-view.svg)

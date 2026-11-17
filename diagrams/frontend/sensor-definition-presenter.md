@@ -44,16 +44,16 @@ class SensorDefinitionViewModel <<State>> {
     +selectedPosition: Position
 }
 
-interface ISensorsAPI <<interface>>
-interface IMapsAPI <<interface>>
-interface IActionsAPI <<interface>>
+interface ISensorsApi <<interface>>
+interface IMapsApi <<interface>>
+interface IActionsApi <<interface>>
 
 useSensorDefinition .u.|> ISensorDefinitionActions
 useSensorDefinition -u-> ISensorDefinitionWindows
 useSensorDefinition *-- "1" SensorDefinitionViewModel : state
-useSensorDefinition --> ISensorsAPI
-useSensorDefinition --> IMapsAPI
-useSensorDefinition --> IActionsAPI
+useSensorDefinition --> ISensorsApi
+useSensorDefinition --> IMapsApi
+useSensorDefinition --> IActionsApi
 @enduml
 ```
 

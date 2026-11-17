@@ -89,6 +89,7 @@ package "Scenariusz i zadania (PU56, PU57)" as P_Scenario {
     interface IScenariosApi <<interface>> {
         + loadScenario(gameId: string, userId: string): Promise<ScenarioDetailDTO>
         + addTask(gameId: string, userId: string, task: TaskCreateDTO): Promise<TaskDTO>
+        + addVictoryCondition(gameId: string, userId: string, victoryCondition: VictoryConditionCreateDTO): Promise<VictoryConditionDTO>
     }
 
     ScenarioDetailDTO *-- "*" TaskDTO
@@ -96,7 +97,7 @@ package "Scenariusz i zadania (PU56, PU57)" as P_Scenario {
     IScenariosApi ..> TaskCreateDTO
 }
 
-package "Akcje (PU51)" as P_Actions {
+package "Akcje (PU51, PU62)" as P_Actions {
     class ActionCreateDTO <<DTO>> {
         + gameId: string
         + name: string
@@ -206,6 +207,27 @@ package "Wydarzenia (PU46)" as P_Events {
     IEventsApi ..> EventDTO
 }
 
+package "Mapa, komnaty i czujniki (PU60, PU59, PU35, PU50)" as P_Maps {
+    interface IMapsApi <<interface>> {
+        + getMap(gameId: string, userId: string): Promise<GameMapDTO>
+        + saveMap(gameId: string, userId: string, map: MapSaveDTO): Promise<GameMapDTO>
+        + getRoom(gameId: string, roomId: number, userId: string): Promise<RoomDTO>
+        + getInventoryItems(gameId: string, userId: string): Promise<InventoryItemDTO[*]>
+        + updateRoom(gameId: string, roomId: number, userId: string, room: RoomDTO): Promise<RoomDTO>
+        + getPlayerMap(gameId: string, userId: string): Promise<PlayerMapDTO>
+    }
+
+    interface ISensorsApi <<interface>> {
+        + getSensorTypes(): Promise<string[*]>
+        + addSensor(gameId: string, userId: string, roomId: number, sensor: SensorDTO): Promise<SensorDTO>
+    }
+
+    note bottom of IMapsApi
+        DTO map, komnat, czujników i warunków zwycięstwa
+        są na razie na diagramach prezenterów PU58, PU60, PU59, PU50.
+    end note
+}
+
 package "Klient API" as P_Client {
     class apiClient <<facade>> {
         + games: IGamesApi
@@ -214,6 +236,8 @@ package "Klient API" as P_Client {
         + reservations: IReservationsApi
         + calendar: ICalendarApi
         + events: IEventsApi
+        + maps: IMapsApi
+        + sensors: ISensorsApi
     }
 
     class httpClient <<AxiosInstance>> {
@@ -234,6 +258,8 @@ apiClient --> IActionsApi
 apiClient --> IReservationsApi
 apiClient --> ICalendarApi
 apiClient --> IEventsApi
+apiClient --> IMapsApi
+apiClient --> ISensorsApi
 
 note bottom of P_Client
     Hooki (prezentery) wołają backend wyłącznie przez apiClient.<moduł>.<metoda>().

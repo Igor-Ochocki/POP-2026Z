@@ -1,7 +1,7 @@
 <div hidden>
 
 ```
-@startuml VictoryCondition-definition
+@startuml victory-condition-definition
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
 skinparam shadovictoryg false

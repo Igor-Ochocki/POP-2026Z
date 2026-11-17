@@ -124,6 +124,6 @@ useMapEditor --> IMapDraftStorage
 
 ```
 
-<\div>
+</div>
 
 ![](rendered/map-editor-presenter.svg)

@@ -1,5 +1,7 @@
+<div hidden>
+
 ```
-@startuml
+@startuml action-display-presenter
 skinparam classAttributeIconSize 0
 skinparam nodesep 30
 skinparam ranksep 40
@@ -33,4 +35,6 @@ end note
 @enduml
 ```
 
-![](./rendered/action-display-presenter.svg)
+</div>
+
+![](rendered/action-display-presenter.svg)
