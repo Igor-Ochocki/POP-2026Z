@@ -111,4 +111,21 @@ MapsService ..> ValidationException : Wprowadzone dane są niepoprawne
 MapsService ..> UpdateException : Zapisanie danych w bazie danych zakończyło się błędem
 MapsService ..> ItemUnavailableException : Jeden lub więcej dodawanych przedmiotów jest niedostępne
 
+' Relacje wynikające z sygnatur interfejsów
+IMapsApi ..> RoomDTO
+IMapsService ..> RoomDTO
+
+' Relacje domeny (BaseModel)
+Room *-- "0..*" InventoryItem
+Room *-- "0..*" Sensor
+Room *-- "0..*" QrCode
+Room "1" -- "0..*" RoomDoor : source / target
+MapsService --> RoomDoor
+
+' Relacje między obiektami DTO
+RoomDTO *-- "0..*" InventoryItemDTO
+RoomDTO *-- "0..*" SensorDTO
+RoomDTO *-- "0..*" QrCodeDTO
+RoomDTO *-- "0..*" RoomDoorDTO
+
 ```
