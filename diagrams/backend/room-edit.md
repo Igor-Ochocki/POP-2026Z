@@ -38,16 +38,13 @@ class InventoryItem <<BaseModel>> {
 
 class Sensor <<BaseModel>> {
     + id: str
-    + positionX: number
-    + positionY: number
+    + position: Position
 }
 
 class QrCode <<BaseModel>> {
     + id: str
-    + positionX: number
-    + positionY: number
-    + content: str
-}
+    + position: Position
+    }
 
 
 class RoomDTO {
@@ -62,13 +59,11 @@ class RoomDTO {
 
 
 class SensorDTO {
-    + positionX: number
-    + positionY: number
+    + position: Position
 }
 
 class QrCodeDTO {
-    + positionX: number
-    + positionY: number
+    + position: Position
 }
 
 CLASS InventoryItemDTO {
