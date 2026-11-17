@@ -36,6 +36,15 @@ class InventoryItem <<BaseModel>> {
     + available: number
 }
 
+class RoomDoor <<BaseModel>> {
+    + id: str
+    + source_room_position: Position
+    + source_room_id: str
+    + target_room_position: Position
+    + target_room_id: str
+    + is_unlocked: bool
+}
+
 class Sensor <<BaseModel>> {
     + id: str
     + position: Position
@@ -46,6 +55,13 @@ class QrCode <<BaseModel>> {
     + position: Position
     }
 
+class RoomDoorDTO {
+    + id: str
+    + source_room_position: Position
+    + target_room_position: Position
+    + target_room_id: str
+    + is_unlocked: bool
+}
 
 class RoomDTO {
     + name: str
@@ -55,6 +71,7 @@ class RoomDTO {
     + items: InventoryItemDTO[]
     + sensors: SensorDTO[]
     + qrCodes: QrCodeDTO[]
+    + doors: RoomDoorDTO[]
 }
 
 
