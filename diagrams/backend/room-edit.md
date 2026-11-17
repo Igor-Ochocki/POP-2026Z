@@ -97,6 +97,6 @@ RoomService ..> RoomDTO
 RoomService ..> NotFoundException : Pokój, gra, bądź ekwipunek nie istnieją, lub brak dostępu
 RoomService ..> ValidationException : Wprowadzone dane są niepoprawne
 RoomService ..> UpdateException : Zapisanie danych w bazie danych zakończyło się błędem
-RoomService ..> ItemUnavailableException : Jeden lub więcej dodawnaych przedmiotów jest niedostępne
+RoomService ..> ItemUnavailableException : Jeden lub więcej dodawanych przedmiotów jest niedostępne
 
 ```
