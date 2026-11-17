@@ -28,12 +28,14 @@ class VictoryConditionSuccessMessageDialog
 class IncorrectDataMessageDialog
 class ConflictMessageDialog
 class SaveErrorMessageDialog
+class LoadErrorMessageDialog
 
 CancelVictoryConditionConfirmationDialog -u-|> ConfirmDialog
 VictoryConditionSuccessMessageDialog -u-|> MessageDialog
 IncorrectDataMessageDialog -u-|> MessageDialog
 ConflictMessageDialog -u-|> MessageDialog
 SaveErrorMessageDialog -u-|> MessageDialog
+LoadErrorMessageDialog -u-|> MessageDialog
 
 class VictoryConditionWindows
 interface IVictoryConditionWindows <<interface>>
@@ -46,7 +48,7 @@ VictoryConditionWindows --> VictoryConditionView
 VictoryConditionWindows --> ConfirmDialog
 VictoryConditionWindows --> MessageDialog
 
-ScenarioEditorView --> IVictoryConditionActions : onVictoryConditionSelect
+ScenarioEditorView --> IVictoryConditionActions : onVictoryConditionSelect,\nonVictoryConditionEditSelect
 VictoryConditionView --> IVictoryConditionActions
 VictoryConditionView --> VictoryConditionViewModel
 CancelVictoryConditionConfirmationDialog --> IVictoryConditionActions
@@ -54,6 +56,7 @@ VictoryConditionSuccessMessageDialog --> IVictoryConditionActions
 IncorrectDataMessageDialog --> IVictoryConditionActions
 ConflictMessageDialog --> IVictoryConditionActions
 SaveErrorMessageDialog --> IVictoryConditionActions
+LoadErrorMessageDialog --> IVictoryConditionActions
 @enduml
 ```
 
