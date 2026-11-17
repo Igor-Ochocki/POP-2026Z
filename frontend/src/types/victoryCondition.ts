@@ -39,6 +39,7 @@ type VictoryConditionForm = {
 
 export type IVictoryConditionActions = {
   onVictoryConditionSelect: () => void;
+  onVictoryConditionEditSelect: (victoryConditionId: string) => void;
 
   onSubmitVictoryCondition: () => void;
   onCancelVictoryCondition: () => void;
@@ -48,6 +49,7 @@ export type IVictoryConditionActions = {
   onIncorrectDataMessageDialogConfirm: () => void;
   onConflictMessageDialogConfirm: () => void;
   onSaveErrorMessageDialogConfirm: () => void;
+  onLoadErrorMessageDialogConfirm: () => void;
 
   onChangeParameter: (
     field: keyof VictoryConditionForm,
@@ -56,19 +58,24 @@ export type IVictoryConditionActions = {
 };
 
 export type VictoryConditionViewModel = VictoryConditionForm & {
+  victoryConditionId: string | null;
+  isLoading: boolean;
   cancelVictoryConditionConfirmationDialogOpen: boolean;
   victoryConditionSuccessMessageDialogOpen: boolean;
   conflictMessageDialogOpen: boolean;
   incorrectDataMessageDialogOpen: boolean;
   saveErrorMessageDialogOpen: boolean;
+  loadErrorMessageDialogOpen: boolean;
 };
 
 export type IVictoryConditionWindows = {
   showVictoryConditionView: () => void;
+  showVictoryConditionEditView: (victoryConditionId: string) => void;
   showCancelVictoryConditionConfirmationDialog: () => void;
   showConflictMessageDialog: () => void;
   showIncorrectDataMessageDialog: () => void;
   showVictoryConditionSuccessMessageDialog: () => void;
   showSaveErrorMessageDialog: () => void;
+  showLoadErrorMessageDialog: () => void;
   hideDialogs: () => void;
 };

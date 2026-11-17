@@ -1,4 +1,5 @@
 import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import Button from '@components/Button/Button';
 import Card from '@components/Card/Card';
 import PageHeader from '@components/PageHeader/PageHeader';
@@ -106,9 +107,24 @@ export function ScenarioEditorView() {
           {scenario?.victoryConditions.length ? (
             <ul className='scenario-editor-view__list'>
               {scenario.victoryConditions.map((condition) => (
-                <li key={condition.victoryConditionId}>
-                  <TextSubheading level={3}>{condition.name}</TextSubheading>
-                  <TextLabel>{describeVictoryCondition(condition)}</TextLabel>
+                <li
+                  key={condition.victoryConditionId}
+                  className='scenario-editor-view__condition'
+                >
+                  <div>
+                    <TextSubheading level={3}>{condition.name}</TextSubheading>
+                    <TextLabel>{describeVictoryCondition(condition)}</TextLabel>
+                  </div>
+                  <Button
+                    variant='outline'
+                    onClick={() =>
+                      victoryCondition.actions.onVictoryConditionEditSelect(
+                        condition.victoryConditionId,
+                      )
+                    }
+                  >
+                    <EditOutlinedIcon fontSize='small' /> Edytuj
+                  </Button>
                 </li>
               ))}
             </ul>

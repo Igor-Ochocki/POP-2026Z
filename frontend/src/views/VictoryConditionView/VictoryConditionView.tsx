@@ -6,6 +6,7 @@ import ElementRow from '@components/ElementRow/ElementRow';
 import InputField from '@components/InputField/InputField';
 import MessageDialog from '@components/MessageDialog/MessageDialog';
 import TextHeading from '@components/TextHeading/TextHeading';
+import TextLabel from '@components/TextLabel/TextLabel';
 import { useVictoryCondition } from '@hooks/useVictoryCondition';
 import {
   victoryConditionTargetLabels,
@@ -22,6 +23,8 @@ function keyByLabel<T extends string>(
 export function VictoryConditionView() {
   const {
     state: {
+      victoryConditionId,
+      isLoading,
       name,
       target,
       conditionType,
@@ -31,6 +34,7 @@ export function VictoryConditionView() {
       conflictMessageDialogOpen,
       incorrectDataMessageDialogOpen,
       saveErrorMessageDialogOpen,
+      loadErrorMessageDialogOpen,
     },
     actions: {
       onSubmitVictoryCondition,
@@ -41,9 +45,11 @@ export function VictoryConditionView() {
       onIncorrectDataMessageDialogConfirm,
       onConflictMessageDialogConfirm,
       onSaveErrorMessageDialogConfirm,
+      onLoadErrorMessageDialogConfirm,
       onChangeParameter,
     },
   } = useVictoryCondition();
+  const isEdit = victoryConditionId !== null;
 
   return (
     <div className='victory-condition-view'>
@@ -54,62 +60,75 @@ export function VictoryConditionView() {
           onSubmitVictoryCondition();
         }}
       >
-        <TextHeading level={1}>Warunek zwycięstwa</TextHeading>
-        <InputField
-          label='Nazwa warunku'
-          inputProps={{
-            placeholder: 'Wprowadź nazwę...',
-            value: name,
-            onChange: (e) => onChangeParameter('name', e.target.value),
-          }}
-        />
-        <DropdownField
-          label='Frakcja/Postać'
-          options={Object.values(victoryConditionTargetLabels)}
-          value={target ? victoryConditionTargetLabels[target] : undefined}
-          onOptionSelected={(option) =>
-            onChangeParameter(
-              'target',
-              keyByLabel(victoryConditionTargetLabels, option),
-            )
-          }
-        />
-        <DropdownField
-          label='Typ warunku'
-          options={Object.values(victoryConditionTypeLabels)}
-          value={
-            conditionType
-              ? victoryConditionTypeLabels[conditionType]
-              : undefined
-          }
-          onOptionSelected={(option) =>
-            onChangeParameter(
-              'conditionType',
-              keyByLabel(victoryConditionTypeLabels, option),
-            )
-          }
-        />
-        <InputField
-          label='Wartość'
-          inputProps={{
-            placeholder: 'Podaj wartość...',
-            value: value,
-            onChange: (e) => onChangeParameter('value', e.target.value),
-          }}
-        />
-        <ElementRow>
-          <Button variant='secondary' onClick={onCancelVictoryCondition}>
-            Anuluj
-          </Button>
-          <Button type='submit'>Zapisz i zamknij</Button>
-        </ElementRow>
+        <TextHeading level={1}>
+          {isEdit ? 'Edycja warunku zwycięstwa' : 'Warunek zwycięstwa'}
+        </TextHeading>
+        {isLoading ? (
+          <TextLabel>Wczytywanie warunku zwycięstwa...</TextLabel>
+        ) : (
+          <>
+            <InputField
+              label='Nazwa warunku'
+              inputProps={{
+                placeholder: 'Wprowadź nazwę...',
+                value: name,
+                onChange: (e) => onChangeParameter('name', e.target.value),
+              }}
+            />
+            <DropdownField
+              label='Frakcja/Postać'
+              options={Object.values(victoryConditionTargetLabels)}
+              value={target ? victoryConditionTargetLabels[target] : undefined}
+              onOptionSelected={(option) =>
+                onChangeParameter(
+                  'target',
+                  keyByLabel(victoryConditionTargetLabels, option),
+                )
+              }
+            />
+            <DropdownField
+              label='Typ warunku'
+              options={Object.values(victoryConditionTypeLabels)}
+              value={
+                conditionType
+                  ? victoryConditionTypeLabels[conditionType]
+                  : undefined
+              }
+              onOptionSelected={(option) =>
+                onChangeParameter(
+                  'conditionType',
+                  keyByLabel(victoryConditionTypeLabels, option),
+                )
+              }
+            />
+            <InputField
+              label='Wartość'
+              inputProps={{
+                placeholder: 'Podaj wartość...',
+                value: value,
+                onChange: (e) => onChangeParameter('value', e.target.value),
+              }}
+            />
+            <ElementRow>
+              <Button variant='secondary' onClick={onCancelVictoryCondition}>
+                Anuluj
+              </Button>
+              <Button type='submit'>Zapisz i zamknij</Button>
+            </ElementRow>
+          </>
+        )}
         <ConfirmDialog
           dangerous
-          title='Anuluj tworzenie warunku zwycięstwa'
-          message={`
-            Czy aby na pewno anulować tworzenie warunku zwycięstwa? Wprowadzone
-            dane nie zostaną zapisane.
-          `}
+          title={
+            isEdit
+              ? 'Anuluj edycję warunku zwycięstwa'
+              : 'Anuluj tworzenie warunku zwycięstwa'
+          }
+          message={
+            isEdit
+              ? 'Czy aby na pewno anulować edycję warunku zwycięstwa? Wprowadzone zmiany nie zostaną zapisane.'
+              : 'Czy aby na pewno anulować tworzenie warunku zwycięstwa? Wprowadzone dane nie zostaną zapisane.'
+          }
           open={cancelVictoryConditionConfirmationDialogOpen}
           onClosed={(confirmed) => {
             if (confirmed) {
@@ -121,7 +140,11 @@ export function VictoryConditionView() {
         />
         <MessageDialog
           title='Sukces'
-          message='Nowy warunek zwycięstwa został dodany.'
+          message={
+            isEdit
+              ? 'Warunek zwycięstwa został zapisany.'
+              : 'Nowy warunek zwycięstwa został dodany.'
+          }
           onClosed={onVictoryConditionSuccessMessageDialogConfirm}
           open={victoryConditionSuccessMessageDialogOpen}
         />
@@ -142,6 +165,12 @@ export function VictoryConditionView() {
           message='Nie udało się zapisać warunku zwycięstwa. Spróbuj ponownie.'
           onClosed={onSaveErrorMessageDialogConfirm}
           open={saveErrorMessageDialogOpen}
+        />
+        <MessageDialog
+          title='Błąd'
+          message='Nie udało się wczytać warunku zwycięstwa.'
+          onClosed={onLoadErrorMessageDialogConfirm}
+          open={loadErrorMessageDialogOpen}
         />
       </form>
     </div>

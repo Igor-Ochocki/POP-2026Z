@@ -116,6 +116,17 @@ export interface IScenariosApi {
     userId: string,
     victoryCondition: VictoryConditionCreateDTO,
   ): Promise<VictoryConditionDTO>;
+  getVictoryCondition(
+    gameId: string,
+    victoryConditionId: string,
+    userId: string,
+  ): Promise<VictoryConditionDTO>;
+  editVictoryCondition(
+    gameId: string,
+    victoryConditionId: string,
+    userId: string,
+    victoryCondition: VictoryConditionCreateDTO,
+  ): Promise<VictoryConditionDTO>;
 }
 
 export const createScenariosApi = (http: AxiosInstance): IScenariosApi => ({
@@ -139,6 +150,28 @@ export const createScenariosApi = (http: AxiosInstance): IScenariosApi => ({
   addVictoryCondition: async (gameId, userId, victoryCondition) => {
     const { data } = await http.post<VictoryConditionResponsePayload>(
       `/games/${gameId}/scenario/victory_conditions`,
+      toVictoryConditionCreatePayload(victoryCondition),
+      { params: { user_id: userId } },
+    );
+    return fromVictoryConditionPayload(data);
+  },
+
+  getVictoryCondition: async (gameId, victoryConditionId, userId) => {
+    const { data } = await http.get<VictoryConditionResponsePayload>(
+      `/games/${gameId}/scenario/victory_conditions/${victoryConditionId}`,
+      { params: { user_id: userId } },
+    );
+    return fromVictoryConditionPayload(data);
+  },
+
+  editVictoryCondition: async (
+    gameId,
+    victoryConditionId,
+    userId,
+    victoryCondition,
+  ) => {
+    const { data } = await http.put<VictoryConditionResponsePayload>(
+      `/games/${gameId}/scenario/victory_conditions/${victoryConditionId}`,
       toVictoryConditionCreatePayload(victoryCondition),
       { params: { user_id: userId } },
     );
