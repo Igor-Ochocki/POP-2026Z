@@ -17,7 +17,7 @@ class Event(Base):
 
     reserv_id : Mapped[str] = mapped_column(ForeignKey("reservations.id"), index=True)
     users_registered: Mapped[int] = mapped_column(Integer)
-    patricipants : Mapped[list[str]] = mapped_column(MutableList.as_mutable(JSON), default=list)
+    participants : Mapped[list[str]] = mapped_column(MutableList.as_mutable(JSON), default=list)
     event_status : Mapped[EventStatus] = mapped_column(Enum(EventStatus), default=EventStatus.OPEN)
 
     reservation : Mapped["Reservation"] = relationship("Reservation", back_populates="event")
