@@ -25,7 +25,7 @@ class EventsService(IEventsService):
     def __init__(self, db_session: Session) -> None:
         self.db_session=db_session
 
-    def get_event(reserv_id: str) -> EventSchema:
+    def get_event(self, reserv_id: str) -> EventSchema:
         event = self.db_session.get(Event, reserv_id)
         reservation = self.db_session.get(Reservation, reserv_id)
 
@@ -36,7 +36,7 @@ class EventsService(IEventsService):
             raise NotFoundError(f"Reservation '{reserv_id}' not found")
 
         returned_event = EventSchema(
-            reserv_id=reservation.reserv_id,
+            reserv_id=reservation.id,
             users_registered=event.users_registered,
             participants=event.participants,
             slot_id=reservation.slot_id,
@@ -47,7 +47,7 @@ class EventsService(IEventsService):
         
         return returned_event
 
-    def join_event(reserv_id: str, user_id: str) -> EventSchema:
+    def join_event(self, reserv_id: str, user_id: str) -> EventSchema:
         self._lock_event()
 
         event = self.db_session.get(Event, reserv_id)
@@ -56,6 +56,9 @@ class EventsService(IEventsService):
         if event is None:
             self.db_session.rollback()
             raise NotFoundError(f"Event '{reserv_id}' not found")
+        if reservation is None:
+            self.db_session.rollback()
+            raise NotFoundError(f"Reservation '{reserv_id}' not found")
         if event.event_status is EventStatus.FINISHED:              # scenariusz alternatywny B - wydarzenie zakończone 
             self.db_session.rollback()
             raise ConflictError(f"Event '{reserv_id}' is already finished")
@@ -65,13 +68,16 @@ class EventsService(IEventsService):
         elif reservation.participant_count == event.users_registered:   # scenariusz alternatywny A - przekroczony maksymalny limit graczy
             self.db_session.rollback()
             raise ConflictError(f"Event '{reserv_id}' has reached the maximum amount of participants")
+        elif user_id in event.participants:
+            self.db_session.rollback()
+            raise ConflictError(f"User '{user_id}' already signed to event '{reserv_id}'")
 
         event.users_registered += 1
         event.participants.append(user_id)
         self.db_session.commit()
 
         returned_event = EventSchema(
-            reserv_id=reservation.reserv_id,
+            reserv_id=reservation.id,
             users_registered=event.users_registered,
             participants=event.participants,
             slot_id=reservation.slot_id,

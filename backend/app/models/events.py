@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class Event(Base):
     __tablename__ = "events"
 
-    reserv_id : Mapped[str] = mapped_column(ForeignKey("reservations.id"), index=True)
+    reserv_id : Mapped[str] = mapped_column(ForeignKey("reservations.id"), primary_key=True, index=True)
     users_registered: Mapped[int] = mapped_column(Integer)
     participants : Mapped[list[str]] = mapped_column(MutableList.as_mutable(JSON), default=list)
     event_status : Mapped[EventStatus] = mapped_column(Enum(EventStatus), default=EventStatus.OPEN)
