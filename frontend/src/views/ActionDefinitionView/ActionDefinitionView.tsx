@@ -7,31 +7,13 @@ import MessageDialog from '@components/MessageDialog/MessageDialog';
 import PageHeader from '@components/PageHeader/PageHeader';
 import { useActionDefinition } from '@hooks/useActionDefinition';
 import { useGameDefinition } from '@hooks/useGameDefinition';
-import type {
-  ActionDefinitionDialogTypes,
-  ActionType,
-  EffectKind,
-  IActionDefinitionActions,
+import {
+  actionTypeLabels,
+  effectKindLabels,
+  type ActionDefinitionDialogTypes,
+  type IActionDefinitionActions,
 } from '@app-types/action';
 import './ActionDefinitionView.css';
-
-const actionTypeLabels: Record<ActionType, string> = {
-  movement: 'ruch',
-  attack: 'atak',
-  useItem: 'użycie przedmiotu',
-  dialogue: 'dialog',
-  custom: 'własna',
-  miniGame: 'minigra',
-};
-
-const effectKindLabels: Record<EffectKind, string> = {
-  changeStat: 'zmiana statystyki',
-  addItem: 'dodanie przedmiotu',
-  removeItem: 'usunięcie przedmiotu',
-  changeLocation: 'zmiana lokacji',
-  setFlag: 'ustawienie flagi',
-  startMiniGame: 'rozpoczęcie minigry',
-};
 
 function keyByLabel<T extends string>(
   labels: Record<T, string>,
