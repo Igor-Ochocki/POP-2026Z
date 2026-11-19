@@ -1,4 +1,4 @@
-from abs import ABC, abstractmethod
+from abc import ABC, abstractmethod
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
