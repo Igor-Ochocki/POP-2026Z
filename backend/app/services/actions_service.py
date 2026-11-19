@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
@@ -68,7 +69,7 @@ class ActionsService(IActionsService):
             .where(Action.game_id == game_id)
         )
 
-        return [ActionSchema.model_validate(action, from_attributes=True) for action in self.db_session.execute(query)]
+        return [ActionSchema.model_validate(action, from_attributes=True) for action in self.db_session.scalars(query)]
 
 
     @staticmethod
