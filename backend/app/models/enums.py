@@ -27,3 +27,10 @@ class PaymentStatus(StrEnum):
     PENDING = "pending"
     COMPLETED = "completed"
     FAILED = "failed"
+
+
+class EventStatus(StrEnum):
+    OPEN = "open"
+    FINISHED = "finished"
+    CANCELLED = "cancelled"
+    RESTRICTED = "restricted"

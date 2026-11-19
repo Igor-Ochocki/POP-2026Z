@@ -10,6 +10,7 @@ from app.models.enums import ReservationStatus
 if TYPE_CHECKING:
     from app.models.payment import Payment
     from app.models.time_slot import TimeSlot
+    from app.models.events import Event
 
 
 class Reservation(Base):
@@ -21,9 +22,12 @@ class Reservation(Base):
     slot_id: Mapped[str] = mapped_column(ForeignKey("time_slots.id"), index=True)
     game_id: Mapped[str] = mapped_column(ForeignKey("games.id"), index=True)
     organizer_id: Mapped[str] = mapped_column(String(36), index=True)  # Jak będą użytkownicy to zmiana na FK do User
-    participant_count: Mapped[int] = mapped_column(Integer)
+    participant_count: Mapped[int] = mapped_column(Integer) 
     total_cost: Mapped[float] = mapped_column(Float)
     status: Mapped[ReservationStatus] = mapped_column(Enum(ReservationStatus), default=ReservationStatus.UNPAID)
     is_paid: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
     slot: Mapped["TimeSlot"] = relationship("TimeSlot")
     payments: Mapped[list["Payment"]] = relationship("Payment", back_populates="reservation")
+    event: Mapped["Event"] = relationship("Event", back_populates="reservation")
