@@ -1,0 +1,144 @@
+.map-editor-view {
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.map-editor-view__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 16rem;
+  gap: 1rem;
+  align-items: start;
+}
+
+.map-editor-view__canvas {
+  width: 100%;
+  height: auto;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  touch-action: none;
+  user-select: none;
+}
+
+
+.map-editor-view__container {
+  fill: color-mix(in srgb, var(--color-surface) 35%, transparent);
+  stroke: var(--color-border);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+  pointer-events: none;
+}
+
+.map-editor-view__room {
+  fill: var(--color-surface-light);
+  stroke: var(--color-border);
+  stroke-width: 2;
+  cursor: grab;
+}
+
+.map-editor-view__room:active {
+  cursor: grabbing;
+}
+
+.map-editor-view__room--selected {
+  stroke: var(--color-primary);
+  stroke-width: 4;
+}
+
+.map-editor-view__room-label {
+  fill: var(--color-text);
+  font: var(--font-label);
+  pointer-events: none;
+  user-select: none;
+}
+
+.map-editor-view__passage-line {
+  stroke: var(--color-text-dim);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+  pointer-events: none;
+}
+
+.map-editor-view__passage-group--selected .map-editor-view__passage-line {
+  stroke: var(--color-primary);
+}
+
+.map-editor-view__passage-endpoint {
+  fill: var(--color-surface);
+  stroke: var(--color-primary);
+  stroke-width: 2;
+  cursor: grab;
+}
+
+.map-editor-view__passage-endpoint:active {
+  cursor: grabbing;
+}
+
+.map-editor-view__passage {
+  fill: var(--color-surface-lighter);
+  stroke: var(--color-text-dim);
+  stroke-width: 2;
+  cursor: grab;
+}
+
+.map-editor-view__passage:active {
+  cursor: grabbing;
+}
+
+.map-editor-view__passage--selected {
+  fill: var(--color-primary);
+  stroke: var(--color-primary-dim);
+}
+
+.map-editor-view__panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.map-editor-view__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.map-editor-view__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--color-surface-lighter);
+}
+
+.map-editor-view__overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--color-base) 70%, transparent);
+  z-index: 1000;
+}
+
+.map-editor-view__dialog {
+  display: grid;
+  gap: 1rem;
+  max-width: 28rem;
+  padding: 1.5rem;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.map-editor-view__dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+@media (max-width: 48rem) {
+  .map-editor-view__layout {
+    grid-template-columns: 1fr;
+  }
+}
