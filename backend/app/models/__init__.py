@@ -9,13 +9,20 @@ tables for models imported in this file, e.g.:
 """
 from app.models.actions import Action
 from app.models.game import Game
+from app.models.item import InventoryItem
 from app.models.message import Message
+from app.models.map import Map
+from app.models.passage import Passage
 from app.models.payment import Payment
+from app.models.qr_code import QRCode
 from app.models.reservation import Reservation
+from app.models.room import Room
 from app.models.scenario import Scenario
+from app.models.sensor import Sensor
 from app.models.task import Task
 from app.models.time_slot import TimeSlot
 
 __all__: list[str] = [
-    "Action", "Game", "Message", "Payment", "Reservation", "Scenario", "Task", "TimeSlot"
+    "Action", "Game", "InventoryItem", "Map", "Message", "Passage", "Payment",
+    "QRCode", "Reservation", "Room", "Scenario", "Sensor", "Task", "TimeSlot"
 ]
