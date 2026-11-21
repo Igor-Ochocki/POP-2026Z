@@ -9,11 +9,15 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship, composite
 from app.db.database import Base
 from app.models.position import Position
 
+if TYPE_CHECKING:
+    from app.models.room import Room
 
 class Sensor(Base):
     __tablename__ = "sensors"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     room_id: Mapped[str] = mapped_column(ForeignKey('rooms.id'), index=True)
-    position: Mapped[Position] = composite()
+    position: Mapped[Position] = composite(Position)
+
+    room: Mapped["Room"] = relationship("Room", back_populates="sensors")
     

@@ -9,6 +9,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base
 
 
+if TYPE_CHECKING:
+    from app.models.game import Game
+
 class InventoryItem(Base):
     __tablename__ = "items"
 
@@ -16,4 +19,6 @@ class InventoryItem(Base):
     game_id: Mapped[str] = mapped_column(ForeignKey('games.id'), index=True)
     name: Mapped[str] = mapped_column(String(32))
     total: Mapped[int] = mapped_column(Integer)
-    availabled: Mapped[int] = mapped_column(Integer)
+    available: Mapped[int] = mapped_column(Integer)
+
+    game: Mapped["Game"] = relationship("Game", back_populates="inventory_items")
