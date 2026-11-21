@@ -37,6 +37,7 @@ package "Controllers (/api/v1)" as C {
     () "IReservationsApi\n/reservations" as R_Reservations
     () "IMapsApi\n/games/{id}/map" as R_Maps
     () "IEventsApi\n/events" as R_Events
+    () "ISensorsApi\n/games/{id}/sensor" as R_Sensors
 
     component [CalendarController] as C_Calendar
     component [GamesController] as C_Games
@@ -45,6 +46,7 @@ package "Controllers (/api/v1)" as C {
     component [ReservationsController] as C_Reservations
     component [MapsController] as C_Maps
     component [EventsController] as C_Events
+    component [SensorsController] as C_Sensors
 
     R_Calendar -- C_Calendar
     R_Games -- C_Games
@@ -53,6 +55,7 @@ package "Controllers (/api/v1)" as C {
     R_Reservations -- C_Reservations
     R_Maps -- C_Maps
     R_Events -- C_Events
+    R_Sensors -- C_Sensors
 }
 
 package "Services" as S {
@@ -63,6 +66,7 @@ package "Services" as S {
     () "IReservationsService" as IS_Reservations
     () "IMapsService" as IS_Maps
     () "IEventsService" as IS_Events
+    () "ISensorsService" as IS_Sensors
 
     component [CalendarService] as S_Calendar
     component [GamesService] as S_Games
@@ -71,6 +75,7 @@ package "Services" as S {
     component [ReservationsService] as S_Reservations
     component [MapsService] as S_Maps
     component [EventsService] as S_Events
+    component [SensorsService] as S_Sensors
 
     () "IPaymentService" as IS_Payment
     () "IMessageService" as IS_Message
@@ -86,11 +91,12 @@ package "Services" as S {
     IS_Message -- S_Message
     IS_Maps -- S_Maps
     IS_Events -- S_Events
+    IS_Sensors -- S_Sensors
 
     S_Reservations --( IS_Payment
     S_Reservations --( IS_Message
     S_Games --( IS_Maps
-    S_Maps --( IS_Actions
+    S_Sensors --( IS_Actions
 }
 
 component "Models\n(SQLAlchemy ORM)" as M
@@ -103,6 +109,7 @@ C_Actions --( IS_Actions
 C_Reservations --( IS_Reservations
 C_Maps --( IS_Maps
 C_Events --( IS_Events
+C_Sensors --( IS_Sensors
 
 S_Calendar --> M
 S_Games --> M
@@ -113,6 +120,7 @@ S_Payment --> M
 S_Message --> M
 S_Maps --> M
 S_Events --> M
+S_Sensors --> M
 M --> DB : Session
 
 note bottom of C
@@ -125,8 +133,8 @@ end note
 note bottom of S
     IActionsService.get_actions - lista akcji gry (PU62, wybór akcji czujnika w PU50).
     IScenariosService - warunki zwycięstwa (PU58), sprzeczność -> ConflictError.
-    IMapsService - mapa, komnaty, przejścia i czujniki jednej gry (PU60, PU59, PU50)
-    oraz widok mapy dla gracza (PU35). GamesService pyta o poprawność mapy przed publikacją.
+    IMapsService - mapa, komnaty, przejścia i magazyn przedmiotów jednej gry (PU60, PU59)
+    oraz widok mapy dla gracza (PU35). ISensorsService - typy i dodanie czujnika w komnacie (PU50). GamesService pyta o poprawność mapy przed publikacją.
 end note
 
 @enduml
