@@ -11,6 +11,8 @@ from app.db.database import Base
 if TYPE_CHECKING:
     from app.models.actions import Action
     from app.models.scenario import Scenario
+    from app.models.map import Map
+    from app.models.inventory_item import InventoryItem
 
 class GameStatus(str, PyEnum):
     Draft = "Draft"
@@ -36,3 +38,5 @@ class Game(Base):
     scenario: Mapped["Scenario | None"] = relationship(
         "Scenario", back_populates="game", cascade="all, delete-orphan", uselist=False
     )
+    maps: Mapped[list["Map"]] = relationship("Map", back_populates="game", cascade="all, delete-orphan") #TODO: Sprawdź, czy ile map może mieć gra
+    inventory_items: Mapped[list["InventoryItem"]] = relationship("InventoryItem", back_populates="game", cascade="all,  delete-orphan")
