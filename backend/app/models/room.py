@@ -10,6 +10,7 @@ from app.db.database import Base
 from app.models.position import Position
 
 if TYPE_CHECKING:
+    from app.models.room_item_claim import RoomItemClaim
     from app.models.passage import Passage
     from app.models.qr_code import QrCode
     from app.models.sensor import Sensor
@@ -38,5 +39,7 @@ class Room(Base):
 
     qr_codes : Mapped[list["QrCode"]] = relationship("QrCode", back_populates="room", cascade="all, delete-orphan")
     sensors : Mapped[list["Sensor"]] = relationship("Sensor", back_populates="room", cascade="all, delete-orphan")
+
+    items_claimed : Mapped[list["RoomItemClaim"]] = relationship("RoomItemClaim", back_populates="room", cascade="all, delete-orphan")
 
     
