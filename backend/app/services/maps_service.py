@@ -8,6 +8,7 @@ from app.models.game import Game
 from app.schemas.maps import *
 from app.models.room import Room
 from app.models.inventory_item import InventoryItem
+from app.models.position import Position
 
 class IMapsService(ABC):
     @abstractmethod
@@ -94,52 +95,88 @@ class MapsService(IMapsService):
 
 
     def _take_item(self, item_id: str, amount: int):
-        game = self.db_session.get(InventoryItem, item_id)
+        session = self.db_session
+        game = session.get(InventoryItem, item_id)
 
         pre_update = game.available
-        self.db_session.execute(
+        session.execute(
             update(InventoryItem)
             .values(available = InventoryItem.available - amount)
             .where(InventoryItem.item_id == item_id, amount >= InventoryItem.available)
         )
-
-        self.db_session.commit()
-        self.db_session.refresh(game)
 
         taken_amount = game.available - pre_update
 
         if taken_amount == 0:
             raise UnprocessableContentError("There are not enough items")
 
-    def _update_items(self, game_id: str, item_id: str, new_amount: int):
+
+    def _update_items(self, game_id: str, new_amounts: dict[str, int]):
         g = self.db_session.get(Game, game_id)
         
         items = g.inventory_items
 
-        current_ammount = 0
-
+        current_ammounts = dict[str, int]()
         for item in items:
-            if item.item_id == item_id:
-                current_ammount += item.available
+            current_ammounts[item.item_id] = item.available
+
+        with self.db_session.begin():
+            for item_id, new_amount in new_amounts.items():
+                current_amount = current_ammounts.get(item_id)
+                if current_amount is None:
+                    raise NotFoundError(f"Item with id {item_id} not found")
+                if new_amount < 0:
+                    raise UnprocessableContentError(f"Amount cannot be negative")
+                if new_amount > current_amount:
+                    self._take_item(item_id, new_amount - current_amount)
+                elif new_amount < current_amount:
+                    self.db_session.execute(
+                        update(InventoryItem)
+                        .values(available = InventoryItem.available + (current_amount - new_amount))
+                        .where(InventoryItem.item_id == item_id)
+                    )
 
         self._take_item(item_id)
 
-        
+    def _change_id(self, previous_id, new_id):
+        pass
+
+    def _change_passages(self, room_id, passages):
+        pass
+
 
         
 
     def update_room(self, game_id, room_id, user_id, dto : RoomSchema):
+        RoomSchema.model_validate(dto)
         self._ensure_edit_rights(user_id, game_id)
 
         room = self.db_session.get(Room, room_id)
 
 
         requested_items = dto.items
-        delattr(dto, 'items')
+        for requested_item in requested_items:
+            self._update_items(game_id, requested_item.item_id, requested_item.amount)
 
-        # W sumie nie ma sensu pozwalac na zmianę ID
-        delattr(dto, 'id')
+        # FIXME: Zmiana id pokoju może powodować problemy z powiązaniami w bazie danych, dlatego na razie jest ignorowana
+        # room.id = dto.id
+        room.name = dto.name
+        room.description = dto.description
+        room.hidden = dto.hidden
+        room.zone = dto.zone
+        room.position = Position(
+            x = dto.position.x,
+            y = dto.position.y
+        )
+        room.width = dto.width
+        room.height = dto.height
 
-        update(room, dto)
+        self.db_session.commit()
+
+        return self._map_room(room)
+
+
+
+
 
 
