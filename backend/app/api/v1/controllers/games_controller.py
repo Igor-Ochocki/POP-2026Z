@@ -69,6 +69,13 @@ def get_game_tags(
     return service.get_game_tags()
 
 
+@router.get("/sensor_types", response_model=list[str])
+def get_sensor_types(
+    service: Annotated[IGamesService, Depends(get_games_service)],
+) -> list[str]:
+    return service.get_sensor_types()
+
+
 @router.get("/{game_id}", response_model=GameResponseSchema)
 def get_game(
     game_id: str,
@@ -123,12 +130,6 @@ def edit_map(
     service: Annotated[IGamesService, Depends(get_games_service)],
 ) -> MapSchema:
     return service.edit_map(game_id, user_id, data)
-
-@router.get("/sensortypes", response_model=list[str])
-def get_sensor_types(
-    service: Annotated[IGamesService, Depends(get_games_service)],
-) -> list[str]:
-    return service.get_sensor_types()
 
 @router.put("/{game_id}/sensor/add", response_model=SensorSchema)
 def add_sensor(

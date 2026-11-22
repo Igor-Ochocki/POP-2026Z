@@ -17,7 +17,7 @@ from app.models.sensor import Sensor
 from app.schemas.actions import ActionSchema
 from app.schemas.game import GameCreateSchema, GameResponseSchema
 from app.schemas.item import InventoryItemSchema
-from app.schemas.map import MapSchema
+from app.schemas.map import MapContainerSchema, MapSchema
 from app.schemas.passage import PassageSchema
 from app.schemas.position import PositionSchema
 from app.schemas.qr_code import QRCodeSchema
@@ -109,10 +109,15 @@ class GamesService(IGamesService):
             name=map_model.name,
             game_id=map_model.game_id,
             description=map_model.description,
+            is_valid=map_model.is_valid,
+            container=MapContainerSchema.model_validate(map_model.container),
             rooms=[
                 RoomSchema(
                     id=room.id,
                     name=room.name,
+                    width=room.width,
+                    height=room.height,
+                    position=PositionSchema.model_validate(room.position),
                     description=room.description,
                     hidden=room.hidden,
                     zone=room.zone,
@@ -139,8 +144,9 @@ class GamesService(IGamesService):
             passages=[
                 PassageSchema(
                     id=passage.id,
-                    room1Id=passage.room1_id,
-                    room2Id=passage.room2_id,
+                    room1_id=passage.room1_id,
+                    room2_id=passage.room2_id,
+                    position=PositionSchema.model_validate(passage.position),
                 )
                 for passage in map_model.passages
             ],
@@ -286,7 +292,7 @@ class GamesService(IGamesService):
 
         room_id_set = set(room_ids)
         for passage in data.passages:
-            if passage.room1Id not in room_id_set or passage.room2Id not in room_id_set:
+            if passage.room1_id not in room_id_set or passage.room2_id not in room_id_set:
                 raise ConflictError(f"Passage '{passage.id}' must connect rooms in this map")
 
         action_records: dict[str, Action] = {}
@@ -302,11 +308,16 @@ class GamesService(IGamesService):
         map_model.name = data.name
         map_model.description = data.description
         map_model.game_id = game_id
+        map_model.is_valid = data.is_valid
+        map_model.container = data.container.model_dump()
 
         updated_rooms: list[Room] = []
         for room_data in data.rooms:
             room = current_rooms.get(room_data.id) or Room(id=room_data.id)
             room.name = room_data.name
+            room.width = room_data.width
+            room.height = room_data.height
+            room.position = room_data.position.model_dump()
             room.description = room_data.description
             room.hidden = room_data.hidden
             room.zone = room_data.zone
@@ -341,8 +352,9 @@ class GamesService(IGamesService):
         updated_passages: list[Passage] = []
         for passage_data in data.passages:
             passage = current_passages.get(passage_data.id) or Passage(id=passage_data.id)
-            passage.room1_id = passage_data.room1Id
-            passage.room2_id = passage_data.room2Id
+            passage.room1_id = passage_data.room1_id
+            passage.room2_id = passage_data.room2_id
+            passage.position = passage_data.position.model_dump()
             updated_passages.append(passage)
         map_model.passages = updated_passages
 

@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, Integer
+from sqlalchemy import ForeignKey, Integer, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
@@ -15,6 +15,7 @@ class Passage(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     room1_id: Mapped[int] = mapped_column(ForeignKey("rooms.id"), index=True)
     room2_id: Mapped[int] = mapped_column(ForeignKey("rooms.id"), index=True)
+    position: Mapped[dict[str, float]] = mapped_column(JSON)
     map_id: Mapped[int] = mapped_column(ForeignKey("maps.id"), index=True)
 
     map: Mapped["Map"] = relationship("Map", back_populates="passages")

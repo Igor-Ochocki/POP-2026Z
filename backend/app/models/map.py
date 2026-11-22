@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, Integer, String
+from sqlalchemy import Boolean, ForeignKey, Integer, JSON, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
@@ -18,6 +18,8 @@ class Map(Base):
     name: Mapped[str] = mapped_column(String(100))
     game_id: Mapped[str] = mapped_column(ForeignKey("games.id"), index=True)
     description: Mapped[str] = mapped_column(String(1000))
+    is_valid: Mapped[bool] = mapped_column(Boolean)
+    container: Mapped[dict[str, int]] = mapped_column(JSON)
 
     game: Mapped["Game"] = relationship("Game")
     rooms: Mapped[list["Room"]] = relationship(
