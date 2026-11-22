@@ -12,6 +12,7 @@ import { ScenarioEditorView } from '@views/ScenarioEditorView/ScenarioEditorView
 import { ReservationView } from '@views/ReservationView/ReservationView';
 import { VictoryConditionView } from '@views/VictoryConditionView/VictoryConditionView';
 import { DisplayActionsView } from '@views/DisplayActionsView/DisplayActionsView';
+import { RoomEditView } from '@views/RoomEditView/RoomEditView';
 
 export const router = createBrowserRouter([
   {
@@ -48,6 +49,10 @@ export const router = createBrowserRouter([
       {
         path: 'creator/games/:gameId/scenario/victory-condition/:victoryConditionId',
         element: <VictoryConditionView />,
+      },
+      {
+        path: 'creator/games/:gameId/map/rooms/:roomId',
+        element: <RoomEditView />,
       },
       { path: '*', element: <NotFoundView /> },
     ],

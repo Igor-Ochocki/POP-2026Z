@@ -1,0 +1,25 @@
+.room-edit-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem 1rem;
+  min-height: 100%;
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+.room-edit-page__header {
+  width: 100%;
+  max-width: 1100px;
+}
+
+.room-edit-page__header h1 {
+  margin: 0;
+  font: var(--font-title);
+}
+
+.room-edit-page__status {
+  margin: 0;
+  color: var(--color-text-dim);
+}
