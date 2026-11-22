@@ -11,6 +11,7 @@ import type {
 
 const initialState: EventJoinViewModel = {
   selectedEvent: null,
+  eventDetails: null,
   dialogType: null,
 };
 
@@ -20,6 +21,7 @@ function createEventJoinWindows(
   return {
     showEventJoinConfirmDialog: () => setDialogType('confirmation'),
     showEventJoinedMessageDialog: () => setDialogType('joined'),
+    showAlreadyJoinedMessageDialog: () => setDialogType('alreadyJoined'),
     showEventFullMessageDialog: () => setDialogType('eventFull'),
     showEventUnavailableMessageDialog: () => setDialogType('eventUnavailable'),
     showAccountBlockedMessageDialog: () => setDialogType('accountBlocked'),
@@ -36,6 +38,24 @@ export function useEventJoin(): {
     setState((prev) => ({ ...prev, dialogType })),
   );
 
+  const openEventJoin = async (event: {
+    id: string;
+    title: string;
+    datetime: Date;
+  }) => {
+    try {
+      const eventDetails = await apiClient.events.getEvent(event.id);
+      setState({
+        selectedEvent: event,
+        eventDetails,
+        dialogType: 'confirmation',
+      });
+    } catch {
+      setState({ selectedEvent: event, eventDetails: null, dialogType: null });
+      windows.showEventUnavailableMessageDialog();
+    }
+  };
+
   const joinEvent = async () => {
     if (!state.selectedEvent) {
       windows.hideDialogs();
@@ -44,10 +64,12 @@ export function useEventJoin(): {
 
     const reservId = state.selectedEvent.id;
     try {
-      // The backend answers 409 for both a full and a finished event,
-      // so the status and free places are checked first.
+      // The backend answers 409 for a full, a finished and an already joined
+      // event alike, so the state is checked here first.
       const event = await apiClient.events.getEvent(reservId);
-      if (event.eventStatus !== 'open') {
+      if (event.participants.includes(env.devUserId)) {
+        windows.showAlreadyJoinedMessageDialog();
+      } else if (event.eventStatus !== 'open') {
         windows.showEventUnavailableMessageDialog();
       } else if (event.usersRegistered >= event.participantCount) {
         windows.showEventFullMessageDialog();
@@ -66,12 +88,11 @@ export function useEventJoin(): {
   return {
     state,
     actions: {
-      onOpenEventJoin: (event) => {
-        setState({ selectedEvent: event, dialogType: 'confirmation' });
-      },
+      onOpenEventJoin: (event) => void openEventJoin(event),
       onConfirmJoin: () => void joinEvent(),
       onCancelJoin: windows.hideDialogs,
       onEventJoinedMessageDialogConfirm: windows.hideDialogs,
+      onAlreadyJoinedMessageDialogConfirm: windows.hideDialogs,
       onEventFullMessageDialogConfirm: windows.hideDialogs,
       onEventUnavailableMessageDialogConfirm: windows.hideDialogs,
       onAccountBlockedMessageDialogConfirm: windows.hideDialogs,

@@ -1,6 +1,5 @@
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import EditNoteIcon from '@mui/icons-material/EditNote';
-import EventIcon from '@mui/icons-material/Event';
 import HomeIcon from '@mui/icons-material/Home';
 import { NavLink, Outlet } from 'react-router';
 import { useCalendar } from '@hooks/useCalendar';
@@ -29,9 +28,6 @@ export function Layout() {
             }}
           >
             <CalendarMonthIcon fontSize='small' /> Kalendarz
-          </NavLink>
-          <NavLink to='/events' className='layout__link'>
-            <EventIcon fontSize='small' /> Wydarzenia
           </NavLink>
         </nav>
       </header>
