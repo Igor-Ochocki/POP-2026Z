@@ -65,8 +65,10 @@ export interface IMapEditorWindows {
   hideDialogs(): void;
 }
 
+
 export interface IMapEditorActions {
   onOpenMapEditor(gameId: string): void;
+  onContainerChange(data: Partial<MapContainerDTO>): void;
   onRoomSelected(roomId: number): void;
   onSelectedRoomChange(data: Partial<RoomDTO>): void;
   onPassageSelected(passageId: number): void;
@@ -83,6 +85,7 @@ export interface IMapEditorActions {
   onRemoveSelectedRoom(): void;
   onAddPassage(room1Id: number, room2Id: number): void;
   onRemoveSelectedPassage(): void;
+  onContainerChange(data: Partial<MapContainerDTO>): void;
 }
 
 export interface IRoomEditActions {
