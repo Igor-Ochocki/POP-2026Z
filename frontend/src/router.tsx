@@ -11,6 +11,7 @@ import { NewTaskView } from '@views/NewTaskView/NewTaskView';
 import { ScenarioEditorView } from '@views/ScenarioEditorView/ScenarioEditorView';
 import { ReservationView } from '@views/ReservationView/ReservationView';
 import { VictoryConditionView } from '@views/VictoryConditionView/VictoryConditionView';
+import { DisplayActionsView } from '@views/DisplayActionsView/DisplayActionsView';
 
 export const router = createBrowserRouter([
   {
@@ -24,6 +25,10 @@ export const router = createBrowserRouter([
       { path: 'creator/games', element: <GameListView /> },
       // :gameId is 'new' for a game that has not been saved yet.
       { path: 'creator/games/:gameId', element: <GameDefinitionView /> },
+      {
+        path: 'creator/games/:gameId/actions',
+        element: <DisplayActionsView />,
+      },
       {
         path: 'creator/games/:gameId/actions/new',
         element: <ActionDefinitionView />,
