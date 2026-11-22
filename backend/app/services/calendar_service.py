@@ -42,7 +42,7 @@ class CalendarService(ICalendarService):
             .where(TimeSlot.start_time >= month_start, TimeSlot.start_time < next_month_start)
             .order_by(TimeSlot.start_time)
         )
-        return [self._to_event(slot, event_id) for slot, event_id in self.db_session.execute(query)]
+        return [self._to_event(slot, reserv_id) for slot, reserv_id in self.db_session.execute(query)]
 
 
     @staticmethod
@@ -53,10 +53,10 @@ class CalendarService(ICalendarService):
         return start, datetime(month.year, month.month + 1, 1)
 
     @staticmethod
-    def _to_event(slot: TimeSlot, event_id: str | None) -> CalendarEventSchema:
+    def _to_event(slot: TimeSlot, reserv_id: str) -> CalendarEventSchema:
 
         return CalendarEventSchema(
-            id=slot.id, 
+            id=reserv_id if reserv_id else slot.id, 
             title=slot.game.title, 
             datetime=slot.start_time
             )
