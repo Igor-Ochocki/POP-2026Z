@@ -76,7 +76,6 @@ function addRoom(map: GameMapDTO): { map: GameMapDTO; roomId: number } {
   return { map: { ...map, rooms: [...map.rooms, room] }, roomId: id };
 }
  
-// Usunięcie komnaty usuwa też jej przejścia u drugiego końca.
 function removeRoom(map: GameMapDTO, roomId: number): GameMapDTO {
   return {
     ...map,
@@ -91,7 +90,6 @@ function removeRoom(map: GameMapDTO, roomId: number): GameMapDTO {
   };
 }
  
-// Przejście jest zapisane w obu komnatach, które łączy.
 function addPassage(
   map: GameMapDTO,
   room1Id: number,
@@ -157,7 +155,6 @@ function removePassage(map: GameMapDTO, passageId: number): GameMapDTO {
   };
 }
  
-
 function isMapValid(map: GameMapDTO): boolean {
   const { rooms, container } = map;
   if (rooms.length === 0) return false;
@@ -229,12 +226,12 @@ export function useMapEditor(): {
  
   const windows = createMapEditorWindows(setState, navigate);
  
-
   const loadMap = useCallback(async (targetGameId: string) => {
     setState((prev) => ({ ...prev, isLoading: true, errorMessage: null }));
     try {
-      const map =
-        (await apiClient.maps.getMap(targetGameId)) ?? createDefaultMap();
+      const serverMap = await apiClient.maps.getMap(targetGameId);
+      const draft = mapDraftStorage.loadDraft(targetGameId);
+      const map = draft ?? serverMap ?? createDefaultMap();
       setState((prev) => ({ ...prev, map, isLoading: false }));
     } catch {
       setState((prev) => ({
@@ -248,6 +245,7 @@ export function useMapEditor(): {
   useEffect(() => {
     if (gameId) void loadMap(gameId);
   }, [gameId, loadMap]);
+ 
 
   const handleAutoSaveLocally = (map: GameMapDTO) => {
     if (!state.isAutoSaveEnabled) return;
@@ -259,6 +257,7 @@ export function useMapEditor(): {
     }
   };
  
+
   const saveMapToSystem = async (map: GameMapDTO) => {
     setState((prev) => ({ ...prev, isSubmitting: true }));
     try {
@@ -266,7 +265,6 @@ export function useMapEditor(): {
       try {
         mapDraftStorage.clearDraft(gameId);
       } catch {
-        // niepowodzenie czyszczenia szkicu nie unieważnia zapisu mapy
       }
       setState((prev) => ({ ...prev, isSubmitting: false }));
       windows.showMapSavedMessageDialog();
@@ -276,7 +274,7 @@ export function useMapEditor(): {
     }
   };
  
-
+  // Krok 4: każda zmiana mapy jest od razu zapisywana lokalnie (krok 5)
   const applyMapChange = (
     map: GameMapDTO,
     selection: Partial<
@@ -314,6 +312,12 @@ export function useMapEditor(): {
       applyMapChange(updatePassage(state.map, state.selectedPassageId, data));
     },
  
+    onContainerChange: (data) => {
+      const container = { ...state.map.container, ...data };
+      if (!(container.width > 0) || !(container.height > 0)) return;
+      applyMapChange({ ...state.map, container });
+    },
+ 
     onEditSelectedRoom: () => {
       const room = state.map.rooms.find((r) => r.id === state.selectedRoomId);
       if (room) roomEditActions.onOpenRoomEditor(room);
@@ -348,19 +352,17 @@ export function useMapEditor(): {
       });
     },
  
-
     onSaveAndExit: () => {
       if (state.isSubmitting) return;
       const map = { ...state.map, isValid: isMapValid(state.map) };
       setState((prev) => ({ ...prev, map }));
       if (!map.isValid) {
-        windows.showIncorrectMapDataMessageDialog();
+        windows.showIncorrectMapDataMessageDialog(); 
         return;
       }
       void saveMapToSystem(map);
     },
  
-
     onRetryBrowserSave: () => {
       windows.hideDialogs();
       handleAutoSaveLocally(state.map);
@@ -378,13 +380,12 @@ export function useMapEditor(): {
       void saveMapToSystem(state.map);
     },
  
-
     onReturnToEditing: () => windows.hideDialogs(),
     onSaveAsInvalid: () => {
       windows.hideDialogs();
       void saveMapToSystem({ ...state.map, isValid: false });
     },
-
+ 
     onExitWithoutSaving: () => windows.hideDialogs(),
   };
  
