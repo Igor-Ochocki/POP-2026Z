@@ -33,8 +33,8 @@ class Room(Base):
     #TODO
     #passage : Mapped[list["Passage"]] = relationship("Passage", back_populates="room", cascade="all, delete-orphan")
     
-    entry_passages: Mapped[list["Passage"]] = relationship(back_populates="Passage.to_room", foreign_keys="Passage.room2_id")
-    exit_passages: Mapped[list["Passage"]] = relationship(back_populates="Passage.from_room", foreign_keys="Passage.room1_id")
+    entry_passages: Mapped[list["Passage"]] = relationship(back_populates="to_room", foreign_keys="Passage.room2_id")
+    exit_passages: Mapped[list["Passage"]] = relationship(back_populates="from_room", foreign_keys="Passage.room1_id")
 
     qr_codes : Mapped[list["QrCode"]] = relationship("QrCode", back_populates="room", cascade="all, delete-orphan")
     sensors : Mapped[list["Sensor"]] = relationship("Sensor", back_populates="room", cascade="all, delete-orphan")
