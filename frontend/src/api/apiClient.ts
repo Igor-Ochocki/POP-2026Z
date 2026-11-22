@@ -5,6 +5,7 @@ import { createCalendarApi } from '@api/modules/calendarApi';
 import { createActionsApi } from '@api/modules/actionsApi';
 import { createReservationsApi } from '@api/modules/reservationsApi';
 import { createScenariosApi } from '@api/modules/scenariosApi';
+import { createSensorsApi } from '@api/modules/sensorsApi.ts';
 
 // Unified API client used by presenter hooks: apiClient.<module>.<method>()
 // Register every new API module here.
@@ -15,6 +16,7 @@ export const apiClient = {
   actions: createActionsApi(httpClient),
   reservations: createReservationsApi(httpClient),
   scenarios: createScenariosApi(httpClient),
+  sensors: createSensorsApi(httpClient),
 };
 
 export type ApiClient = typeof apiClient;
