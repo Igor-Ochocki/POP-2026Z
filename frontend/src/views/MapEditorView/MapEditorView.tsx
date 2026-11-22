@@ -18,6 +18,7 @@ import type {
   RoomDTO,
 } from '@app-types/map';
 import './MapEditorView.css';
+import { resolveRoomDrag } from './MapGeometry';
 
 interface Choice {
   label: string;
@@ -120,45 +121,6 @@ function getChoiceDialogs(
 const clamp = (value: number, min: number, max: number) =>
   Math.max(min, Math.min(value, max));
 
-function wouldOverlapAnyRoom(
-  candidatePos: PositionDTO,
-  room: RoomDTO,
-  allRooms: RoomDTO[],
-): boolean {
-  return allRooms.some((other) => {
-    if (other.id === room.id) return false;
-    return (
-      candidatePos.x < other.position.x + other.width &&
-      candidatePos.x + room.width > other.position.x &&
-      candidatePos.y < other.position.y + other.height &&
-      candidatePos.y + room.height > other.position.y
-    );
-  });
-}
-
-function resolveNonOverlappingPosition(
-  targetPos: PositionDTO,
-  room: RoomDTO,
-  allRooms: RoomDTO[],
-): PositionDTO {
-  const currentPos = room.position;
-
-  if (!wouldOverlapAnyRoom(targetPos, room, allRooms)) {
-    return targetPos;
-  }
-
-  const moveXOnly = { x: targetPos.x, y: currentPos.y };
-  if (!wouldOverlapAnyRoom(moveXOnly, room, allRooms)) {
-    return moveXOnly;
-  }
-
-  const moveYOnly = { x: currentPos.x, y: targetPos.y };
-  if (!wouldOverlapAnyRoom(moveYOnly, room, allRooms)) {
-    return moveYOnly;
-  }
-
-  return currentPos;
-}
 
 function getPassageEndpoints(
   passage: PassageDTO,
@@ -258,25 +220,18 @@ export function MapEditorView() {
       const offset = dragOffsetRef.current;
       if (!point || !offset || selectedRoomId !== room.id) return;
 
-      const clampedTarget: PositionDTO = {
-        x: clamp(
-          point.x - offset.x,
-          0,
-          Math.max(0, container.width - room.width),
-        ),
-        y: clamp(
-          point.y - offset.y,
-          0,
-          Math.max(0, container.height - room.height),
-        ),
-      };
+      const rect = svgRef.current?.getBoundingClientRect();
+      const pxPerUnit = rect && container.width ? rect.width / container.width : 1;
 
-      const nextPos = resolveNonOverlappingPosition(
-        clampedTarget,
-        room,
-        map.rooms,
-      );
-      actions.onSelectedRoomChange({ position: nextPos });
+      actions.onSelectedRoomChange({
+        position: resolveRoomDrag(
+          { x: point.x - offset.x, y: point.y - offset.y },
+          room,
+          map.rooms,
+          container,
+          pxPerUnit,
+        ),
+      });
     },
     startPassageDrag: (e: React.PointerEvent<SVGElement>, passage: PassageDTO) => {
       const point = toSvgPoint(e);
@@ -545,17 +500,15 @@ export function MapEditorView() {
             </svg>
             <div className='map-editor-view__panel'>
               <FormSection title='Wymiary obszaru (container)'>
-              <InputField
-                label='Szerokość obszaru'
-                inputProps={{
-                  type: 'number',
-                  value: container.width,
-                  onChange: (e) => {
-                    console.log('onChange width:', e.target.value, 'Number:', Number(e.target.value));
-                    actions.onContainerChange({ width: Number(e.target.value) });
-                  },
-                }}
-              />
+                <InputField
+                  label='Szerokość obszaru'
+                  inputProps={{
+                    type: 'number',
+                    value: container.width,
+                    onChange: (e) =>
+                      actions.onContainerChange({ width: Number(e.target.value) }),
+                  }}
+                />
                 <InputField
                   label='Wysokość obszaru'
                   inputProps={{
