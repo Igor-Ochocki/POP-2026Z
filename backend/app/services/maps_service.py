@@ -78,15 +78,14 @@ class MapsService(IMapsService):
 
     def get_room(self, game_id, room_id, user_id):
         self._ensure_viewing_rights(user_id, game_id)
-
         room = self.db_session.get(Room, room_id)
         if room is None:
-            raise NotFoundError("Nie znaleziono pokoju")
+            raise NotFoundError(f"Nie znaleziono pokoju")
         return self._map_room(room)
 
 
     def get_inventory_items(self, game_id, user_id):
-        self._ensure_viewing_rights(user_id, game_id)
+        self._ensure_edit_rights(user_id, game_id)
 
         game = self.db_session.get(Game, game_id)
 

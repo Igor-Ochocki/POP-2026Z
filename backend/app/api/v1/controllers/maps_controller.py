@@ -11,7 +11,7 @@ from app.services.maps_service import IMapsService, MapsService
 
 class IMapsApi(ABC):
     @abstractmethod
-    def get_room(self, game_id: str, room_id: str, user_id: str,) -> RoomSchema: ...
+    def get_room(self, game_id: str, room_id: str, user_id: str) -> RoomSchema: ...
 
     @abstractmethod
     def get_inventory_items(self, game_id: str) -> list[InventoryItemSchema]: ...
@@ -29,7 +29,7 @@ def get_maps_service(db: Annotated[Session, Depends(get_db)]) -> IMapsService:
     return MapsService(db)
 
 
-@router.get("/{game_id}/map/rooms/{room_id}}", response_model=RoomSchema)
+@router.get("/{game_id}/map/rooms/{room_id}", response_model=RoomSchema)
 def get_room(
     game_id: str, 
     room_id: str,
@@ -44,7 +44,7 @@ def get_inventory_items(
     user_id: str,
     service: Annotated[IMapsService, Depends(get_maps_service)]
 ) -> list[InventoryItemSchema]:
-    return service.get_inventory_items()
+    return service.get_inventory_items(game_id, user_id)
 
 @router.post("/{game_id}/maps/rooms/{room_id}")
 def update_room(
