@@ -5,7 +5,12 @@ import type {
   IDisplayActionsWindows,
 } from '@app-types/action';
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams, type NavigateFunction } from 'react-router';
+import {
+  useLocation,
+  useNavigate,
+  useParams,
+  type NavigateFunction,
+} from 'react-router';
 
 function createDisplayActionsWindows(
   navigate: NavigateFunction,
@@ -35,12 +40,16 @@ export function useDisplayActions(): {
     gameId,
   });
 
-  useEffect(() => {
-    (async () => {
-      const actions = await apiClient.actions.getAll(gameId);
-      setState({ ...state, actions });
-    })();
-  }, []);
+  const location = useLocation();
+
+  if (location.pathname.endsWith('/actions')) {
+    useEffect(() => {
+      (async () => {
+        const actions = await apiClient.actions.getAll(gameId);
+        setState({ ...state, actions });
+      })();
+    }, []);
+  }
 
   const actions: IDisplayActionsActions = {
     onDisplayActionsSelect: () => showDisplayActionsView(),
