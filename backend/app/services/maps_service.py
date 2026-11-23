@@ -14,6 +14,8 @@ from app.models.sensor import Sensor
 from app.models.qr_code import QrCode
 from app.models.position import Position
 from app.models.room_item_claim import RoomItemClaim
+from fastapi.logger import logger
+
 
 class IMapsService(ABC):
     @abstractmethod
@@ -26,7 +28,8 @@ class IMapsService(ABC):
     def update_room(self, game_id: str, room_id: int, user_id: str, dto: RoomSchema)-> RoomSchema: ...
 
 
-
+def _chamber_not_found():
+    raise NotFoundError("Chamber not found.")
 
 class MapsService(IMapsService):
     def __init__(self, db_session: Session) -> None:
@@ -75,7 +78,6 @@ class MapsService(IMapsService):
 
     @staticmethod
     def _map2_passage(p: PassageSchema, map_id: str) -> Passage:
-        p.model_validate()
         return Passage(
             id = p.id,
             map_id = map_id,
@@ -88,12 +90,14 @@ class MapsService(IMapsService):
     @staticmethod
     def _map_sensor(sensor: Sensor) -> SensorSchema:
         return SensorSchema(
-            position = sensor.position
+            position = PositionSchema(
+                x = sensor.position.x,
+                y = sensor.position.y
+            )
         )
 
     @staticmethod
     def _map2_sensor(s: SensorSchema, room_id: int) -> Sensor:
-        s.model_validate()
         return Sensor(
             position = s.position,
             room_id = room_id
@@ -103,15 +107,17 @@ class MapsService(IMapsService):
     @staticmethod
     def _map_qr_code(qr_code: QrCode) -> QrCodeSchema:
         return QrCodeSchema(
-            position=qr_code.position,
+            position=PositionSchema(
+                x = qr_code.position.x,
+                y = qr_code.position.y
+            ),
         )
 
     @staticmethod
     def _map2_qr_code(q: QrCodeSchema, room_id: int) -> QrCode:
-        q.model_validate()
         return QrCode(
             position = q.position,
-            content = q.content,
+            content = "https://www.youtube.com/watch?v=xvFZjo5PgG0",
             room_id = room_id
         )
 
@@ -128,7 +134,7 @@ class MapsService(IMapsService):
     def _ensure_edit_rights(self, user_id: str, game_id: str):
         game = self.db_session.get(Game, game_id)
         if game is None or game.author_id != user_id:
-            raise NotFoundError("Chamber not found, or user has no access")
+            raise NotFoundError("Game not found, or user has no access")
 
                 
 
@@ -140,8 +146,14 @@ class MapsService(IMapsService):
         self._ensure_viewing_rights(user_id, game_id)
         room = self.db_session.get(Room, room_id)
         if room is None:
-            raise NotFoundError(f"Chamber not found")
+            logger.debug(f"The room with id [{room_id}] doesn't exist")
+            _chamber_not_found()
+        elif room.map.game_id != game_id:
+            logger.debug(f"The room doesn't belong to the specified game. room.map.game_id: [{room.map.game_id}], game_id: [{game_id}]")
+            _chamber_not_found()
+
         return self._map_room(room)
+        
 
 
     def get_inventory_items(self, game_id, user_id):
@@ -182,7 +194,6 @@ class MapsService(IMapsService):
         # QUESTION: Can a passage be between maps? 
 
         for passage in passages:
-            passage.model_validate()
             room1_id = passage.room1_id
             room2_id = passage.room2_id
 
@@ -217,7 +228,6 @@ class MapsService(IMapsService):
         
 
     def update_room(self, game_id, room_id, user_id, dto : RoomSchema):
-        RoomSchema.model_validate(dto)
         self._ensure_edit_rights(user_id, game_id)
 
         room = self.db_session.get(Room, room_id)
