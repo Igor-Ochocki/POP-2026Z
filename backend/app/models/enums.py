@@ -27,3 +27,22 @@ class PaymentStatus(StrEnum):
     PENDING = "pending"
     COMPLETED = "completed"
     FAILED = "failed"
+
+
+class VictoryConditionType(StrEnum):
+    COMPLETE_TASKS = "completeTasks"
+    REACH_SCORE = "reachScore"
+    ELIMINATE_FACTION = "eliminateFaction"
+    SURVIVE_TIME = "surviveTime"
+
+
+class VictoryConditionTarget(StrEnum):
+    FACTION = "faction"
+    CHARACTER = "character"
+
+class EventStatus(StrEnum):
+    OPEN = "open"
+    FINISHED = "finished"
+    CANCELLED = "cancelled"
+    RESTRICTED = "restricted"
+
