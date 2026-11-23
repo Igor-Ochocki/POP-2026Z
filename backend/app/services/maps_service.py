@@ -79,7 +79,7 @@ class MapsService(IMapsService):
     @staticmethod
     def _map2_passage(p: PassageSchema, map_id: str) -> Passage:
         return Passage(
-            # id = p.id, Disallow manually setting id to prevent overwritting passages that belong to other games
+            id = p.id,
             map_id = map_id,
             room1_id = p.room1_id,
             room2_id = p.room2_id,
@@ -217,7 +217,11 @@ class MapsService(IMapsService):
         room.entry_passages = []
 
         for passage in passages:
+
+            if self.db_session.get(Passage, passage.id) is not None:
+                raise ConflictError("Using this id would overwrite an existing relationship between other rooms.")
             p = MapsService._map2_passage(passage, room.map_id)
+
 
             if p.room2_id == room.id:
                 room.entry_passages.append(p)
