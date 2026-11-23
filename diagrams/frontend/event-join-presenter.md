@@ -14,10 +14,11 @@ hide empty members
 title PU46 Dołączenie do wydarzenia - presenter
 
 interface IEventJoinActions <<interface>> {
-    + onOpenEventJoin(event: EventDTO)
+    + onOpenEventJoin(event: CalendarEventDTO)
     + onConfirmJoin()
     + onCancelJoin()
     + onEventJoinedMessageDialogConfirm()
+    + onAlreadyJoinedMessageDialogConfirm()
     + onEventFullMessageDialogConfirm()
     + onEventUnavailableMessageDialogConfirm()
     + onAccountBlockedMessageDialogConfirm()
@@ -26,6 +27,7 @@ interface IEventJoinActions <<interface>> {
 interface IEventJoinWindows <<interface>> {
     + showEventJoinConfirmDialog()
     + showEventJoinedMessageDialog()
+    + showAlreadyJoinedMessageDialog()
     + showEventFullMessageDialog()
     + showEventUnavailableMessageDialog()
     + showAccountBlockedMessageDialog()
@@ -33,35 +35,36 @@ interface IEventJoinWindows <<interface>> {
 }
 
 class useEventJoin <<Hook>> {
+    - openEventJoin(event: CalendarEventDTO)
     - joinEvent()
 }
 
 class EventJoinViewModel <<State>> {
-    + selectedEvent: EventDTO | null
+    + selectedEvent: CalendarEventDTO | null
+    + eventDetails: EventDTO | null
     + dialogType: EventJoinDialogTypes | null
 }
 
 enum EventJoinDialogTypes {
     confirmation
     joined
+    alreadyJoined
     eventFull
     eventUnavailable
     accountBlocked
 }
 
 interface IEventsApi <<interface>>
-interface IEventListActions <<interface>>
+class CalendarEventDTO <<DTO>>
 class EventDTO <<DTO>>
 
 useEventJoin .u.|> IEventJoinActions
 useEventJoin -u-> IEventJoinWindows
 useEventJoin *-- "1" EventJoinViewModel : state
-useEventJoin --> IEventListActions : onOpenEventList (PU45)
 EventJoinViewModel ..> EventJoinDialogTypes
-EventJoinViewModel ..> EventDTO : selectedEvent
-useEventJoin --> IEventsApi : apiClient.events\njoinEvent
-
-
+EventJoinViewModel ..> CalendarEventDTO : selectedEvent
+EventJoinViewModel ..> EventDTO : eventDetails
+useEventJoin --> IEventsApi : apiClient.events\ngetEvent, joinEvent
 @enduml
 ```
 

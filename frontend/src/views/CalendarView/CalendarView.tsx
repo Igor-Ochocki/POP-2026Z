@@ -1,7 +1,6 @@
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import Button from '@components/Button/Button';
 import Calendar from '@components/Calendar/Calendar';
-import SegmentedControl from '@components/SegmentedControl/SegmentedControl';
 import { useCalendar } from '@hooks/useCalendar';
 import { useEventJoin } from '@hooks/useEventJoin';
 import { useReservation } from '@hooks/useReservation';
@@ -40,16 +39,6 @@ export function CalendarView() {
         </div>
       )}
 
-      <SegmentedControl
-        label='Widok'
-        options={[
-          { label: 'Terminy', value: 'slots' },
-          { label: 'Wydarzenia', value: 'events' },
-        ]}
-        value={state.mode}
-        onChange={actions.onChangeMode}
-      />
-
       <Calendar
         events={state.events}
         onMonthChange={actions.onChangeMonth}
@@ -61,16 +50,25 @@ export function CalendarView() {
         }}
       />
 
-      {state.mode === 'slots' && (
-        <div className='calendar-page__actions'>
-          <Button
-            variant='primary'
-            onClick={() => reservation.actions.onOpenReservation()}
-          >
-            Dodaj wydarzenie
+      <div className='calendar-page__actions'>
+        {state.mode === 'slots' ? (
+          <>
+            <Button variant='secondary' onClick={actions.onShowEvents}>
+              Dołącz do wydarzenia
+            </Button>
+            <Button
+              variant='primary'
+              onClick={() => reservation.actions.onOpenReservation()}
+            >
+              Dodaj wydarzenie
+            </Button>
+          </>
+        ) : (
+          <Button variant='secondary' onClick={actions.onShowSlots}>
+            Wróć do terminów
           </Button>
-        </div>
-      )}
+        )}
+      </div>
 
       <EventJoinDialogs
         state={eventJoin.state}

@@ -16,6 +16,8 @@ title PU1 Wyświetlanie kalendarza - presenter
 interface ICalendarActions <<interface>> {
     + onShowCalendar()
     + onChangeMonth(month: Date)
+    + onShowSlots()
+    + onShowEvents()
     + onBack()
 }
 
@@ -28,24 +30,32 @@ class useCalendar <<Hook>>
 class CalendarViewModel <<State>> {
     + events: CalendarEventDTO[*]
     + month: Date | null
+    + mode: CalendarMode
     + errorMessage: string | null
 }
 
 interface ICalendarApi <<interface>>
+interface IEventsApi <<interface>>
+enum CalendarMode {
+    slots
+    events
+}
 class CalendarEventDTO <<DTO>>
 
 useCalendar .u.|> ICalendarActions
 useCalendar -u-> ICalendarWindows
 useCalendar *-- "1" CalendarViewModel : state
 CalendarViewModel ..> CalendarEventDTO : events
+CalendarViewModel ..> CalendarMode
 useCalendar --> ICalendarApi : apiClient.calendar\ngetEvents
+useCalendar --> IEventsApi : apiClient.events\ngetEvents (tryb events)
 
 note right of useCalendar
     onChangeMonth woła kalendarz przy każdym pokazanym
     miesiącu (także przy pierwszym wyświetleniu), więc dane
     pobiera tylko CalendarView - inne widoki wołają jedynie
     onShowCalendar. Odpowiedzi dla miesiąca, z którego
-    użytkownik już przeszedł, są ignorowane.
+    użytkownik już przeszedł (lub w trybie, który zmienił), są ignorowane.
 end note
 
 note bottom of ICalendarApi

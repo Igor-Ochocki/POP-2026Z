@@ -17,6 +17,7 @@ class Layout <<View>>
 
 class CalendarView <<View>>
 
+
 class Calendar <<Component>> {
     + onMonthChange(month: Date)
 }
@@ -31,17 +32,20 @@ CalendarWindows --> CalendarView
 
 Layout --> ICalendarActions : onShowCalendar
 CalendarView *-- Calendar
-CalendarView --> ICalendarActions
+CalendarView --> ICalendarActions : onShowEvents, onShowSlots
 CalendarView --> CalendarViewModel
 Calendar --> ICalendarActions : onChangeMonth
 
 interface IReservationActions <<interface>>
 CalendarView --> IReservationActions : onOpenReservation (PU2)
+interface IEventJoinActions <<interface>>
+CalendarView --> IEventJoinActions : onOpenEventJoin (PU46)
 
 note right of Calendar
     FullCalendar (widok miesiąca) - przy zmianie
     miesiąca zgłasza jego pierwszy dzień.
-    "Dodaj wydarzenie" otwiera pusty widok rezerwacji.
+    "Dodaj wydarzenie" otwiera pusty widok rezerwacji,
+    "Dołącz do wydarzenia" przełącza kalendarz na wydarzenia (PU46).
 end note
 @enduml
 ```

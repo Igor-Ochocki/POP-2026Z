@@ -57,7 +57,7 @@ export function useCalendar(): {
   // so only CalendarView triggers the API - other views just open it.
   const onChangeMonth = (month: Date) => loadEvents(month, state.mode);
 
-  const onChangeMode = (mode: CalendarMode) => {
+  const showMode = (mode: CalendarMode) => {
     if (!state.month) return;
     setState((prev) => ({ ...prev, events: [] }));
     void loadEvents(state.month, mode);
@@ -68,7 +68,8 @@ export function useCalendar(): {
     actions: {
       onShowCalendar: windows.showCalendarView,
       onChangeMonth: (month) => void onChangeMonth(month),
-      onChangeMode,
+      onShowSlots: () => showMode('slots'),
+      onShowEvents: () => showMode('events'),
       onBack: () => void navigate(HOME_PATH),
     },
   };
