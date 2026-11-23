@@ -11,7 +11,9 @@ import type {
 } from '@app-types/roomEdit';
 import './RoomEditPanel.css';
 
-const CELL_SIZE = 40;
+const MAX_CANVAS_WIDTH = 600;
+const MAX_CANVAS_HEIGHT = 450;
+const MAX_CELL_SIZE = 4;
 
 type MarkerKind = 'sensors' | 'qrCodes';
 
@@ -33,11 +35,6 @@ interface RoomEditPanelProps extends Pick<
 
 const clamp = (value: number, max: number) => Math.min(Math.max(value, 0), max);
 
-const markerStyle = (position: PositionDTO) => ({
-  left: position.x * CELL_SIZE,
-  top: position.y * CELL_SIZE,
-});
-
 export function RoomEditPanel({
   room,
   sensors,
@@ -49,6 +46,19 @@ export function RoomEditPanel({
 }: RoomEditPanelProps) {
   const [selected, setSelected] = useState<SelectedMarker | null>(null);
   const [dragged, setDragged] = useState<SelectedMarker | null>(null);
+  const cellSize =
+    room.width > 0 && room.height > 0
+      ? Math.min(
+          MAX_CANVAS_WIDTH / room.width,
+          MAX_CANVAS_HEIGHT / room.height,
+          MAX_CELL_SIZE,
+        )
+      : 1;
+
+  const markerStyle = (position: PositionDTO) => ({
+    left: position.x * cellSize,
+    top: position.y * cellSize,
+  });
 
   const markersOf = (kind: MarkerKind): { position: PositionDTO }[] =>
     kind === 'sensors' ? sensors : qrCodes;
@@ -58,8 +68,8 @@ export function RoomEditPanel({
   ): PositionDTO => {
     const rect = event.currentTarget.getBoundingClientRect();
     return {
-      x: clamp(Math.round((event.clientX - rect.left) / CELL_SIZE), room.width),
-      y: clamp(Math.round((event.clientY - rect.top) / CELL_SIZE), room.height),
+      x: clamp(Math.round((event.clientX - rect.left) / cellSize), room.width),
+      y: clamp(Math.round((event.clientY - rect.top) / cellSize), room.height),
     };
   };
 
@@ -232,8 +242,9 @@ export function RoomEditPanel({
           role='application'
           aria-label='Plan komnaty'
           style={{
-            width: room.width * CELL_SIZE,
-            height: room.height * CELL_SIZE,
+            width: room.width * cellSize,
+            height: room.height * cellSize,
+            backgroundSize: `${cellSize}px ${cellSize}px`,
           }}
           onPointerDown={() => setSelected(null)}
           onPointerMove={moveDragged}
