@@ -1,98 +1,95 @@
-
 import type { AxiosInstance } from 'axios';
-import { ApiError } from '@api/apiError';
 import type {
   GameMapDTO,
+  MapContainerDTO,
   MapSaveDTO,
   PassageDTO,
   PositionDTO,
   RoomDTO,
 } from '@app-types/map';
- 
-interface PassagePayload {
+
+interface PositionSchema extends PositionDTO {}
+
+interface PassageSchema {
   id: number;
-  room1_id: number;
-  room2_id: number;
-  position: PositionDTO;
+  room1Id: number;
+  room2Id: number;
+  position: PositionSchema;
 }
- 
-interface RoomPayload {
+
+interface RoomSchema {
   id: number;
   name: string;
+  description: string;
   width: number;
   height: number;
-  position: PositionDTO;
-  passages: PassagePayload[];
+  position: PositionSchema;
 }
- 
-interface MapPayload {
-  container: { width: number; height: number };
-  rooms: RoomPayload[];
-  is_valid: boolean;
+
+interface MapContainerSchema extends MapContainerDTO {}
+
+interface MapSchema {
+  id: number;
+  name: string;
+  description: string;
+  container: MapContainerSchema;
+  rooms: RoomSchema[];
+  passages: PassageSchema[];
+  isValid: boolean;
 }
- 
-const toPassagePayload = (passage: PassageDTO): PassagePayload => ({
-  id: passage.id,
-  room1_id: passage.room1Id,
-  room2_id: passage.room2Id,
-  position: passage.position,
+
+const toPassageSchema = (p: PassageDTO): PassageSchema => ({
+  id: p.id,
+  room1Id: p.room1Id,
+  room2Id: p.room2Id,
+  position: p.position,
 });
- 
-const fromPassagePayload = (passage: PassagePayload): PassageDTO => ({
-  id: passage.id,
-  room1Id: passage.room1_id,
-  room2Id: passage.room2_id,
-  position: passage.position,
+
+const toRoomSchema = (r: RoomDTO): RoomSchema => ({
+  id: r.id,
+  name: r.name,
+  description: r.description,
+  width: r.width,
+  height: r.height,
+  position: r.position,
 });
- 
-const toRoomPayload = (room: RoomDTO): RoomPayload => ({
-  id: room.id,
-  name: room.name,
-  width: room.width,
-  height: room.height,
-  position: room.position,
-  passages: room.passages.map(toPassagePayload),
-});
- 
-const fromRoomPayload = (room: RoomPayload): RoomDTO => ({
-  id: room.id,
-  name: room.name,
-  width: room.width,
-  height: room.height,
-  position: room.position,
-  passages: room.passages.map(fromPassagePayload),
-});
- 
-const toMapPayload = (map: GameMapDTO): MapPayload => ({
+
+const toMapSchema = (map: GameMapDTO): MapSchema => ({
+  id: map.id,
+  name: map.name,
+  description: map.description,
   container: map.container,
-  rooms: map.rooms.map(toRoomPayload),
-  is_valid: map.isValid,
+  rooms: map.rooms.map(toRoomSchema),
+  passages: map.passages.map(toPassageSchema),
+  isValid: map.isValid,
 });
- 
-const fromMapPayload = (map: MapPayload): GameMapDTO => ({
-  container: map.container,
-  rooms: map.rooms.map(fromRoomPayload),
-  isValid: map.is_valid,
+
+const fromMapSchema = (schema: MapSchema): GameMapDTO => ({
+  id: schema.id,
+  name: schema.name,
+  description: schema.description,
+  container: schema.container,
+  rooms: schema.rooms.map(toRoomSchema),
+  passages: schema.passages.map(toPassageSchema),
+  isValid: schema.isValid,
 });
- 
+
 export const createMapsApi = (http: AxiosInstance) => ({
-  getMap: async (gameId: string): Promise<GameMapDTO | null> => {
-    try {
-      const { data } = await http.get<MapPayload>(`/games/${gameId}/map`);
-      return fromMapPayload(data);
-    } catch (error) {
-      if (error instanceof ApiError && error.status === 404) return null;
-      throw error;
-    }
+  getMap: async (gameId: string, userId: string): Promise<GameMapDTO> => {
+    const { data } = await http.get<MapSchema>(`/games/${gameId}/map`, {
+      params: { user_id: userId },
+    });
+    return fromMapSchema(data);
   },
- 
-  saveMap: async ({ gameId, map }: MapSaveDTO): Promise<GameMapDTO> => {
-    const { data } = await http.put<MapPayload>(
-      `/games/${gameId}/map`,
-      toMapPayload(map),
+
+  editMap: async ({ gameId, userId, map }: MapSaveDTO): Promise<GameMapDTO> => {
+    const { data } = await http.post<MapSchema>(
+      `/games/${gameId}/map/edit`,
+      toMapSchema(map),
+      { params: { user_id: userId } },
     );
-    return fromMapPayload(data);
+    return fromMapSchema(data);
   },
 });
- 
+
 export type MapsApi = ReturnType<typeof createMapsApi>;
