@@ -4,7 +4,10 @@ from sqlalchemy.orm import Session
 from app.core.exceptions import ForbiddenError, NotFoundError
 from app.models.character import Character
 from app.models.game import Game, GameStatus
-from app.models.map import Map, Passage, Room
+from app.models.map import Map
+from app.models.passage import Passage
+from app.models.position import Position
+from app.models.room import Room
 from app.services.maps_service import MapsService
 
 
@@ -32,17 +35,17 @@ def _seed_map(session: Session, game: Game) -> Map:
     session.add(m)
     session.flush()
 
-    r1 = Room(map_id=m.id, name="Sala Tronowa", description="Główna sala", zone="A",
-              position_x=0.0, position_y=0.0, width=4.0, height=3.0, hidden=False)
-    r2 = Room(map_id=m.id, name="Korytarz", description="Ciemny korytarz", zone="B",
-              position_x=5.0, position_y=0.0, width=2.0, height=1.0, hidden=False)
-    r3 = Room(map_id=m.id, name="Skarbiec", description="Skarbiec króla", zone="C",
-              position_x=8.0, position_y=0.0, width=3.0, height=3.0, hidden=True)
+    r1 = Room(map_id=m.map_id, name="Sala Tronowa", description="Główna sala", zone="A",
+              position=Position(0.0, 0.0), width=4.0, height=3.0, hidden=False)
+    r2 = Room(map_id=m.map_id, name="Korytarz", description="Ciemny korytarz", zone="B",
+              position=Position(5.0, 0.0), width=2.0, height=1.0, hidden=False)
+    r3 = Room(map_id=m.map_id, name="Skarbiec", description="Skarbiec króla", zone="C",
+              position=Position(8.0, 0.0), width=3.0, height=3.0, hidden=True)
     session.add_all([r1, r2, r3])
     session.flush()
 
-    p1 = Passage(map_id=m.id, room1_id=r1.id, room2_id=r2.id)
-    p2 = Passage(map_id=m.id, room1_id=r2.id, room2_id=r3.id)
+    p1 = Passage(map_id=m.map_id, room1_id=r1.id, room2_id=r2.id)
+    p2 = Passage(map_id=m.map_id, room1_id=r2.id, room2_id=r3.id)
     session.add_all([p1, p2])
     session.flush()
 

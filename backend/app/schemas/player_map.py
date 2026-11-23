@@ -1,5 +1,8 @@
 from enum import StrEnum
+
 from pydantic import BaseModel
+
+from app.schemas.maps import PositionSchema
 
 
 class RoomAccess(StrEnum):
@@ -7,13 +10,8 @@ class RoomAccess(StrEnum):
     OUTLINE = "outline"
 
 
-class PositionSchema(BaseModel):
-    x: float
-    y: float
-
-
 class PlayerRoomSchema(BaseModel):
-    room_id: str
+    room_id: int
     access: RoomAccess
     position: PositionSchema
     width: float
@@ -23,9 +21,9 @@ class PlayerRoomSchema(BaseModel):
 
 
 class PassageSchema(BaseModel):
-    passage_id: str
-    room1_id: str
-    room2_id: str
+    passage_id: int
+    room1_id: int
+    room2_id: int
 
 
 class PlayerMapSchema(BaseModel):

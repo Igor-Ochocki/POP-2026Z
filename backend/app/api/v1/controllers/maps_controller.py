@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
-from app.schemas.map import PlayerMapSchema
+from app.schemas.player_map import PlayerMapSchema
 from app.schemas.maps import RoomSchema, InventoryItemSchema
 from app.services.maps_service import IMapsService, MapsService
 

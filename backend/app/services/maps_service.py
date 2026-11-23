@@ -7,8 +7,8 @@ from app.core.exceptions import ConflictError, NotFoundError, UnprocessableConte
 from app.models.character import Character
 from app.models.game import Game
 from app.models.map import Map
-from app.schemas.map import PassageSchema as PlayerPassageSchema
-from app.schemas.map import PlayerMapSchema, PlayerRoomSchema, RoomAccess
+from app.schemas.player_map import PassageSchema as PlayerPassageSchema
+from app.schemas.player_map import PlayerMapSchema, PlayerRoomSchema, RoomAccess
 from app.schemas.maps import *
 from app.models.room import Room
 
@@ -281,14 +281,14 @@ class MapsService(IMapsService):
 
         # Filtruj komnaty wg uprawnień postaci
         visible_rooms: list[PlayerRoomSchema] = []
-        visible_room_ids: set[str] = set()
+        visible_room_ids: set[int] = set()
 
         for room in game_map.rooms:
             if room.zone in allowed_zones:
                 visible_rooms.append(PlayerRoomSchema(
                     room_id=room.id,
                     access=RoomAccess.ACCESSIBLE,
-                    position=PositionSchema(x=room.position_x, y=room.position_y),
+                    position=PositionSchema(x=room.position.x, y=room.position.y),
                     width=room.width,
                     height=room.height,
                     name=room.name,
@@ -300,7 +300,7 @@ class MapsService(IMapsService):
                 visible_rooms.append(PlayerRoomSchema(
                     room_id=room.id,
                     access=RoomAccess.OUTLINE,
-                    position=PositionSchema(x=room.position_x, y=room.position_y),
+                    position=PositionSchema(x=room.position.x, y=room.position.y),
                     width=room.width,
                     height=room.height,
                     name=None,
@@ -320,7 +320,7 @@ class MapsService(IMapsService):
                 ))
 
         return PlayerMapSchema(
-            map_id=game_map.id,
+            map_id=game_map.map_id,
             game_id=game_id,
             name=game_map.name,
             character_id=character.id,
