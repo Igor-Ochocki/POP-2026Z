@@ -31,7 +31,7 @@ GameDefinitionView --> IScenarioEditorActions : onOpenScenarioEditor
 ScenarioEditorView --> IScenarioEditorActions : onReloadScenario
 ScenarioEditorView --> ScenarioEditorViewModel
 ScenarioEditorView --> INewTaskActions : onNewTaskSelect (PU57)
-ScenarioEditorView --> IVictoryConditionActions : onVictoryConditionSelect (PU58)
+ScenarioEditorView --> IVictoryConditionActions : onVictoryConditionSelect,\nonVictoryConditionEditSelect (PU58)
 ScenarioEditorView --> IGameDefinitionActions : onOpenGame (PU49)
 
 note right of ScenarioEditorView

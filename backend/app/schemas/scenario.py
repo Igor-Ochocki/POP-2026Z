@@ -1,4 +1,25 @@
-from pydantic import BaseModel, Field
+from collections.abc import Callable
+from enum import Enum
+from typing import Annotated
+
+from pydantic import AfterValidator, BaseModel, Field
+
+from app.models.enums import VictoryConditionTarget, VictoryConditionType
+
+
+def _one_of(enum_cls: type[Enum]) -> Callable[[str], str]:
+    allowed = [member.value for member in enum_cls]
+
+    def check(value: str) -> str:
+        if value not in allowed:
+            raise ValueError(f"must be one of: {', '.join(allowed)}")
+        return value
+
+    return check
+
+
+VictoryConditionTypeStr = Annotated[str, AfterValidator(_one_of(VictoryConditionType))]
+VictoryConditionTargetStr = Annotated[str, AfterValidator(_one_of(VictoryConditionTarget))]
 
 
 class TaskSchema(BaseModel):
@@ -24,9 +45,23 @@ class TaskCreateSchema(BaseModel):
     reward_value: str = Field(min_length=1)
 
 
+class VictoryConditionSchema(BaseModel):
+    victory_condition_id: str
+    name: str
+    target: VictoryConditionTarget
+    value: str
+    condition_type: VictoryConditionType
+
+
+class VictoryConditionCreateSchema(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+    target: VictoryConditionTargetStr
+    value: str = Field(min_length=1, max_length=100)
+    condition_type: VictoryConditionTypeStr
+
+
 class ScenarioDetailSchema(BaseModel):
     scenario_id: str
     game_id: str
     tasks: list[TaskSchema]
-    # Placeholder do PU58 - tam dojdzie model warunku zwycięstwa.
-    victory_conditions: list[str]
+    victory_conditions: list[VictoryConditionSchema]
