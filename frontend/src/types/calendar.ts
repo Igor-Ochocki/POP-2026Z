@@ -17,7 +17,8 @@ export interface CalendarViewModel {
 export interface ICalendarActions {
   onShowCalendar(): void;
   onChangeMonth(month: Date): void;
-  onChangeMode(mode: CalendarMode): void;
+  onShowSlots(): void;
+  onShowEvents(): void;
   onBack(): void;
 }
 
