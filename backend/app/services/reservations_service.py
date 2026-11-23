@@ -4,8 +4,9 @@ from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import AppError, ConflictError, ForbiddenError, NotFoundError
-from app.models.enums import ReservationStatus
+from app.models.enums import ReservationStatus, EventStatus
 from app.models.reservation import Reservation
+from app.models.events import Event
 from app.models.time_slot import TimeSlot
 from app.schemas.reservation import ReservationCreateSchema, ReservationSummarySchema
 from app.services.message_service import IMessageService
@@ -71,7 +72,16 @@ class ReservationsService(IReservationsService):
         reservation.status = ReservationStatus.CONFIRMED
         reservation.is_paid = True
         self.message_service.send_reservation_confirmation(user_id, reservation_id)
+
+        event = Event(
+            reserv_id=reservation.id,
+            users_registered=0,                 #tworzenie wydarzenia przy opłaceniu rezerwacji; rezerwujący nie jest automatycznie zapisywany na wydarzenie
+            participants=[],
+            event_status=EventStatus.OPEN,
+        )
+        self.db_session.add(event)
         self.db_session.commit()
+
         return self._to_summary(reservation)
 
     def _lock_slot(self, slot_id: str) -> None:

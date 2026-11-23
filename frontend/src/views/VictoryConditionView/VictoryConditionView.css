@@ -1,0 +1,9 @@
+.victory-condition-view {
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+.victory-condition-form {
+  display: grid;
+  gap: 1rem;
+}

@@ -18,6 +18,9 @@ class IActionsApi(ABC):
     def get_action(self, action_id: str) -> ActionSchema: ...
 
     @abstractmethod
+    def get_actions_list(self, game_id: str) -> list[ActionSchema]: ...
+
+    @abstractmethod
     def get_action_types(self) -> list[str]: ...
 
     @abstractmethod
@@ -46,6 +49,11 @@ def get_action_types(service: ActionsServiceDep) -> list[str]:
 @router.get("/effect_kind", response_model=list[str])
 def get_effect_kind(service: ActionsServiceDep) -> list[str]:
     return service.get_effect_kind()
+
+
+@router.get("/list/{game_id}", response_model=list[ActionSchema])
+def get_actions_list(game_id: str, service: ActionsServiceDep) -> list[ActionSchema]:
+    return service.get_actions_list(game_id)
 
 
 @router.get("/{action_id}", response_model=ActionSchema)

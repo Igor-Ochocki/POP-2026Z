@@ -10,6 +10,25 @@ export type EffectKind =
   | 'setFlag'
   | 'startMiniGame';
 
+export const actionTypeLabels: Record<ActionType, string> = {
+  movement: 'ruch',
+  attack: 'atak',
+  useItem: 'użycie przedmiotu',
+  dialogue: 'dialog',
+  custom: 'własna',
+  miniGame: 'minigra',
+};
+
+export const effectKindLabels: Record<EffectKind, string> = {
+  changeStat: 'zmiana statystyki',
+  addItem: 'dodanie przedmiotu',
+  removeItem: 'usunięcie przedmiotu',
+  changeLocation: 'zmiana lokacji',
+  setFlag: 'ustawienie flagi',
+  startMiniGame: 'rozpoczęcie minigry',
+};
+
+
 export interface ActionCreateDTO {
   gameId: string;
   name: string;
@@ -57,3 +76,16 @@ export interface IActionDefinitionWindows {
   showActionSaveErrorMessageDialog(): void;
   hideDialogs(): void;
 }
+
+export type IDisplayActionsWindows = {
+  showDisplayActionsView: () => void;
+};
+
+export type IDisplayActionsActions = {
+  onDisplayActionsSelect: () => void;
+};
+
+export type DisplayActionsViewModel = {
+  actions: ActionDTO[];
+  gameId: string;
+};
