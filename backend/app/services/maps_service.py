@@ -142,8 +142,9 @@ class MapsService(IMapsService):
                 
 
     def _ensure_viewing_rights(self, user_id: str, game_id: str):
-        return
-        
+        game = self.db_session.get(Game, game_id)
+        if game is None:
+            raise NotFoundError("Game not found, or user has no access")        
 
     def get_room(self, game_id, room_id, user_id):
         self._ensure_viewing_rights(user_id, game_id)
