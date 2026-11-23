@@ -245,8 +245,8 @@ class MapsService(IMapsService):
         room.width = dto.width
         room.height = dto.height
 
-        room.sensors = map(lambda s: MapsService._map2_sensor(s, room.id), dto.sensors)
-        room.qr_codes = map(lambda q: MapsService._map2_qr_code(q, room.id), dto.qr_codes)
+        room.sensors = list(map(lambda s: MapsService._map2_sensor(s, room.id), dto.sensors))
+        room.qr_codes = list(map(lambda q: MapsService._map2_qr_code(q, room.id), dto.qr_codes))
 
         self.db_session.commit()
 
