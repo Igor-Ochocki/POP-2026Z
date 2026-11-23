@@ -15,7 +15,8 @@ const isGameMap = (value: unknown): value is GameMapDTO => {
     map !== null &&
     typeof map.container?.width === 'number' &&
     typeof map.container?.height === 'number' &&
-    Array.isArray(map.rooms)
+    Array.isArray(map.rooms) &&
+    Array.isArray(map.passages)
   );
 };
  
