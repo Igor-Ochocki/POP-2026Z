@@ -50,6 +50,10 @@ export const router = createBrowserRouter([
         path: 'creator/games/:gameId/scenario/victory-condition/:victoryConditionId',
         element: <VictoryConditionView />,
       },
+      {
+        path: '/creator/games/:gameId/map/rooms/:roomId/add-sensor',
+        element: <SensorDefinitionView />,
+      },
       { path: '*', element: <NotFoundView /> },
     ],
   },

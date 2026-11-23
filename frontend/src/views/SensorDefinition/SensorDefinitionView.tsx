@@ -11,6 +11,7 @@ import type {
   SensorDefinitionViewModel,
 } from '@/types/sensor.ts';
 import type { PositionDTO } from '@/types/map.ts';
+import MessageDialog from '@components/MessageDialog/MessageDialog.tsx';
 
 function SensorPositionSelector({
   state,
@@ -19,7 +20,9 @@ function SensorPositionSelector({
   state: SensorDefinitionViewModel;
   actions: SensorDefinitionActions;
 }) {
-  const room = state.gameMap.rooms.find((room) => room.id === state.roomId);
+  const room = state.gameMap.rooms.find(
+    (room) => room.id === Number(state.roomId),
+  );
   const [circlePos, setCirclePos] = useState<PositionDTO | null>(null);
   if (!room) {
     return null;
@@ -100,11 +103,12 @@ function SensorPositionSelector({
                     fill='#1e3a8a'
                     style={{ pointerEvents: 'none', userSelect: 'none' }}
                   >
-                    Przejście do: {
+                    Przejście do:{' '}
+                    {
                       state.gameMap.rooms.find(
                         (r) =>
                           r.id ===
-                          (passage.room1Id === state.roomId
+                          (passage.room1Id === Number(state.roomId)
                             ? passage.room2Id
                             : passage.room1Id),
                       )?.name
@@ -136,10 +140,14 @@ function SensorPositionSelector({
           >
             Anuluj
           </Button>
-          <Button onClick={()=>{
-            actions.onChangeParameter('selectedPosition', circlePos);
-            actions.onChangeParameter('positionSelectorOpen', false);
-          }}>Zapisz i zamknij</Button>
+          <Button
+            onClick={() => {
+              actions.onChangeParameter('selectedPosition', circlePos);
+              actions.onChangeParameter('positionSelectorOpen', false);
+            }}
+          >
+            Zapisz i zamknij
+          </Button>
         </div>
       </Card>
     </div>
@@ -156,6 +164,7 @@ export function SensorDefinitionView() {
           <InputField
             label={'Pozycja czujnika'}
             inputProps={{
+              onChange: () => {},
               value:
                 state.selectedPosition === null
                   ? 'nie wybrano'
@@ -172,20 +181,47 @@ export function SensorDefinitionView() {
           <DropdownField
             label={'Typ czujnika'}
             options={state.sensorTypes}
-            onOptionSelected={() => {}}
+            onOptionSelected={(e) =>
+              actions.onChangeParameter('selectedType', e)
+            }
           />
           <DropdownField
             label={'Akcja'}
             options={state.actions.map((v) => v.name)}
-            onOptionSelected={() => {}}
+            onOptionSelected={(e) =>{
+              const a = state.actions.find((v)=>v.name === e)
+              actions.onChangeParameter('selectedAction', a?.actionId)
+            }}
           />
-          <Button variant={'secondary'}>Anuluj</Button>
-          <Button>Zapisz i zamknij</Button>
+          <Button variant={'secondary'} onClick={actions.onCreateSensorCancel}>
+            Anuluj
+          </Button>
+          <Button onClick={actions.onSensorSubmit}>Zapisz i zamknij</Button>
         </div>
       </Card>
       {state.positionSelectorOpen && (
         <SensorPositionSelector state={state} actions={actions} />
       )}
+      <MessageDialog
+        title={'Błąd'}
+        message={'Podane dane czujnika są nieprawidłowe'}
+        open={state.dataErrorDialogOpen}
+        onClosed={() => actions.onChangeParameter('dataErrorDialogOpen', false)}
+      />
+      <MessageDialog
+        title={'Błąd'}
+        message={'Wystąpił błąd zapisu'}
+        open={state.saveErrorDialogOpen}
+        onClosed={() => actions.onChangeParameter('saveErrorDialogOpen', false)}
+      />
+      <MessageDialog
+        title={'Sukces'}
+        message={'Nowy czujnik został dodany'}
+        open={state.saveSuccessDialogOpen}
+        onClosed={() =>
+          actions.onChangeParameter('saveSuccessDialogOpen', false)
+        }
+      />
     </div>
   );
 }

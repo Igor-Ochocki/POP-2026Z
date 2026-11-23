@@ -8,12 +8,14 @@ export interface SensorDTO {
 }
 
 export interface SensorDefinitionViewModel {
-  gameId: number;
-  roomId: number;
+  gameId: string;
+  roomId: string;
   sensorTypes: string[];
   actions: ActionDTO[];
   gameMap: GameMapDTO;
   selectedPosition: PositionDTO | null;
+  selectedAction: string;
+  selectedType: string;
   dataErrorDialogOpen: boolean;
   saveErrorDialogOpen: boolean;
   saveSuccessDialogOpen: boolean;
@@ -30,7 +32,8 @@ export interface ISensorDefinitionWindows {
 
 export interface SensorDefinitionActions {
   onChangeParameter(field: string, value: any): void;
-  onCreateSensor(gameId: number, roomId: number): void;
+  onCreateSensor(): void;
   onOpenPositionSelector(): void;
   onSensorSubmit(): void;
+  onCreateSensorCancel(): void;
 }
