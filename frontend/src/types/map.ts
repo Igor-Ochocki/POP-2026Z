@@ -8,17 +8,15 @@ export interface PassageDTO {
   room1Id: number;
   room2Id: number;
   position: PositionDTO;
-  start?: PositionDTO;
-  end?: PositionDTO;
 }
 
 export interface RoomDTO {
   id: number;
   name: string;
   width: number;
+  description: string;
   height: number;
   position: PositionDTO;
-  passages: PassageDTO[];
 }
 
 export interface MapContainerDTO {
@@ -27,13 +25,18 @@ export interface MapContainerDTO {
 }
 
 export interface GameMapDTO {
+  id: number; 
+  name: string;
+  description: string;
   container: MapContainerDTO;
   rooms: RoomDTO[];
+  passages: PassageDTO[];
   isValid: boolean;
 }
 
 export interface MapSaveDTO {
   gameId: string;
+  userId: string;
   map: GameMapDTO;
 }
 
@@ -51,8 +54,9 @@ export interface MapEditorViewModel {
   isAutoSaveEnabled: boolean;
   lastSaveTime: Date | null;
   isSubmitting: boolean;
-  dialogType: MapEditorDialogTypes | null;
+  dialogType: MapEditorDialogTypes | null;  
   isLoading: boolean;
+  isMapMissing: boolean;
   errorMessage: string | null;
 }
 
@@ -64,7 +68,6 @@ export interface IMapEditorWindows {
   showMapSaveBrowserErrorMessageDialog(): void;
   hideDialogs(): void;
 }
-
 
 export interface IMapEditorActions {
   onOpenMapEditor(gameId: string): void;
@@ -85,7 +88,7 @@ export interface IMapEditorActions {
   onRemoveSelectedRoom(): void;
   onAddPassage(room1Id: number, room2Id: number): void;
   onRemoveSelectedPassage(): void;
-  onContainerChange(data: Partial<MapContainerDTO>): void;
+  onGenerateMap(): void;
 }
 
 export interface IRoomEditActions {
