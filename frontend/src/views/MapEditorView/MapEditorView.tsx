@@ -180,9 +180,7 @@ export function MapEditorView() {
   const container = map.container;
   const selectedRoom = map.rooms.find((r) => r.id === selectedRoomId) ?? null;
 
-  const passages: PassageDTO[] = [
-    ...new Map(map.rooms.flatMap((r) => r.passages).map((p) => [p.id, p])).values(),
-  ];
+  const { passages } = map;
   const roomById = (id: number) => map.rooms.find((r) => r.id === id);
 
   const openGame = () => gameDefinitionActions.onOpenGame(state.gameId);
@@ -308,8 +306,16 @@ export function MapEditorView() {
           subtitle='Dodawaj komnaty i łącz je przejściami'
         />
         {state.isLoading && <TextLabel>Wczytywanie mapy gry...</TextLabel>}
-        {state.errorMessage && <TextLabel>{state.errorMessage}</TextLabel>}
-        {!state.isLoading && !state.errorMessage && (
+        {!state.isLoading && state.errorMessage && (
+          <TextLabel>{state.errorMessage}</TextLabel>
+        )}
+        {!state.isLoading && !state.errorMessage && state.isMapMissing && (
+          <div className='map-editor-view__empty'>
+            <TextLabel>Gra nie ma jeszcze utworzonej mapy.</TextLabel>
+            <Button onClick={actions.onGenerateMap}>Wygeneruj nową mapę</Button>
+          </div>
+        )}
+        {!state.isLoading && !state.errorMessage && !state.isMapMissing && (
           <div className='map-editor-view__layout'>
             <svg
               ref={svgRef}
@@ -547,6 +553,16 @@ export function MapEditorView() {
                         value: selectedRoom.name,
                         onChange: (e) =>
                           actions.onSelectedRoomChange({ name: e.target.value }),
+                      }}
+                    />
+                    <InputField
+                      label='Opis'
+                      inputProps={{
+                        value: selectedRoom.description,
+                        onChange: (e) =>
+                          actions.onSelectedRoomChange({
+                            description: e.target.value,
+                          }),
                       }}
                     />
                     <InputField
