@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, type NavigateFunction } from 'react-router';
 import { apiClient } from '@api/apiClient';
 import type {
+  CalendarMode,
   CalendarViewModel,
   ICalendarActions,
   ICalendarWindows,
@@ -14,6 +15,7 @@ const LOAD_ERROR = 'Nie udało się wczytać wydarzeń. Spróbuj ponownie.';
 const initialState: CalendarViewModel = {
   events: [],
   month: null,
+  mode: 'slots',
   errorMessage: null,
 };
 
@@ -31,21 +33,34 @@ export function useCalendar(): {
   const [state, setState] = useState<CalendarViewModel>(initialState);
   const windows = createCalendarWindows(navigate);
 
-  // Called by the calendar whenever it shows a month (also on first render),
-  // so only CalendarView triggers the API - other views just open it.
-  const onChangeMonth = async (month: Date) => {
-    setState((prev) => ({ ...prev, month, errorMessage: null }));
+  const loadEvents = async (month: Date, mode: CalendarMode) => {
+    setState((prev) => ({ ...prev, month, mode, errorMessage: null }));
     try {
-      const events = await apiClient.calendar.getEvents(month);
-      // Ignore responses for a month the user has already left.
-      setState((prev) => (prev.month === month ? { ...prev, events } : prev));
+      const events =
+        mode === 'events'
+          ? await apiClient.events.getEvents(month)
+          : await apiClient.calendar.getEvents(month);
+      // Ignore responses for a month or mode the user has already left.
+      setState((prev) =>
+        prev.month === month && prev.mode === mode ? { ...prev, events } : prev,
+      );
     } catch {
       setState((prev) =>
-        prev.month === month
+        prev.month === month && prev.mode === mode
           ? { ...prev, events: [], errorMessage: LOAD_ERROR }
           : prev,
       );
     }
+  };
+
+  // Called by the calendar whenever it shows a month (also on first render),
+  // so only CalendarView triggers the API - other views just open it.
+  const onChangeMonth = (month: Date) => loadEvents(month, state.mode);
+
+  const showMode = (mode: CalendarMode) => {
+    if (!state.month) return;
+    setState((prev) => ({ ...prev, events: [] }));
+    void loadEvents(state.month, mode);
   };
 
   return {
@@ -53,6 +68,8 @@ export function useCalendar(): {
     actions: {
       onShowCalendar: windows.showCalendarView,
       onChangeMonth: (month) => void onChangeMonth(month),
+      onShowSlots: () => showMode('slots'),
+      onShowEvents: () => showMode('events'),
       onBack: () => void navigate(HOME_PATH),
     },
   };

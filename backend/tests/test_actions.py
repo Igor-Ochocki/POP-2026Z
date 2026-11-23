@@ -112,6 +112,26 @@ def game_id(session_factory):
         session.commit()
         return game.id
 
+@pytest.fixture()
+def listed_actions(session_factory, game_id):
+    with session_factory() as session:
+        other_game = make_game()
+        actions = [
+            make_action(game_id=game_id),
+            make_action(
+                game_id=game_id,
+                name="Drink potion",
+                action_type=ActionType.USE_ITEM,
+                outcome_type=EffectKind.ADD_ITEM,
+                outcome_value="potion",
+            ),
+        ]
+        session.add_all([*actions, make_action(game=other_game)])
+        session.commit()
+
+        return [ActionSchema.model_validate(action, from_attributes=True) for action in actions]
+
+
 
 def make_game(**overrides) -> Game:
     fields = {
@@ -401,6 +421,26 @@ def test_service_get_action_for_an_unknown_id_raises_not_found(db):
         ActionsService(db).get_action("nope")
 
 
+def test_service_get_actions_list_returns_schemas_for_the_requested_game(db, game_id, listed_actions):
+    result = ActionsService(db).get_actions_list(game_id)
+
+    assert isinstance(result, list)
+    assert all(isinstance(action, ActionSchema) for action in result)
+    assert sorted(result, key=lambda action: action.action_id) == sorted(
+        listed_actions, key=lambda action: action.action_id
+    )
+
+
+def test_service_get_actions_list_returns_an_empty_list_for_a_game_without_actions(db, game_id):
+    assert ActionsService(db).get_actions_list(game_id) == []
+
+
+def test_service_get_actions_list_for_an_unknown_game_raises_not_found(db):
+    with pytest.raises(NotFoundError, match="no-such-game"):
+        ActionsService(db).get_actions_list("no-such-game")
+
+
+
 def test_service_lookup_lists_contain_the_enum_values_as_plain_strings():
     action_types = ActionsService.get_action_types()
     effect_kinds = ActionsService.get_effect_kind()
@@ -435,6 +475,32 @@ def test_api_get_action_returns_what_was_created(client, game_id):
 
     assert response.status_code == 200
     assert response.json() == created
+
+
+def test_api_get_actions_list_returns_only_the_requested_games_actions(client, game_id, listed_actions):
+    response = client.get(f"/actions/list/{game_id}")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert isinstance(body, list)
+    expected = [action.model_dump(mode="json") for action in listed_actions]
+    assert sorted(body, key=lambda action: action["action_id"]) == sorted(
+        expected, key=lambda action: action["action_id"]
+    )
+
+
+def test_api_get_actions_list_for_a_game_without_actions_returns_an_empty_list(client, game_id):
+    response = client.get(f"/actions/list/{game_id}")
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_api_get_actions_list_for_an_unknown_game_returns_404(client):
+    response = client.get("/actions/list/no-such-game")
+
+    assert response.status_code == 404
+    assert "no-such-game" in response.json()["detail"]
 
 
 def test_api_create_action_ignores_a_client_supplied_action_id(client, game_id):

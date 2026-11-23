@@ -14,6 +14,8 @@ class ICalendarApi(ABC):
     @abstractmethod
     def get_events(self, month: date) -> list[CalendarEventSchema]: ...
 
+    @abstractmethod
+    def get_payed_events(self, month: date) -> list[CalendarEventSchema]: ...
 
 router = APIRouter(prefix="/calendar", tags=["calendar"])
 
@@ -28,3 +30,11 @@ def get_events(
     service: Annotated[ICalendarService, Depends(get_calendar_service)],
 ) -> list[CalendarEventSchema]:
     return service.get_events(month)
+
+
+@router.get("/payed_events", response_model=list[CalendarEventSchema])
+def get_payed_events(
+    month: Annotated[date, Query(description="Dowolny dzień wybranego miesiąca, np. 2026-11-01")],
+    service: Annotated[ICalendarService, Depends(get_calendar_service)], 
+) -> list[CalendarEventSchema]:
+    return service.get_payed_events(month)    

@@ -3,10 +3,18 @@ from abc import ABC, abstractmethod
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import ConflictError, NotFoundError
+from app.models.enums import VictoryConditionTarget, VictoryConditionType
 from app.models.game import Game
 from app.models.scenario import Scenario
 from app.models.task import Task
-from app.schemas.scenario import ScenarioDetailSchema, TaskCreateSchema, TaskSchema
+from app.models.victory_condition import VictoryCondition
+from app.schemas.scenario import (
+    ScenarioDetailSchema,
+    TaskCreateSchema,
+    TaskSchema,
+    VictoryConditionCreateSchema,
+    VictoryConditionSchema,
+)
 
 
 class IScenariosService(ABC):
@@ -15,6 +23,18 @@ class IScenariosService(ABC):
 
     @abstractmethod
     def add_task(self, game_id: str, user_id: str, dto: TaskCreateSchema) -> TaskSchema: ...
+
+    @abstractmethod
+    def get_victory_condition_list(self, game_id: str, user_id: str) -> list[VictoryConditionSchema]: ...
+
+    @abstractmethod
+    def get_victory_condition(self, game_id: str, victory_condition_id: str, user_id: str) -> VictoryConditionSchema: ...
+
+    @abstractmethod
+    def create_victory_condition(self, game_id: str, user_id: str, dto: VictoryConditionCreateSchema) -> VictoryConditionSchema: ...
+
+    @abstractmethod
+    def edit_victory_condition(self, game_id: str, victory_condition_id: str, user_id: str, dto: VictoryConditionCreateSchema) -> VictoryConditionSchema: ...
 
 
 class ScenariosService(IScenariosService):
@@ -35,24 +55,42 @@ class ScenariosService(IScenariosService):
             reward_value=task.reward_value,
         )
 
-    @classmethod
-    def _map_to_response(cls, scenario: Scenario) -> ScenarioDetailSchema:
+    @staticmethod
+    def _map_victory_condition(condition: VictoryCondition) -> VictoryConditionSchema:
+        return VictoryConditionSchema(
+            victory_condition_id=condition.id,
+            name=condition.name,
+            target=VictoryConditionTarget(condition.target),
+            value=condition.value,
+            condition_type=VictoryConditionType(condition.condition_type),
+        )
+
+    def _map_to_response(self, scenario: Scenario) -> ScenarioDetailSchema:
+        conditions = (
+            self.db_session.query(VictoryCondition)
+            .filter(VictoryCondition.scenario_id == scenario.id)
+            .all()
+        )
         return ScenarioDetailSchema(
             scenario_id=scenario.id,
             game_id=scenario.game_id,
-            tasks=[cls._map_task(task) for task in scenario.tasks],
-            victory_conditions=[],
+            tasks=[self._map_task(task) for task in scenario.tasks],
+            victory_conditions=[self._map_victory_condition(c) for c in conditions],
         )
 
-    def _get_own_scenario(self, game_id: str, user_id: str) -> Scenario:
+    def _get_game_for_user(self, game_id: str, user_id: str) -> Game:
         game = self.db_session.get(Game, game_id)
         if game is None or game.author_id != user_id:
             raise NotFoundError(f"Game {game_id} not found")
+        return game
 
-        scenario = game.scenario
+    def _get_own_scenario(self, game_id: str, user_id: str) -> Scenario:
+        self._get_game_for_user(game_id, user_id)
+
+        scenario = self.db_session.query(Scenario).filter(Scenario.game_id == game_id).first()
         if scenario is None:
             # Gra bez scenariusza (np. zapisana przed wprowadzeniem scenariuszy) - tworzymy pusty.
-            scenario = Scenario(game_id=game.id)
+            scenario = Scenario(game_id=game_id)
             self.db_session.add(scenario)
             self.db_session.commit()
             self.db_session.refresh(scenario)
@@ -74,3 +112,69 @@ class ScenariosService(IScenariosService):
         self.db_session.commit()
         self.db_session.refresh(task)
         return self._map_task(task)
+
+    def get_victory_condition_list(self, game_id: str, user_id: str) -> list[VictoryConditionSchema]:
+        scenario = self._get_own_scenario(game_id, user_id)
+        conditions = (
+            self.db_session.query(VictoryCondition)
+            .filter(VictoryCondition.scenario_id == scenario.id)
+            .all()
+        )
+        return [self._map_victory_condition(c) for c in conditions]
+
+    def get_victory_condition(self, game_id: str, victory_condition_id: str, user_id: str) -> VictoryConditionSchema:
+        scenario = self._get_own_scenario(game_id, user_id)
+        condition = self.db_session.get(VictoryCondition, victory_condition_id)
+        if condition is None or condition.scenario_id != scenario.id:
+            raise NotFoundError(f"Victory condition {victory_condition_id} not found")
+        return self._map_victory_condition(condition)
+
+    def create_victory_condition(
+        self, game_id: str, user_id: str, dto: VictoryConditionCreateSchema
+    ) -> VictoryConditionSchema:
+        scenario = self._get_own_scenario(game_id, user_id)
+        existing = (
+            self.db_session.query(VictoryCondition)
+            .filter(VictoryCondition.scenario_id == scenario.id, VictoryCondition.condition_type == dto.condition_type)
+            .first()
+        )
+        if existing:
+            raise ConflictError(f"Victory condition of type {dto.condition_type} already exists")
+        condition = VictoryCondition(
+            scenario_id=scenario.id,
+            name=dto.name,
+            target=dto.target,
+            value=dto.value,
+            condition_type=dto.condition_type,
+        )
+        self.db_session.add(condition)
+        self.db_session.commit()
+        self.db_session.refresh(condition)
+        return self._map_victory_condition(condition)
+
+    def edit_victory_condition(
+        self, game_id: str, victory_condition_id: str, user_id: str, dto: VictoryConditionCreateSchema
+    ) -> VictoryConditionSchema:
+        scenario = self._get_own_scenario(game_id, user_id)
+        condition = self.db_session.get(VictoryCondition, victory_condition_id)
+        if condition is None or condition.scenario_id != scenario.id:
+            raise NotFoundError(f"Victory condition {victory_condition_id} not found")
+        if dto.condition_type != condition.condition_type:
+            existing = (
+                self.db_session.query(VictoryCondition)
+                .filter(
+                    VictoryCondition.scenario_id == scenario.id,
+                    VictoryCondition.condition_type == dto.condition_type,
+                    VictoryCondition.id != victory_condition_id,
+                )
+                .first()
+            )
+            if existing:
+                raise ConflictError(f"Victory condition of type {dto.condition_type} already exists")
+        condition.name = dto.name
+        condition.target = dto.target
+        condition.value = dto.value
+        condition.condition_type = dto.condition_type
+        self.db_session.commit()
+        self.db_session.refresh(condition)
+        return self._map_victory_condition(condition)

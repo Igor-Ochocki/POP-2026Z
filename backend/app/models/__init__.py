@@ -15,7 +15,9 @@ from app.models.reservation import Reservation
 from app.models.scenario import Scenario
 from app.models.task import Task
 from app.models.time_slot import TimeSlot
+from app.models.victory_condition import VictoryCondition
+from app.models.events import Event
 
 __all__: list[str] = [
-    "Action", "Game", "Message", "Payment", "Reservation", "Scenario", "Task", "TimeSlot"
+    "Action", "Game", "Message", "Payment", "Reservation", "Scenario", "Task", "TimeSlot", "VictoryCondition", "Event"
 ]

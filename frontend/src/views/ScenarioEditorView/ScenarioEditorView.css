@@ -52,6 +52,14 @@
   padding-left: 0.25rem;
 }
 
+.scenario-editor-view__condition {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
 .scenario-editor-view__list h3,
 .scenario-editor-view__list p {
   margin: 0 0 0.4rem;

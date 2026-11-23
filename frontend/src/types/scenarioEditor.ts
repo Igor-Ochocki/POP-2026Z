@@ -1,11 +1,12 @@
 import type { GameMetadataDTO } from '@app-types/game';
 import type { TaskDTO } from '@app-types/task';
+import type { VictoryConditionDTO } from '@app-types/victoryCondition';
 
 export interface ScenarioDetailDTO {
   scenarioId: string;
   gameId: string;
   tasks: TaskDTO[];
-  victoryConditions: string[];
+  victoryConditions: VictoryConditionDTO[];
 }
 
 export interface ScenarioEditorViewModel {
