@@ -34,10 +34,10 @@ class Room(Base):
 
     # room1_id -> exit_passages, room2_id -> entry_passages (przejście jest dwukierunkowe)
     exit_passages: Mapped[list["Passage"]] = relationship(
-        back_populates="from_room", foreign_keys="Passage.room1_id"
+        back_populates="from_room", foreign_keys="Passage.room1_id", cascade="all, delete-orphan"
     )
     entry_passages: Mapped[list["Passage"]] = relationship(
-        back_populates="to_room", foreign_keys="Passage.room2_id"
+        back_populates="to_room", foreign_keys="Passage.room2_id", cascade="all, delete-orphan"
     )
 
     qr_codes: Mapped[list["QrCode"]] = relationship("QrCode", back_populates="room", cascade="all, delete-orphan")

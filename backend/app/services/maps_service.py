@@ -69,22 +69,25 @@ class MapsService(IMapsService):
         return PassageSchema(
             id = p.id,
             room1_id = p.room1_id,
-            room2_id = p.room1_id,
+            room2_id = p.room2_id,
             position = PositionSchema(
                 x = p.position.x,
                 y = p.position.y,
             ),
-        ), 
+        )
 
     @staticmethod
     def _map2_passage(p: PassageSchema, map_id: str) -> Passage:
         return Passage(
-            id = p.id,
+            # id = p.id, Disallow manually setting id to prevent overwritting passages that belong to other games
             map_id = map_id,
             room1_id = p.room1_id,
             room2_id = p.room2_id,
-            position = p.position
+            position = Position(
+                x = p.position.x,
+                y = p.position.y
             )
+        )
 
 
     @staticmethod
@@ -204,10 +207,10 @@ class MapsService(IMapsService):
                 raise NotFoundError("One or more rooms not found for passage")
 
             if room1.map_id != room2.map_id:
-                raise ValidationError("A passage needs to be between rooms on the same map") #TODO: Pick a better error
+                raise ForbiddenError("A passage needs to be between rooms on the same map") #TODO: Pick a better error
 
             if room.id not in [room1.id, room2.id]:
-                raise ValidationError("The passage needs to include this room")
+                raise ForbiddenError("The passage needs to include this room")
 
         room.exit_passages = []
         room.entry_passages = []
@@ -215,9 +218,9 @@ class MapsService(IMapsService):
         for passage in passages:
             p = MapsService._map2_passage(passage, room.map_id)
 
-            if p.to_room.id == room.id:
+            if p.room2_id == room.id:
                 room.entry_passages.append(p)
-            elif p.from_room.id == room.id:
+            elif p.room1_id == room.id:
                 room.exit_passages.append(p)
 
 
