@@ -10,11 +10,11 @@ class MapContainerSchema(BaseModel):
 
 
 class MapSchema(BaseModel):
-    id: int
+    id: str
     name: str
     game_id: str
     description: str
     is_valid: bool
-    container: MapContainerSchema
+    container: MapContainerSchema | None
     rooms: list[RoomSchema]
     passages: list[PassageSchema]

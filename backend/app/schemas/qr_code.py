@@ -3,5 +3,5 @@ from pydantic import BaseModel
 from app.schemas.position import PositionSchema
 
 class QRCodeSchema(BaseModel):
-    id: int
+    id: str
     position: PositionSchema
