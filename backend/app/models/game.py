@@ -38,5 +38,9 @@ class Game(Base):
     scenario: Mapped["Scenario | None"] = relationship(
         "Scenario", back_populates="game", cascade="all, delete-orphan", uselist=False
     )
-    maps: Mapped[list["Map"]] = relationship("Map", back_populates="game", cascade="all, delete-orphan") #TODO: Sprawdź, czy ile map może mieć gra
-    inventory_items: Mapped[list["InventoryItem"]] = relationship("InventoryItem", back_populates="game", cascade="all,  delete-orphan")
+    map: Mapped["Map | None"] = relationship(
+        "Map", back_populates="game", cascade="all, delete-orphan", uselist=False
+    )
+    inventory_items: Mapped[list["InventoryItem"]] = relationship(
+        "InventoryItem", back_populates="game", cascade="all, delete-orphan"
+    )

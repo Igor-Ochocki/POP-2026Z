@@ -17,13 +17,13 @@ from app.models.room_item_claim import RoomItemClaim
 
 class IMapsService(ABC):
     @abstractmethod
-    def get_room(self, game_id: str, room_id: str, user_id: str) -> RoomSchema: ...
+    def get_room(self, game_id: str, room_id: int, user_id: str) -> RoomSchema: ...
 
     @abstractmethod
     def get_inventory_items(self, game_id: str, user_id: str) -> list[InventoryItemSchema]: ...
 
     @abstractmethod
-    def update_room(self, game_id: str, room_id: str, user_id: str, dto: RoomSchema)-> RoomSchema: ...
+    def update_room(self, game_id: str, room_id: int, user_id: str, dto: RoomSchema)-> RoomSchema: ...
 
 
 
@@ -48,7 +48,7 @@ class MapsService(IMapsService):
             height = room.height,
             passages = map(
                 MapsService._map_passages,
-                room.exit_passages + room.entry_passages,
+                room.passages,
             ),
             items = map(MapsService._map_inventory_item, map(lambda l: l.item, room.items_claimed)),
             sensors = map(
@@ -74,10 +74,11 @@ class MapsService(IMapsService):
         ), 
 
     @staticmethod
-    def _map2_passage(p: PassageSchema) -> Passage:
+    def _map2_passage(p: PassageSchema, map_id: str) -> Passage:
         p.model_validate()
         return Passage(
             id = p.id,
+            map_id = map_id,
             room1_id = p.room1_id,
             room2_id = p.room2_id,
             position = p.position
@@ -91,7 +92,7 @@ class MapsService(IMapsService):
         )
 
     @staticmethod
-    def _map2_sensor(s: SensorSchema, room_id: str) -> Sensor:
+    def _map2_sensor(s: SensorSchema, room_id: int) -> Sensor:
         s.model_validate()
         return Sensor(
             position = s.position,
@@ -106,7 +107,7 @@ class MapsService(IMapsService):
         )
 
     @staticmethod
-    def _map2_qr_code(q: QrCodeSchema, room_id: str) -> QrCode:
+    def _map2_qr_code(q: QrCodeSchema, room_id: int) -> QrCode:
         q.model_validate()
         return QrCode(
             position = q.position,
@@ -201,7 +202,7 @@ class MapsService(IMapsService):
         room.entry_passages = []
 
         for passage in passages:
-            p = MapsService._map2_passage(passage)
+            p = MapsService._map2_passage(passage, room.map_id)
 
             if p.to_room.id == room.id:
                 room.entry_passages.append(p)

@@ -6,8 +6,8 @@ class PositionSchema(BaseModel):
 
 class PassageSchema(BaseModel):
     id: int
-    room1_id: str = Field(min_length=36, max_length=36)
-    room2_id: str = Field(min_length=36, max_length=36)
+    room1_id: int
+    room2_id: int
     position: PositionSchema = Field()
 
 class SensorSchema(BaseModel):
@@ -21,8 +21,8 @@ class InventoryItemSchema(BaseModel):
     name: str = Field(max_length=32)
 
 class RoomSchema(BaseModel):
-    id: str = Field(min_length=36, max_length=36)
-    name: str = Field(max_length=64)
+    id: int
+    name: str = Field(min_length=1, max_length=100)
     description: str = Field(max_length=4096)
     hidden: bool = Field()
     zone: str = Field(max_length=64)
