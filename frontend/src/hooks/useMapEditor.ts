@@ -56,7 +56,6 @@ function createMapEditorWindows(
   };
 }
 
-
 function updateRoom(
   map: GameMapDTO,
   roomId: number,
@@ -117,10 +116,16 @@ function addPassage(
     room2Id,
     position: {
       x:
-        (room1.position.x + room1.width / 2 + room2.position.x + room2.width / 2) /
+        (room1.position.x +
+          room1.width / 2 +
+          room2.position.x +
+          room2.width / 2) /
         2,
       y:
-        (room1.position.y + room1.height / 2 + room2.position.y + room2.height / 2) /
+        (room1.position.y +
+          room1.height / 2 +
+          room2.position.y +
+          room2.height / 2) /
         2,
     },
   };
@@ -226,37 +231,52 @@ export function useMapEditor(): {
   const windows = createMapEditorWindows(setState, navigate);
 
   const loadMap = useCallback(
-    async (targetGameId: string, targetUserId: string, isCancelled: () => boolean) => {
-setState((prev) => ({
-      ...prev,
-      gameId: targetGameId,
-      selectedRoomId: null,
-      selectedPassageId: null,
-      isLoading: true,
-      isMapMissing: false,
-      errorMessage: null,
-    }));
-    try {
-      const serverMap = await apiClient.maps.getMap(targetGameId, targetUserId);
-      if (isCancelled()) return;
-      const draft = mapDraftStorage.loadDraft(targetGameId);
+    async (
+      targetGameId: string,
+      targetUserId: string,
+      isCancelled: () => boolean,
+    ) => {
       setState((prev) => ({
         ...prev,
-        map: draft ?? serverMap,
-        isLoading: false,
+        gameId: targetGameId,
+        selectedRoomId: null,
+        selectedPassageId: null,
+        isLoading: true,
         isMapMissing: false,
+        errorMessage: null,
       }));
-    } catch (err: unknown) {
-      if (isCancelled()) return;
-      const status = (err as { status?: number | null } | null)?.status;
-      if (status === 404) {
+      try {
+        const serverMap = await apiClient.maps.getMap(
+          targetGameId,
+          targetUserId,
+        );
+        if (isCancelled()) return;
         const draft = mapDraftStorage.loadDraft(targetGameId);
-        if (draft) {
+        setState((prev) => ({
+          ...prev,
+          map: draft ?? serverMap,
+          isLoading: false,
+          isMapMissing: false,
+        }));
+      } catch (err: unknown) {
+        if (isCancelled()) return;
+        const status = (err as { status?: number | null } | null)?.status;
+        if (status === 404) {
+          const draft = mapDraftStorage.loadDraft(targetGameId);
+          if (draft) {
+            setState((prev) => ({
+              ...prev,
+              map: draft,
+              isLoading: false,
+              isMapMissing: false,
+              errorMessage: null,
+            }));
+            return;
+          }
           setState((prev) => ({
             ...prev,
-            map: draft,
             isLoading: false,
-            isMapMissing: false,
+            isMapMissing: true,
             errorMessage: null,
           }));
           return;
@@ -264,18 +284,10 @@ setState((prev) => ({
         setState((prev) => ({
           ...prev,
           isLoading: false,
-          isMapMissing: true,
-          errorMessage: null,
+          isMapMissing: false,
+          errorMessage: 'Nie udało się wczytać mapy gry. Spróbuj ponownie.',
         }));
-        return;
       }
-      setState((prev) => ({
-        ...prev,
-        isLoading: false,
-        isMapMissing: false,
-        errorMessage: 'Nie udało się wczytać mapy gry. Spróbuj ponownie.',
-      }));
-    }
     },
     [],
   );
@@ -305,8 +317,7 @@ setState((prev) => ({
       await apiClient.maps.editMap({ gameId, userId: env.devUserId, map });
       try {
         mapDraftStorage.clearDraft(gameId);
-      } catch {
-      }
+      } catch {}
       setState((prev) => ({ ...prev, isSubmitting: false }));
       windows.showMapSavedMessageDialog();
     } catch {
@@ -326,7 +337,7 @@ setState((prev) => ({
   };
 
   const actions: IMapEditorActions = {
-    onOpenMapEditor: (targetGameId) => windows.showMapEditorView(targetGameId), 
+    onOpenMapEditor: (targetGameId) => windows.showMapEditorView(targetGameId),
 
     onRoomSelected: (roomId) =>
       setState((prev) => ({

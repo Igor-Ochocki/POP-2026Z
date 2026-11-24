@@ -1,35 +1,35 @@
 .sensor-definition-view {
-    max-width: 48rem;
-    margin: 0 auto;
+  max-width: 48rem;
+  margin: 0 auto;
 }
 
 .sensor-definition-view__layout {
-    align-items: center;
-    grid-template-columns: repeat(2, 1fr);
-    display: grid;
-    gap: 1.5rem;
+  align-items: center;
+  grid-template-columns: repeat(2, 1fr);
+  display: grid;
+  gap: 1.5rem;
 }
 
 .sensor-definition-view__layout > :nth-child(1),
 .sensor-definition-view__layout > :nth-child(4),
 .sensor-definition-view__layout > :nth-child(5) {
-    grid-column: 1 / -1;
+  grid-column: 1 / -1;
 }
 
 .sensor-definition-view__position-selector {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 9999;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
 }
 .sensor-definition-view__position-selector-layout {
-    grid-template-columns: repeat(2, 1fr);
-    display: grid;
-    gap: 1.5rem;
+  grid-template-columns: repeat(2, 1fr);
+  display: grid;
+  gap: 1.5rem;
 }
 
 .sensor-definition-view__position-selector-layout > :nth-child(1),
 .sensor-definition-view__position-selector-layout > :nth-child(2) {
-    grid-column: 1 / -1;
+  grid-column: 1 / -1;
 }

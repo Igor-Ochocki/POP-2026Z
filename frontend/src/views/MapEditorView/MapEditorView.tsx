@@ -40,7 +40,11 @@ interface PassageEndpoints {
 function ChoiceDialog({ title, message, choices }: ChoiceDialogProps) {
   return (
     <div className='map-editor-view__overlay' role='presentation'>
-      <div className='map-editor-view__dialog' role='alertdialog' aria-modal='true'>
+      <div
+        className='map-editor-view__dialog'
+        role='alertdialog'
+        aria-modal='true'
+      >
         <PageHeader title={title} />
         <TextLabel>{message}</TextLabel>
         <div className='map-editor-view__dialog-actions'>
@@ -60,7 +64,8 @@ function ChoiceDialog({ title, message, choices }: ChoiceDialogProps) {
 }
 
 function describeLastSave(lastSaveTime: Date | null): string {
-  if (!lastSaveTime) return 'Nie wykonano jeszcze żadnego zapisu w przeglądarce.';
+  if (!lastSaveTime)
+    return 'Nie wykonano jeszcze żadnego zapisu w przeglądarce.';
   const minutes = Math.max(
     0,
     Math.round((Date.now() - lastSaveTime.getTime()) / 60000),
@@ -89,7 +94,11 @@ function getChoiceDialogs(
         'Możesz wrócić do edycji albo zapisać mapę jako niepoprawną - nie będzie ' +
         'można opublikować gry, dopóki mapa nie zostanie poprawiona.',
       choices: [
-        { label: 'Wróć do edycji', variant: 'secondary', onClick: actions.onReturnToEditing },
+        {
+          label: 'Wróć do edycji',
+          variant: 'secondary',
+          onClick: actions.onReturnToEditing,
+        },
         { label: 'Zapisz i wyjdź', onClick: actions.onSaveAsInvalid },
       ],
     },
@@ -120,7 +129,6 @@ function getChoiceDialogs(
 
 const clamp = (value: number, min: number, max: number) =>
   Math.max(min, Math.min(value, max));
-
 
 function getPassageEndpoints(
   passage: PassageDTO,
@@ -191,7 +199,9 @@ export function MapEditorView() {
       ? choiceDialogs[state.dialogType]
       : null;
 
-  const toSvgPoint = (e: React.PointerEvent<SVGElement>): PositionDTO | null => {
+  const toSvgPoint = (
+    e: React.PointerEvent<SVGElement>,
+  ): PositionDTO | null => {
     const svg = svgRef.current;
     const matrix = svg?.getScreenCTM();
     if (!svg || !matrix) return null;
@@ -219,7 +229,8 @@ export function MapEditorView() {
       if (!point || !offset || selectedRoomId !== room.id) return;
 
       const rect = svgRef.current?.getBoundingClientRect();
-      const pxPerUnit = rect && container.width ? rect.width / container.width : 1;
+      const pxPerUnit =
+        rect && container.width ? rect.width / container.width : 1;
 
       actions.onSelectedRoomChange({
         position: resolveRoomDrag(
@@ -231,7 +242,10 @@ export function MapEditorView() {
         ),
       });
     },
-    startPassageDrag: (e: React.PointerEvent<SVGElement>, passage: PassageDTO) => {
+    startPassageDrag: (
+      e: React.PointerEvent<SVGElement>,
+      passage: PassageDTO,
+    ) => {
       const point = toSvgPoint(e);
       if (!point) return;
       e.currentTarget.setPointerCapture(e.pointerId);
@@ -324,7 +338,10 @@ export function MapEditorView() {
             >
               <defs>
                 {map.rooms.map((room) => (
-                  <clipPath key={`clip-room-${room.id}`} id={`room-clip-${room.id}`}>
+                  <clipPath
+                    key={`clip-room-${room.id}`}
+                    id={`room-clip-${room.id}`}
+                  >
                     <rect
                       x={room.position.x}
                       y={room.position.y}
@@ -447,7 +464,10 @@ export function MapEditorView() {
                       <text
                         className='map-editor-view__room-label'
                         x={room.position.x + paddingX}
-                        y={room.position.y + Math.min(20, Math.max(14, room.height - 6))}
+                        y={
+                          room.position.y +
+                          Math.min(20, Math.max(14, room.height - 6))
+                        }
                         textLength={
                           maxTextWidth > 0 && shouldShrink
                             ? maxTextWidth
@@ -512,7 +532,9 @@ export function MapEditorView() {
                     type: 'number',
                     value: container.width,
                     onChange: (e) =>
-                      actions.onContainerChange({ width: Number(e.target.value) }),
+                      actions.onContainerChange({
+                        width: Number(e.target.value),
+                      }),
                   }}
                 />
                 <InputField
@@ -521,7 +543,9 @@ export function MapEditorView() {
                     type: 'number',
                     value: container.height,
                     onChange: (e) =>
-                      actions.onContainerChange({ height: Number(e.target.value) }),
+                      actions.onContainerChange({
+                        height: Number(e.target.value),
+                      }),
                   }}
                 />
               </FormSection>
@@ -552,7 +576,9 @@ export function MapEditorView() {
                       inputProps={{
                         value: selectedRoom.name,
                         onChange: (e) =>
-                          actions.onSelectedRoomChange({ name: e.target.value }),
+                          actions.onSelectedRoomChange({
+                            name: e.target.value,
+                          }),
                       }}
                     />
                     <InputField
@@ -587,7 +613,10 @@ export function MapEditorView() {
                           }),
                       }}
                     />
-                    <Button variant='outline' onClick={actions.onEditSelectedRoom}>
+                    <Button
+                      variant='outline'
+                      onClick={actions.onEditSelectedRoom}
+                    >
                       Edytuj komnatę
                     </Button>
                   </FormSection>
@@ -612,7 +641,9 @@ export function MapEditorView() {
                   </FormSection>
                 </>
               ) : (
-                <TextLabel>Wybierz komnatę, aby ją edytować lub połączyć.</TextLabel>
+                <TextLabel>
+                  Wybierz komnatę, aby ją edytować lub połączyć.
+                </TextLabel>
               )}
             </div>
           </div>

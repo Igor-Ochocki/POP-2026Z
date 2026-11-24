@@ -20,7 +20,6 @@
   user-select: none;
 }
 
-
 .map-editor-view__container {
   fill: color-mix(in srgb, var(--color-surface) 35%, transparent);
   stroke: var(--color-border);

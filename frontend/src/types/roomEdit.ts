@@ -63,11 +63,7 @@ export interface RoomEditViewModel {
 }
 
 export type RoomDataValue =
-  | string
-  | boolean
-  | AccessRestriction
-  | InventoryItemDTO[]
-  | PositionDTO[];
+  string | boolean | AccessRestriction | InventoryItemDTO[] | PositionDTO[];
 
 export interface IRoomEditActions {
   onEditRoom(gameId: string, roomId: number): void;

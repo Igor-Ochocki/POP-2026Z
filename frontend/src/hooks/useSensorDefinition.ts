@@ -56,7 +56,11 @@ async function loadGameMap(setState: SetState, gameId: string) {
 }
 
 function isSensorDataValid(state: SensorDefinitionViewModel): boolean {
-  return !(state.selectedAction === '' || state.selectedType === '' || state.selectedPosition === null);
+  return !(
+    state.selectedAction === '' ||
+    state.selectedType === '' ||
+    state.selectedPosition === null
+  );
 }
 
 function createSensorDefinitionWindows(
@@ -122,7 +126,7 @@ export function useSensorDefinition(): {
       onOpenPositionSelector: () => windows.showSensorPositionSelector(),
       onSensorSubmit: async () => {
         if (!isSensorDataValid(state)) {
-          windows.showDataErrorDialog()
+          windows.showDataErrorDialog();
           return;
         }
         // @ts-ignore
@@ -131,11 +135,10 @@ export function useSensorDefinition(): {
           position: state.selectedPosition,
           type: state.selectedType,
         };
-        apiClient.sensors.addSensor(state.gameId, state.roomId, sensor).then(
-          windows.showSaveSuccessDialog
-        ).catch(
-          windows.showSaveErrorDialog
-        )
+        apiClient.sensors
+          .addSensor(state.gameId, state.roomId, sensor)
+          .then(windows.showSaveSuccessDialog)
+          .catch(windows.showSaveErrorDialog);
       },
       onCreateSensorCancel: () => {
         /*const { actions } = useRoomEdit();

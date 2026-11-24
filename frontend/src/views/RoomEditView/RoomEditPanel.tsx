@@ -99,7 +99,10 @@ export function RoomEditPanel({
       y: Math.floor(room.height / 2),
     };
     const markers = markersOf(kind);
-    onChangeRoomData(kind, [...markers.map((marker) => marker.position), centre]);
+    onChangeRoomData(kind, [
+      ...markers.map((marker) => marker.position),
+      centre,
+    ]);
     setSelected({ kind, index: markers.length });
   };
 
@@ -145,9 +148,7 @@ export function RoomEditPanel({
             placeholder='Nazwa komnaty'
             required
             error={room.name.trim().length === 0}
-            onChange={(event) =>
-              onChangeRoomData('name', event.target.value)
-            }
+            onChange={(event) => onChangeRoomData('name', event.target.value)}
           />
         </label>
 
@@ -193,10 +194,7 @@ export function RoomEditPanel({
             );
             const unavailable = !isAvailable(item.itemId);
             return (
-              <label
-                key={item.itemId}
-                className='room-edit-panel__checkbox'
-              >
+              <label key={item.itemId} className='room-edit-panel__checkbox'>
                 <input
                   type='checkbox'
                   checked={checked}

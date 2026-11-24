@@ -28,7 +28,6 @@ export const effectKindLabels: Record<EffectKind, string> = {
   startMiniGame: 'rozpoczęcie minigry',
 };
 
-
 export interface ActionCreateDTO {
   gameId: string;
   name: string;

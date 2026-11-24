@@ -1,5 +1,5 @@
 import type { AxiosInstance } from 'axios';
-import type { SensorDTO} from '@/types/sensor.ts';
+import type { SensorDTO } from '@/types/sensor.ts';
 import type { PositionDTO } from '@/types/map.ts';
 
 export interface ISensorsApi {
@@ -11,11 +11,10 @@ export interface ISensorsApi {
   ): Promise<SensorDTO>;
 }
 
-
 interface SensorCreatePayload {
   type: string;
   action: string;
-  position: PositionDTO
+  position: PositionDTO;
 }
 
 interface SensorResponsePayload extends SensorCreatePayload {
@@ -35,15 +34,11 @@ const fromResponsePayload = (data: SensorResponsePayload): SensorDTO => ({
 });
 
 export const createSensorsApi = (http: AxiosInstance): ISensorsApi => ({
-  addSensor: async (
-    gameId: string,
-    userId: string,
-    sensor: SensorDTO,
-  ) => {
+  addSensor: async (gameId: string, userId: string, sensor: SensorDTO) => {
     const { data } = await http.post<SensorResponsePayload>(
       '/games/sensor/add',
       toCreatePayload(sensor),
-      { params: { user_id: userId, game_id: gameId} },
+      { params: { user_id: userId, game_id: gameId } },
     );
     return fromResponsePayload(data);
   },

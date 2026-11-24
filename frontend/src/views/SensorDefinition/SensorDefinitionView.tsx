@@ -84,41 +84,41 @@ function SensorPositionSelector({
             {state.gameMap.passages
               .filter((p) => p.room1Id === room.id || p.room2Id === room.id)
               .map((passage) => {
-              const nearTop = passage.position.y < 36;
-              const nearRight = passage.position.x > room.width - 140;
+                const nearTop = passage.position.y < 36;
+                const nearRight = passage.position.x > room.width - 140;
 
-              const textY = nearTop ? 28 : -14;
-              const textX = nearRight ? -8 : 12;
-              const anchor: 'start' | 'end' = nearRight ? 'end' : 'start';
+                const textY = nearTop ? 28 : -14;
+                const textX = nearRight ? -8 : 12;
+                const anchor: 'start' | 'end' = nearRight ? 'end' : 'start';
 
-              return (
-                <g
-                  key={passage.id}
-                  transform={`translate(${passage.position.x}, ${passage.position.y})`}
-                >
-                  <circle r={10} fill='#2563eb' />
-                  <text
-                    x={textX}
-                    y={textY}
-                    textAnchor={anchor}
-                    fontSize={24}
-                    fill='#1e3a8a'
-                    style={{ pointerEvents: 'none', userSelect: 'none' }}
+                return (
+                  <g
+                    key={passage.id}
+                    transform={`translate(${passage.position.x}, ${passage.position.y})`}
                   >
-                    Przejście do:{' '}
-                    {
-                      state.gameMap.rooms.find(
-                        (r) =>
-                          r.id ===
-                          (passage.room1Id === Number(state.roomId)
-                            ? passage.room2Id
-                            : passage.room1Id),
-                      )?.name
-                    }
-                  </text>
-                </g>
-              );
-            })}
+                    <circle r={10} fill='#2563eb' />
+                    <text
+                      x={textX}
+                      y={textY}
+                      textAnchor={anchor}
+                      fontSize={24}
+                      fill='#1e3a8a'
+                      style={{ pointerEvents: 'none', userSelect: 'none' }}
+                    >
+                      Przejście do:{' '}
+                      {
+                        state.gameMap.rooms.find(
+                          (r) =>
+                            r.id ===
+                            (passage.room1Id === Number(state.roomId)
+                              ? passage.room2Id
+                              : passage.room1Id),
+                        )?.name
+                      }
+                    </text>
+                  </g>
+                );
+              })}
             {circlePos && (
               <g transform={`translate(${circlePos.x}, ${circlePos.y})`}>
                 <circle r={8} fill='red' />
@@ -190,9 +190,9 @@ export function SensorDefinitionView() {
           <DropdownField
             label={'Akcja'}
             options={state.actions.map((v) => v.name)}
-            onOptionSelected={(e) =>{
-              const a = state.actions.find((v)=>v.name === e)
-              actions.onChangeParameter('selectedAction', a?.actionId)
+            onOptionSelected={(e) => {
+              const a = state.actions.find((v) => v.name === e);
+              actions.onChangeParameter('selectedAction', a?.actionId);
             }}
           />
           <Button variant={'secondary'} onClick={actions.onCreateSensorCancel}>

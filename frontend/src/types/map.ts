@@ -25,7 +25,7 @@ export interface MapContainerDTO {
 }
 
 export interface GameMapDTO {
-  id: number; 
+  id: number;
   name: string;
   description: string;
   container: MapContainerDTO;
@@ -41,10 +41,7 @@ export interface MapSaveDTO {
 }
 
 export type MapEditorDialogTypes =
-  | 'mapSaved'
-  | 'incorrectMapData'
-  | 'saveError'
-  | 'browserSaveError';
+  'mapSaved' | 'incorrectMapData' | 'saveError' | 'browserSaveError';
 
 export interface MapEditorViewModel {
   gameId: string;
@@ -54,7 +51,7 @@ export interface MapEditorViewModel {
   isAutoSaveEnabled: boolean;
   lastSaveTime: Date | null;
   isSubmitting: boolean;
-  dialogType: MapEditorDialogTypes | null;  
+  dialogType: MapEditorDialogTypes | null;
   isLoading: boolean;
   isMapMissing: boolean;
   errorMessage: string | null;

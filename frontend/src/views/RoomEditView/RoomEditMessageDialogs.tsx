@@ -4,7 +4,9 @@ interface RoomEditMessageDialogProps {
   onClosed: () => void;
 }
 
-export function RoomSavedMessageDialog({ onClosed }: RoomEditMessageDialogProps) {
+export function RoomSavedMessageDialog({
+  onClosed,
+}: RoomEditMessageDialogProps) {
   return (
     <MessageDialog
       title='Komnata zapisana'
