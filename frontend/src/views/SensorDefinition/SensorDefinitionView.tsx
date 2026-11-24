@@ -81,7 +81,9 @@ function SensorPositionSelector({
               strokeWidth={2}
             />
 
-            {room.passages.map((passage) => {
+            {state.gameMap.passages
+              .filter((p) => p.room1Id === room.id || p.room2Id === room.id)
+              .map((passage) => {
               const nearTop = passage.position.y < 36;
               const nearRight = passage.position.x > room.width - 140;
 

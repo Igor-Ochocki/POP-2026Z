@@ -25,6 +25,11 @@ class ConflictError(AppError):
 
     status_code = 409
 
+class UnprocessableContentError(AppError):
+    """Zapytanie poprawne, ale serwer i tak nie był w stanie go obslużyć"""
+
+    status_code = 422
+
 
 async def app_error_handler(_: Request, exc: AppError) -> JSONResponse:
     return JSONResponse(status_code=exc.status_code, content={"detail": str(exc)})

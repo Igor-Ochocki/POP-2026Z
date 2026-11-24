@@ -6,6 +6,8 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.schemas.game import GameCreateSchema, GameResponseSchema
+from app.schemas.map import MapSchema
+from app.schemas.sensor import SensorSchema
 from app.services.games_service import GamesService, IGamesService
 
 
@@ -27,6 +29,18 @@ class IGamesApi(ABC):
 
     @abstractmethod
     def submit_to_reviewer(self, game_id: str, user_id: str) -> bool: ...
+
+    @abstractmethod
+    def get_map(self, game_id: str, user_id: str) -> MapSchema: ...
+
+    @abstractmethod
+    def edit_map(self, game_id: str, user_id: str, data: MapSchema) -> MapSchema: ...
+
+    @abstractmethod
+    def get_sensor_types(self) -> list[str]: ...
+
+    @abstractmethod
+    def add_sensor(self, game_id: str, user_id: str, room_id: int, data: SensorSchema) -> SensorSchema: ...
 
 
 router = APIRouter(prefix="/games", tags=["games"])
@@ -53,6 +67,13 @@ def get_game_tags(
     service: Annotated[IGamesService, Depends(get_games_service)],
 ) -> list[str]:
     return service.get_game_tags()
+
+
+@router.get("/sensor_types", response_model=list[str])
+def get_sensor_types(
+    service: Annotated[IGamesService, Depends(get_games_service)],
+) -> list[str]:
+    return service.get_sensor_types()
 
 
 @router.get("/{game_id}", response_model=GameResponseSchema)
@@ -93,3 +114,29 @@ def submit_to_reviewer(
 ) -> bool:
     return service.submit_to_reviewer(game_id, user_id)
 
+@router.get("/{game_id}/map", response_model=MapSchema)
+def get_map(
+    game_id: str,
+    user_id: str,
+    service: Annotated[IGamesService, Depends(get_games_service)],
+) -> MapSchema:
+    return service.get_map(game_id, user_id)
+
+@router.post("/{game_id}/map/edit", response_model=MapSchema)
+def edit_map(
+    game_id: str,
+    user_id: str,
+    data: MapSchema,
+    service: Annotated[IGamesService, Depends(get_games_service)],
+) -> MapSchema:
+    return service.edit_map(game_id, user_id, data)
+
+@router.put("/{game_id}/sensor/add", response_model=SensorSchema)
+def add_sensor(
+    game_id: str,
+    user_id: str,
+    room_id: int,
+    data: SensorSchema,
+    service: Annotated[IGamesService, Depends(get_games_service)],
+) -> SensorSchema:
+    return service.add_sensor(game_id, user_id, room_id, data)

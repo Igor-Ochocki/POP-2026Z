@@ -7,6 +7,7 @@ from app.api.v1.controllers import scenarios_controller
 from app.api.v1.controllers import calendar_controller
 from app.api.v1.controllers import reservations_controller
 from app.api.v1.controllers import events_controller
+from app.api.v1.controllers import maps_controller
 
 # Register every new controller here.
 api_router = APIRouter(prefix="/api/v1")
@@ -17,3 +18,4 @@ api_router.include_router(scenarios_controller.router)
 api_router.include_router(calendar_controller.router)
 api_router.include_router(reservations_controller.router)
 api_router.include_router(events_controller.router)
+api_router.include_router(maps_controller.router)

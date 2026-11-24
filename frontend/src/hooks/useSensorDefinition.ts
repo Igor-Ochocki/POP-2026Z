@@ -19,11 +19,15 @@ const initialState: SensorDefinitionViewModel = {
   selectedAction: '',
   selectedType: '',
   gameMap: {
+    id: 0,
+    name: '',
+    description: '',
     container: {
       width: 800,
       height: 600,
     },
     rooms: [],
+    passages: [],
     isValid: false,
   },
   positionSelectorOpen: false,

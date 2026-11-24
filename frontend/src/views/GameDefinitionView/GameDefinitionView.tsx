@@ -17,6 +17,7 @@ import { useActionDefinition } from '@hooks/useActionDefinition';
 import { useCreatorPanel } from '@hooks/useCreatorPanel';
 import { useGameDefinition } from '@hooks/useGameDefinition';
 import { useGameList } from '@hooks/useGameList';
+import { useMapEditor } from '@hooks/useMapEditor';
 import { useScenarioEditor } from '@hooks/useScenarioEditor';
 import type { ICreatorPanelActions } from '@app-types/creatorPanel';
 import type {
@@ -84,6 +85,7 @@ function getDialogs(
 export function GameDefinitionView() {
   const { state, actions } = useGameDefinition();
   const { actions: actionDefinitionActions } = useActionDefinition();
+  const { actions: mapEditorActions } = useMapEditor();
   const {
     actions: { onDisplayActionsSelect },
   } = useDisplayActions();
@@ -149,11 +151,19 @@ export function GameDefinitionView() {
                   : undefined
               }
             />
-            {/* TODO: enable once PU60 is implemented */}
             <ActionTile
               icon={<MapOutlinedIcon />}
               title='Edytuj mapę gry'
-              description='Komnaty i rozmieszczenie elementów'
+              description={
+                game?.gameId
+                  ? 'Komnaty i rozmieszczenie elementów'
+                  : 'Zapisz grę, aby otworzyć jej mapę'
+              }
+              onClick={
+                game?.gameId
+                  ? () => mapEditorActions.onOpenMapEditor(game.gameId)
+                  : undefined
+              }
             />
             <ActionTile
               icon={<BoltOutlinedIcon />}
