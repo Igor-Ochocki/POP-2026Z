@@ -635,10 +635,10 @@ package "Presenter" as P {
 }
 
 package "API proxy" as A {
-    () "ISensorsApi" as IA_Sensors
+    () "IGamesApi" as IA_Sensors
     () "IMapsApi" as IA_Maps
     () "IActionsApi" as IA_Actions
-    component [sensorsApi] as A_Sensors
+    component [gamesApi] as A_Sensors
     component [mapsApi] as A_Maps
     component [actionsApi] as A_Actions
     IA_Sensors -- A_Sensors
@@ -702,7 +702,6 @@ package "API proxy" as A {
     () "IActionsApi" as IA_Actions
     () "IScenariosApi" as IA_Scenarios
     () "IMapsApi" as IA_Maps
-    () "ISensorsApi" as IA_Sensors
     () "IMapDraftStorage" as IA_Draft
 
     component [calendarApi] as A_Calendar
@@ -712,7 +711,6 @@ package "API proxy" as A {
     component [actionsApi] as A_Actions
     component [scenariosApi] as A_Scenarios
     component [mapsApi] as A_Maps
-    component [sensorsApi] as A_Sensors
     component [mapDraftStorage] as A_Draft
     component [httpClient] as A_Http
 

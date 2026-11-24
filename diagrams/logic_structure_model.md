@@ -78,7 +78,7 @@ end note
 note right of BE
     Porty REST mają te same nazwy co porty API frontendu
     (IGamesApi, IScenariosApi, IActionsApi, ICalendarApi, IReservationsApi,
-    IMapsApi, ISensorsApi, IEventsApi).
+    IMapsApi, IEventsApi).
     Błędy domenowe (AppError) mapuje jeden handler.
 end note
 @enduml

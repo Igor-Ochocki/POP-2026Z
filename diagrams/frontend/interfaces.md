@@ -28,7 +28,6 @@ class apiClient <<facade>> {
     + actions: IActionsApi
     + scenarios: IScenariosApi
     + maps: IMapsApi
-    + sensors: ISensorsApi
 }
 class httpClient <<AxiosInstance>> {
     baseURL = VITE_API_URL + /api/v1
@@ -280,6 +279,8 @@ package "API" as A {
         + submitToReviewer(gameId: string, userId: string): Promise<boolean>
         + getGames(userId: string, tags: string[*], limit: number, offset: number): Promise<GameMetadataDTO[*]>
         + getGameTags(): Promise<string[*]>
+        + getSensorTypes(): Promise<string[*]>
+        + addSensor(gameId: string, userId: string, sensor: sensor.SensorDTO): Promise<sensor.SensorDTO>
     }
 }
 
@@ -694,10 +695,7 @@ package "API" as A {
         + getInventoryItems(gameId: string, userId: string): Promise<InventoryItemDTO[*]>
         + updateRoom(gameId: string, roomId: number, userId: string, room: roomEdit.RoomDTO): Promise<roomEdit.RoomDTO>
     }
-    interface ISensorsApi <<interface>> {
-        + getSensorTypes(): Promise<string[*]>
-        + addSensor(gameId: string, userId: string, sensor: sensor.SensorDTO): Promise<sensor.SensorDTO>
-    }
+    interface IGamesApi <<interface>> {}
     interface IMapDraftStorage <<interface>> {
         + saveDraft(gameId: string, map: GameMapDTO): void
         + loadDraft(gameId: string): GameMapDTO | null
@@ -790,7 +788,7 @@ EditRoom *-- "*" EditSensor
 EditRoom *-- "*" QrCodeDTO
 IMapsApi ..> GameMapDTO
 IMapsApi ..> EditRoom
-ISensorsApi ..> SensorDef
+IGamesApi ..> SensorDef
 IMapDraftStorage ..> GameMapDTO
 
 note bottom of IMapDraftStorage
