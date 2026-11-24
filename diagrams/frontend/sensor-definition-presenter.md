@@ -57,7 +57,7 @@ class SensorDTO <<DTO>> {
     + position: PositionDTO
 }
 
-interface ISensorsApi <<interface>> {
+interface IGamesApi <<interface>> {
     + getSensorTypes(): Promise<string[]>
     + addSensor(gameId: string, userId: string, sensor: SensorDTO): Promise<SensorDTO>
 }
@@ -66,7 +66,7 @@ interface IActionsApi <<interface>>
 useSensorDefinition .u.|> SensorDefinitionActions
 useSensorDefinition -u-> ISensorDefinitionWindows
 useSensorDefinition *-- "1" SensorDefinitionViewModel : state
-useSensorDefinition --> ISensorsApi
+useSensorDefinition --> IGamesApi
 useSensorDefinition --> IActionsApi
 ISensorsApi ..> SensorDTO
 
