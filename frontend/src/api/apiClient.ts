@@ -5,7 +5,6 @@ import { createCalendarApi } from '@api/modules/calendarApi';
 import { createActionsApi } from '@api/modules/actionsApi';
 import { createReservationsApi } from '@api/modules/reservationsApi';
 import { createScenariosApi } from '@api/modules/scenariosApi';
-import { createSensorsApi } from '@api/modules/sensorsApi.ts';
 import { createMapsApi } from '@api/modules/mapsApi';
 import { createEventsApi } from '@api/modules/eventsApi';
 
@@ -18,7 +17,6 @@ export const apiClient = {
   actions: createActionsApi(httpClient),
   reservations: createReservationsApi(httpClient),
   scenarios: createScenariosApi(httpClient),
-  sensors: createSensorsApi(httpClient),
   maps: createMapsApi(httpClient),
   events: createEventsApi(httpClient),
 };

@@ -7,6 +7,8 @@ import type {
 import React, { useState } from 'react';
 import { type NavigateFunction, useNavigate, useParams } from 'react-router';
 import { apiClient } from '@api/apiClient.ts';
+import { useRoomEdit } from './useRoomEdit';
+import { env } from '@config/env';
 
 type SetState = React.Dispatch<React.SetStateAction<SensorDefinitionViewModel>>;
 
@@ -38,7 +40,7 @@ const initialState: SensorDefinitionViewModel = {
 
 async function loadSensorTypes(setState: SetState) {
   try {
-    const sensorTypes = await apiClient.sensors.getSensorTypes();
+    const sensorTypes = await apiClient.games.getSensorTypes();
     setState((prev) => ({ ...prev, sensorTypes }));
   } catch {
     setState((prev) => ({ ...prev, sensorTypes: ['default'] }));
@@ -51,8 +53,8 @@ async function loadActions(setState: SetState, gameId: string) {
 }
 
 async function loadGameMap(setState: SetState, gameId: string) {
-  /*const gameMap = await apiClient.mapsApi.getMap(gameId);
-  setState((prev) => ({ ...prev, gameMap }));*/
+  const gameMap = await apiClient.maps.getMap(gameId, env.devUserId);
+  setState((prev) => ({ ...prev, gameMap }));
 }
 
 function isSensorDataValid(state: SensorDefinitionViewModel): boolean {
@@ -92,9 +94,12 @@ export function useSensorDefinition(): {
   state: SensorDefinitionViewModel;
   actions: SensorDefinitionActions;
 } {
-  const { gameId, roomId } = useParams();
-  if (gameId === undefined || roomId === undefined) {
+  var { gameId, roomId } = useParams();
+  if (gameId === undefined) {
     throw 'useSensorDefinition used outside of path with no gameId or roomId';
+  }
+  if (roomId === undefined) {
+      roomId = "0"
   }
 
   const [state, setState] = useState<SensorDefinitionViewModel>({
@@ -116,11 +121,12 @@ export function useSensorDefinition(): {
     actions: {
       onChangeParameter: (field: string, value: any) =>
         setState((prev) => ({ ...prev, [field]: value })),
-      onCreateSensor: () => {
+      onCreateSensor: (gameId: string) => {
         Promise.all([
+          setState({...state, gameId}),
           loadSensorTypes(setState),
-          loadActions(setState, state.gameId),
-          loadGameMap(setState, state.gameId),
+          loadActions(setState, gameId),
+          loadGameMap(setState, gameId),
         ]).then(windows.showSensorDefinitionView);
       },
       onOpenPositionSelector: () => windows.showSensorPositionSelector(),
@@ -135,14 +141,14 @@ export function useSensorDefinition(): {
           position: state.selectedPosition,
           type: state.selectedType,
         };
-        apiClient.sensors
+        apiClient.games
           .addSensor(state.gameId, state.roomId, sensor)
           .then(windows.showSaveSuccessDialog)
           .catch(windows.showSaveErrorDialog);
       },
       onCreateSensorCancel: () => {
-        /*const { actions } = useRoomEdit();
-        actions.onEditRoom(Number(state.gameId), Number(state.roomId));*/
+        const { actions } = useRoomEdit();
+        actions.onEditRoom(state.gameId, Number(state.roomId));
       },
     },
   };

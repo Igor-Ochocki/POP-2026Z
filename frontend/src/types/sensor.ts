@@ -32,7 +32,7 @@ export interface ISensorDefinitionWindows {
 
 export interface SensorDefinitionActions {
   onChangeParameter(field: string, value: any): void;
-  onCreateSensor(): void;
+  onCreateSensor(gameId: string): void;
   onOpenPositionSelector(): void;
   onSensorSubmit(): void;
   onCreateSensorCancel(): void;

@@ -30,6 +30,7 @@ import type { IGameListActions } from '@app-types/gameList';
 import { GameParametersPanel } from './GameParametersPanel';
 import './GameDefinitionView.css';
 import { useDisplayActions } from '@hooks/useDisplayActions';
+import { useSensorDefinition } from '@hooks/useSensorDefinition';
 
 function describeGame(game: GameMetadataDTO): string {
   return [
@@ -94,6 +95,7 @@ export function GameDefinitionView() {
   const scenarioEditor = useScenarioEditor();
   const game = state.activeGame;
   const canSave = game !== null && !state.isSubmitting;
+  const sensorDefinition = useSensorDefinition()
   const dialog = state.dialogType
     ? getDialogs(actions, creatorPanel.actions, gameList.actions)[
         state.dialogType
@@ -184,6 +186,9 @@ export function GameDefinitionView() {
               icon={<SensorsOutlinedIcon />}
               title='Dodaj nowy czujnik'
               description='Czujniki wyzwalające akcje w grze'
+              onClick={
+                  game?.gameId ? () => sensorDefinition.actions.onCreateSensor(game.gameId): undefined
+              }
             />
             <ActionTile
               icon={<ListIcon />}

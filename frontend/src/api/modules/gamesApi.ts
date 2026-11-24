@@ -5,6 +5,9 @@ import type {
   GameResponseDTO,
 } from '@app-types/game';
 
+import type { SensorDTO } from '@app-types/sensor';
+import type { PositionDTO } from '@app-types/roomEdit';
+
 export interface IGamesApi {
   getGame(gameId: string, userId: string): Promise<GameResponseDTO>;
   saveGame(
@@ -26,6 +29,12 @@ export interface IGamesApi {
     offset: number,
   ): Promise<GameMetadataDTO[]>;
   getGameTags(): Promise<string[]>;
+  getSensorTypes(): Promise<string[]>;
+  addSensor(
+    gameId: string,
+    userId: string,
+    sensor: SensorDTO,
+  ): Promise<SensorDTO>;
 }
 
 // Backend payloads (GameCreateSchema / GameResponseSchema) - snake_case stays inside this module.
@@ -64,6 +73,28 @@ const fromResponsePayload = (data: GameResponsePayload): GameResponseDTO => ({
   requiresInvitation: data.requires_invitation,
   tags: data.tags,
   status: data.status,
+});
+
+interface SensorCreatePayload {
+  type: string;
+  action: string;
+  position: PositionDTO;
+}
+
+interface SensorResponsePayload extends SensorCreatePayload {
+  id: string;
+}
+
+const toCreateSensorPayload = (dto: SensorDTO): SensorCreatePayload => ({
+  type: dto.type,
+  action: dto.action,
+  position: dto.position,
+});
+
+const fromSensorResponsePayload = (data: SensorResponsePayload): SensorDTO => ({
+  type: data.type,
+  action: data.action,
+  position: data.position,
 });
 
 export const createGamesApi = (http: AxiosInstance): IGamesApi => ({
@@ -113,5 +144,19 @@ export const createGamesApi = (http: AxiosInstance): IGamesApi => ({
   getGameTags: async () => {
     const { data } = await http.get<string[]>('/games/tags');
     return data;
+  },
+
+  getSensorTypes: async () => {
+    const { data } = await http.get<string[]>('/games/sensor_types');
+    return data;
+  },
+
+  addSensor: async (gameId: string, userId: string, sensor: SensorDTO) => {
+    const { data } = await http.post<SensorResponsePayload>(
+      `/games/${gameId}/sensor/add`,
+      toCreateSensorPayload(sensor),
+      { params: { user_id: userId, game_id: gameId } },
+    );
+    return fromSensorResponsePayload(data);
   },
 });
