@@ -200,11 +200,13 @@ package "Wydarzenia (PU46)" as P_Events {
     }
 
     interface IEventsApi <<interface>> {
+        + getEvents(month: Date): Promise<CalendarEventDTO[*]>
         + getEvent(reservId: string): Promise<EventDTO>
         + joinEvent(reservId: string, userId: string): Promise<EventDTO>
     }
 
     IEventsApi ..> EventDTO
+    IEventsApi ..> CalendarEventDTO
 }
 
 package "Mapa, komnaty i czujniki (PU60, PU59, PU35, PU50)" as P_Maps {
