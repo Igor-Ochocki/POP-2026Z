@@ -10,6 +10,7 @@ import { GameListView } from '@views/GameListView/GameListView';
 import { NewTaskView } from '@views/NewTaskView/NewTaskView';
 import { ScenarioEditorView } from '@views/ScenarioEditorView/ScenarioEditorView';
 import { ReservationView } from '@views/ReservationView/ReservationView';
+import { SensorDefinitionView } from '@views/SensorDefinition/SensorDefinitionView.tsx';
 import {MapEditorView} from '@views/MapEditorView/MapEditorView'
 import { VictoryConditionView } from '@views/VictoryConditionView/VictoryConditionView';
 import { DisplayActionsView } from '@views/DisplayActionsView/DisplayActionsView';
@@ -55,6 +56,10 @@ export const router = createBrowserRouter([
       {
         path: 'creator/games/:gameId/map/rooms/:roomId',
         element: <RoomEditView />,
+      },
+      {
+        path: 'creator/games/:gameId/map/rooms/:roomId/add-sensor',
+        element: <SensorDefinitionView />,
       },
       { path: '*', element: <NotFoundView /> },
     ],
