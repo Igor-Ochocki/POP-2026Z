@@ -13,8 +13,10 @@ hide empty members
 
 title PU46 Dołączenie do wydarzenia - widok
 
-class EventListView <<View>> {
-    + onJoinClick(event: EventDTO)
+class CalendarView <<View>>
+
+class EventJoinDialogs <<View>> {
+    + onMessageClosed()
 }
 
 class ConfirmDialog {
@@ -27,12 +29,14 @@ class MessageDialog {
 
 class EventJoinConfirmDialog
 class EventJoinedMessageDialog
+class AlreadyJoinedMessageDialog
 class EventFullMessageDialog
 class EventUnavailableMessageDialog
 class AccountBlockedMessageDialog
 
 EventJoinConfirmDialog -u-|> ConfirmDialog
 EventJoinedMessageDialog -u-|> MessageDialog
+AlreadyJoinedMessageDialog -u-|> MessageDialog
 EventFullMessageDialog -u-|> MessageDialog
 EventUnavailableMessageDialog -u-|> MessageDialog
 AccountBlockedMessageDialog -u-|> MessageDialog
@@ -41,20 +45,22 @@ class EventJoinWindows
 interface IEventJoinWindows <<interface>>
 interface IEventJoinActions <<interface>>
 class EventJoinViewModel <<State>>
+interface ICalendarActions <<interface>>
 
 EventJoinWindows .u.|> IEventJoinWindows
-EventJoinWindows --> EventListView
 EventJoinWindows --> ConfirmDialog
 EventJoinWindows --> MessageDialog
 
-EventListView --> IEventJoinActions : onOpenEventJoin
-EventListView --> EventJoinViewModel
+CalendarView --> IEventJoinActions : onOpenEventJoin
+CalendarView *-- EventJoinDialogs
+CalendarView --> ICalendarActions : onChangeMonth (PU1)
+EventJoinDialogs --> EventJoinViewModel
 EventJoinConfirmDialog --> IEventJoinActions : onConfirmJoin, onCancelJoin
 EventJoinedMessageDialog --> IEventJoinActions
+AlreadyJoinedMessageDialog --> IEventJoinActions
 EventFullMessageDialog --> IEventJoinActions
 EventUnavailableMessageDialog --> IEventJoinActions
 AccountBlockedMessageDialog --> IEventJoinActions
-
 @enduml
 ```
 
