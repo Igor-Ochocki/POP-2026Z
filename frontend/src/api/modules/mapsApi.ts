@@ -5,6 +5,13 @@ import type {
   PositionDTO,
   RoomDTO,
 } from '@app-types/roomEdit';
+import type {
+  GameMapDTO,
+  MapContainerDTO,
+  MapSaveDTO,
+  PassageDTO as MapPassageDTO,
+  RoomDTO as MapRoomDTO,
+} from '@app-types/map';
 
 interface PositionPayload {
   x: number;
@@ -104,7 +111,72 @@ const toRoomPayload = (room: RoomDTO): RoomPayload => ({
   })),
 });
 
+// PU60 - cała mapa gry
+interface MapPassageSchema {
+  id: number;
+  room1Id: number;
+  room2Id: number;
+  position: PositionPayload;
+}
+
+interface MapRoomSchema {
+  id: number;
+  name: string;
+  description: string;
+  width: number;
+  height: number;
+  position: PositionPayload;
+}
+
+interface MapSchema {
+  id: number;
+  name: string;
+  description: string;
+  container: MapContainerDTO;
+  rooms: MapRoomSchema[];
+  passages: MapPassageSchema[];
+  isValid: boolean;
+}
+
+const toMapPassageSchema = (p: MapPassageDTO): MapPassageSchema => ({
+  id: p.id,
+  room1Id: p.room1Id,
+  room2Id: p.room2Id,
+  position: p.position,
+});
+
+const toMapRoomSchema = (r: MapRoomDTO): MapRoomSchema => ({
+  id: r.id,
+  name: r.name,
+  description: r.description,
+  width: r.width,
+  height: r.height,
+  position: r.position,
+});
+
+const toMapSchema = (map: GameMapDTO): MapSchema => ({
+  id: map.id,
+  name: map.name,
+  description: map.description,
+  container: map.container,
+  rooms: map.rooms.map(toMapRoomSchema),
+  passages: map.passages.map(toMapPassageSchema),
+  isValid: map.isValid,
+});
+
+const fromMapSchema = (schema: MapSchema): GameMapDTO => ({
+  id: schema.id,
+  name: schema.name,
+  description: schema.description,
+  container: schema.container,
+  rooms: schema.rooms.map(toMapRoomSchema),
+  passages: schema.passages.map(toMapPassageSchema),
+  isValid: schema.isValid,
+});
+
 export interface IMapsApi {
+  getMap(gameId: string, userId: string): Promise<GameMapDTO>;
+  editMap(dto: MapSaveDTO): Promise<GameMapDTO>;
   getRoom(gameId: string, roomId: number, userId: string): Promise<RoomDTO>;
   getInventoryItems(
     gameId: string,
@@ -119,6 +191,22 @@ export interface IMapsApi {
 }
 
 export const createMapsApi = (http: AxiosInstance): IMapsApi => ({
+  getMap: async (gameId, userId) => {
+    const { data } = await http.get<MapSchema>(`/games/${gameId}/map`, {
+      params: { user_id: userId },
+    });
+    return fromMapSchema(data);
+  },
+
+  editMap: async ({ gameId, userId, map }) => {
+    const { data } = await http.post<MapSchema>(
+      `/games/${gameId}/map/edit`,
+      toMapSchema(map),
+      { params: { user_id: userId } },
+    );
+    return fromMapSchema(data);
+  },
+
   getRoom: async (gameId, roomId, userId) => {
     const { data } = await http.get<RoomPayload>(
       `/games/${gameId}/map/rooms/${roomId}`,
