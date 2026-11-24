@@ -178,8 +178,8 @@ def get_items(client: TestClient, game_id: str, user_id: str):
 
 
 def update_room(client: TestClient, game_id: str, room_id: int, user_id: str, dto: RoomSchema):
-    return client.post(
-        f"/api/v1/games/{game_id}/maps/rooms/{room_id}",
+    return client.put(
+        f"/api/v1/games/{game_id}/map/rooms/{room_id}",
         params={"user_id": user_id},
         json=dto.model_dump(mode="json"),
     )
