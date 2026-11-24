@@ -9,6 +9,7 @@ import uuid
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.game import Game
@@ -182,6 +183,33 @@ def update_room(client: TestClient, game_id: str, room_id: int, user_id: str, dt
         params={"user_id": user_id},
         json=dto.model_dump(mode="json"),
     )
+
+
+def snapshot_room(client: TestClient, game_id: str, room_id: int, user_id: str = AUTHOR) -> dict:
+    """Pobiera pełny stan pokoju przez GET — migawka do porównania po błędnym POST."""
+    resp = get_room(client, game_id, room_id, user_id)
+    assert resp.status_code == 200
+    return resp.json()
+
+
+def assert_room_unchanged(
+    client: TestClient,
+    db_session: Session,
+    game_id: str,
+    room_id: int,
+    before: dict,
+    user_id: str = AUTHOR,
+) -> None:
+    """Po odrzuconym zapytaniu (błąd) dane pokoju w bazie nie mogą się zmienić.
+
+    rollback() odrzuca niedokończone zmiany w sesji — to odpowiednik zamknięcia
+    sesji bez commitu, jak dzieje się w produkcji przy wyjątku.
+    """
+    db_session.rollback()
+    db_session.expire_all()
+    after = get_room(client, game_id, room_id, user_id)
+    assert after.status_code == 200
+    assert after.json() == before
 
 
 # ---------------------------------------------------------------------------
@@ -456,20 +484,19 @@ class TestUpdateRoomBasicParams:
 
         assert resp.status_code == 404
 
-    def test_update_as_non_owner_returns_404(
+    def test_update_as_non_owner_returns_404_and_room_unchanged(
         self, client: TestClient, db_session: Session
     ) -> None:
         game = make_game(db_session, author=AUTHOR)
         m = make_map(db_session, game)
-        room = make_room(db_session, m)
-        dto = make_room_dto(room, name="Hakier")
+        room = make_room(db_session, m, name="Oryginał")
+        before = snapshot_room(client, game.id, room.id, AUTHOR)
+        dto = make_room_dto(room, name="Hakier", hidden=True, zone="Włam")
 
         resp = update_room(client, game.id, room.id, OTHER_USER, dto)
 
         assert resp.status_code == 404
-        # Pokój nie został zmieniony
-        check = get_room(client, game.id, room.id, AUTHOR)
-        assert check.json()["name"] != "Hakier"
+        assert_room_unchanged(client, db_session, game.id, room.id, before, AUTHOR)
 
     def test_update_room_of_other_game_returns_404(
         self, client: TestClient, db_session: Session
@@ -774,15 +801,17 @@ class TestUpdateRoomPassages:
 
     """3. Czy aktualizacje działają poprawnie."""
 
-    def test_update_passage_same_id_returns_409(
+    def test_update_passage_same_id_returns_409_and_unchanged(
         self, client: TestClient, db_session: Session
     ) -> None:
-        """Przejście o tym samym id już istnieje — ConflictError (409)."""
+        """Przejście o tym samym id już istnieje — ConflictError (409), dane bez zmian."""
         game = make_game(db_session)
         m = make_map(db_session, game)
         room1 = make_room(db_session, m, name="A")
         room2 = make_room(db_session, m, name="B", x=20.0)
         p = make_passage(db_session, m, room1, room2, x=5.0, y=5.0)
+        before1 = snapshot_room(client, game.id, room1.id)
+        before2 = snapshot_room(client, game.id, room2.id)
 
         dto = make_room_dto(
             room1,
@@ -796,6 +825,8 @@ class TestUpdateRoomPassages:
         resp = update_room(client, game.id, room1.id, AUTHOR, dto)
 
         assert resp.status_code == 409
+        assert_room_unchanged(client, db_session, game.id, room1.id, before1)
+        assert_room_unchanged(client, db_session, game.id, room2.id, before2)
 
     def test_update_passage_new_id_changes_position(
         self, client: TestClient, db_session: Session
@@ -826,10 +857,10 @@ class TestUpdateRoomPassages:
 
     """4. Nadpis relacji między 2 INNYMI pokojami."""
 
-    def test_cannot_overwrite_passage_between_other_rooms_returns_409(
+    def test_cannot_overwrite_passage_between_other_rooms_returns_409_and_unchanged(
         self, client: TestClient, db_session: Session
     ) -> None:
-        """Przejście o id X już istnieje między C i D — nie można go użyć dla A i B."""
+        """Przejście o id X między C i D — próba użycia go dla A i B: 409, wszystkie pokoje bez zmian."""
         game = make_game(db_session)
         m = make_map(db_session, game)
         room_a = make_room(db_session, m, name="A")
@@ -837,6 +868,10 @@ class TestUpdateRoomPassages:
         room_c = make_room(db_session, m, name="C", x=40.0)
         room_d = make_room(db_session, m, name="D", x=60.0)
         existing = make_passage(db_session, m, room_c, room_d)
+        before_a = snapshot_room(client, game.id, room_a.id)
+        before_b = snapshot_room(client, game.id, room_b.id)
+        before_c = snapshot_room(client, game.id, room_c.id)
+        before_d = snapshot_room(client, game.id, room_d.id)
 
         dto = make_room_dto(
             room_a,
@@ -850,15 +885,21 @@ class TestUpdateRoomPassages:
         resp = update_room(client, game.id, room_a.id, AUTHOR, dto)
 
         assert resp.status_code == 409
+        assert_room_unchanged(client, db_session, game.id, room_a.id, before_a)
+        assert_room_unchanged(client, db_session, game.id, room_b.id, before_b)
+        # Istniejąca relacja C-D też musi zostać nietknięta
+        assert_room_unchanged(client, db_session, game.id, room_c.id, before_c)
+        assert_room_unchanged(client, db_session, game.id, room_d.id, before_d)
 
     """5. Jeden pokój nie istnieje."""
 
-    def test_passage_with_nonexistent_room1_returns_404(
+    def test_passage_with_nonexistent_room1_returns_404_and_unchanged(
         self, client: TestClient, db_session: Session
     ) -> None:
         game = make_game(db_session)
         m = make_map(db_session, game)
         room_a = make_room(db_session, m, name="A")
+        before = snapshot_room(client, game.id, room_a.id)
 
         dto = make_room_dto(
             room_a,
@@ -872,13 +913,15 @@ class TestUpdateRoomPassages:
         resp = update_room(client, game.id, room_a.id, AUTHOR, dto)
 
         assert resp.status_code == 404
+        assert_room_unchanged(client, db_session, game.id, room_a.id, before)
 
-    def test_passage_with_nonexistent_room2_returns_404(
+    def test_passage_with_nonexistent_room2_returns_404_and_unchanged(
         self, client: TestClient, db_session: Session
     ) -> None:
         game = make_game(db_session)
         m = make_map(db_session, game)
         room_a = make_room(db_session, m, name="A")
+        before = snapshot_room(client, game.id, room_a.id)
 
         dto = make_room_dto(
             room_a,
@@ -892,10 +935,11 @@ class TestUpdateRoomPassages:
         resp = update_room(client, game.id, room_a.id, AUTHOR, dto)
 
         assert resp.status_code == 404
+        assert_room_unchanged(client, db_session, game.id, room_a.id, before)
 
     """6. Relacja między pokojami z innych map/gier."""
 
-    def test_passage_between_rooms_from_different_maps_returns_403(
+    def test_passage_between_rooms_from_different_maps_returns_403_and_unchanged(
         self, client: TestClient, db_session: Session
     ) -> None:
         game = make_game(db_session)
@@ -904,6 +948,8 @@ class TestUpdateRoomPassages:
         m2 = make_map(db_session, game2, name="Mapa 2")
         room_a = make_room(db_session, m1, name="A")
         room_b = make_room(db_session, m2, name="B")
+        before_a = snapshot_room(client, game.id, room_a.id)
+        before_b = snapshot_room(client, game2.id, room_b.id)
 
         dto = make_room_dto(
             room_a,
@@ -917,16 +963,21 @@ class TestUpdateRoomPassages:
         resp = update_room(client, game.id, room_a.id, AUTHOR, dto)
 
         assert resp.status_code == 403
+        assert_room_unchanged(client, db_session, game.id, room_a.id, before_a)
+        assert_room_unchanged(client, db_session, game2.id, room_b.id, before_b)
 
-    def test_passage_not_including_current_room_returns_403(
+    def test_passage_not_including_current_room_returns_403_and_unchanged(
         self, client: TestClient, db_session: Session
     ) -> None:
-        """Przejście musi zawierać edytowany pokój."""
+        """Przejście musi zawierać edytowany pokój — 403, żaden pokój bez zmian."""
         game = make_game(db_session)
         m = make_map(db_session, game)
         room_a = make_room(db_session, m, name="A")
         room_b = make_room(db_session, m, name="B", x=20.0)
         room_c = make_room(db_session, m, name="C", x=40.0)
+        before_a = snapshot_room(client, game.id, room_a.id)
+        before_b = snapshot_room(client, game.id, room_b.id)
+        before_c = snapshot_room(client, game.id, room_c.id)
 
         dto = make_room_dto(
             room_a,
@@ -940,6 +991,9 @@ class TestUpdateRoomPassages:
         resp = update_room(client, game.id, room_a.id, AUTHOR, dto)
 
         assert resp.status_code == 403
+        assert_room_unchanged(client, db_session, game.id, room_a.id, before_a)
+        assert_room_unchanged(client, db_session, game.id, room_b.id, before_b)
+        assert_room_unchanged(client, db_session, game.id, room_c.id, before_c)
 
 
 # ---------------------------------------------------------------------------
@@ -1005,12 +1059,13 @@ class TestUpdateRoomItemReservation:
 
     """2. Nieistniejący przedmiot / komnata."""
 
-    def test_reserve_nonexistent_item_returns_404(
+    def test_reserve_nonexistent_item_returns_404_and_unchanged(
         self, client: TestClient, db_session: Session
     ) -> None:
         game = make_game(db_session)
         m = make_map(db_session, game)
         room = make_room(db_session, m)
+        before = snapshot_room(client, game.id, room.id)
 
         dto = make_room_dto(
             room,
@@ -1019,8 +1074,9 @@ class TestUpdateRoomItemReservation:
         resp = update_room(client, game.id, room.id, AUTHOR, dto)
 
         assert resp.status_code == 404
+        assert_room_unchanged(client, db_session, game.id, room.id, before)
 
-    def test_reserve_for_nonexistent_room_returns_404(
+    def test_reserve_for_nonexistent_room_returns_404_and_no_claims_created(
         self, client: TestClient, db_session: Session
     ) -> None:
         game = make_game(db_session)
@@ -1037,16 +1093,20 @@ class TestUpdateRoomItemReservation:
         resp = update_room(client, game.id, 99999, AUTHOR, dto)
 
         assert resp.status_code == 404
+        # Żadna rezerwacja nie została utworzona
+        db_session.rollback()
+        assert db_session.scalars(select(RoomItemClaim)).all() == []
 
     """3. Rezerwacja do gry bez uprawnień."""
 
-    def test_reserve_without_permissions_returns_404(
+    def test_reserve_without_permissions_returns_404_and_unchanged(
         self, client: TestClient, db_session: Session
     ) -> None:
         game = make_game(db_session, author=AUTHOR)
         m = make_map(db_session, game)
         room = make_room(db_session, m)
         item = make_item(db_session, game)
+        before = snapshot_room(client, game.id, room.id, AUTHOR)
 
         dto = make_room_dto(
             room,
@@ -1055,17 +1115,19 @@ class TestUpdateRoomItemReservation:
         resp = update_room(client, game.id, room.id, OTHER_USER, dto)
 
         assert resp.status_code == 404
+        assert_room_unchanged(client, db_session, game.id, room.id, before, AUTHOR)
 
     """4. Przedmiot się wyczerpał."""
 
-    def test_reserve_exhausted_item_returns_422(
+    def test_reserve_exhausted_item_returns_422_and_unchanged(
         self, client: TestClient, db_session: Session
     ) -> None:
-        """available=0 — rezerwacja powinna zwrócić 422."""
+        """available=0 — rezerwacja zwraca 422, pokój bez zmian."""
         game = make_game(db_session)
         m = make_map(db_session, game)
         room = make_room(db_session, m)
         item = make_item(db_session, game, total=1, available=0)
+        before = snapshot_room(client, game.id, room.id)
 
         dto = make_room_dto(
             room,
@@ -1074,19 +1136,23 @@ class TestUpdateRoomItemReservation:
         resp = update_room(client, game.id, room.id, AUTHOR, dto)
 
         assert resp.status_code == 422
+        assert_room_unchanged(client, db_session, game.id, room.id, before)
 
-    def test_reserve_more_than_available_across_rooms_returns_422(
+    def test_reserve_more_than_available_across_rooms_returns_422_and_unchanged(
         self, client: TestClient, db_session: Session
     ) -> None:
-        """Suma rezerwacji we wszystkich pokojach przekracza available."""
+        """Suma rezerwacji we wszystkich pokojach przekracza available — 422, oba pokoje bez zmian."""
         game = make_game(db_session)
         m = make_map(db_session, game)
         room1 = make_room(db_session, m, name="A")
         room2 = make_room(db_session, m, name="B", x=20.0)
-        item = make_item(db_session, game, total=3, available=3)
+        item = make_item(db_session, game, total=3, available=2)
         db_session.add(RoomItemClaim(room_id=room1.id, item_id=item.item_id, amount=2))
         db_session.commit()
+        before1 = snapshot_room(client, game.id, room1.id)
+        before2 = snapshot_room(client, game.id, room2.id)
 
+        # Pokój B próbuje zarezerwować 1 szt. — razem byłoby 3 > available=2
         dto = make_room_dto(
             room2,
             items=[InventoryItemSchema(item_id=item.item_id, name=item.name)],
@@ -1094,6 +1160,12 @@ class TestUpdateRoomItemReservation:
         resp = update_room(client, game.id, room2.id, AUTHOR, dto)
 
         assert resp.status_code == 422
+        assert_room_unchanged(client, db_session, game.id, room1.id, before1)
+        assert_room_unchanged(client, db_session, game.id, room2.id, before2)
+        # Rezerwacja w pokoju A nadal ma amount=2
+        db_session.expire_all()
+        claim = db_session.get(RoomItemClaim, (room1.id, item.item_id))
+        assert claim is not None and claim.amount == 2
 
     def test_reserve_exactly_available_ok(
         self, client: TestClient, db_session: Session
@@ -1147,19 +1219,19 @@ class TestUpdateRoomNonExistenceCombinations:
         resp = update_room(client, game.id, 42, AUTHOR, self._dto(42))
         assert resp.status_code == 404
 
-    def test_room_exists_but_user_not_author_returns_404(
+    def test_room_exists_but_user_not_author_returns_404_and_unchanged(
         self, client: TestClient, db_session: Session
     ) -> None:
         game = make_game(db_session, author=AUTHOR)
         m = make_map(db_session, game)
-        room = make_room(db_session, m)
+        room = make_room(db_session, m, name="Oryginał")
+        before = snapshot_room(client, game.id, room.id, AUTHOR)
         dto = make_room_dto(room, name="Zmiana")
 
         resp = update_room(client, game.id, room.id, "nie-autor", dto)
 
         assert resp.status_code == 404
-        check = get_room(client, game.id, room.id, AUTHOR)
-        assert check.json()["name"] != "Zmiana"
+        assert_room_unchanged(client, db_session, game.id, room.id, before, AUTHOR)
 
     def test_room_exists_but_game_not_exists_returns_404(
         self, client: TestClient, db_session: Session
@@ -1179,10 +1251,10 @@ class TestUpdateRoomNonExistenceCombinations:
         game = make_game(db_session, author=AUTHOR)
         m = make_map(db_session, game)
         room = make_room(db_session, m, name="Oryginał")
-        dto = make_room_dto(room, name="Zmiana")
+        before = snapshot_room(client, game.id, room.id, AUTHOR)
+        dto = make_room_dto(room, name="Zmiana", description="zmieniony", hidden=True)
 
         resp = update_room(client, game.id, room.id, "ktokolwiek-inny", dto)
 
         assert resp.status_code == 404
-        check = get_room(client, game.id, room.id, AUTHOR)
-        assert check.json()["name"] == "Oryginał"
+        assert_room_unchanged(client, db_session, game.id, room.id, before, AUTHOR)
