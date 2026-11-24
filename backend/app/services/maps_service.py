@@ -14,6 +14,8 @@ from app.models.sensor import Sensor
 from app.models.qr_code import QrCode
 from app.models.position import Position
 from app.models.room_item_claim import RoomItemClaim
+from fastapi.logger import logger
+
 
 class IMapsService(ABC):
     @abstractmethod
@@ -26,7 +28,11 @@ class IMapsService(ABC):
     def update_room(self, game_id: str, room_id: int, user_id: str, dto: RoomSchema)-> RoomSchema: ...
 
 
+def _chamber_not_found():
+    raise NotFoundError("Chamber not found.")
 
+def _item_not_found():
+    raise NotFoundError("Item not found or is unaccessible for the current user/game.")
 
 class MapsService(IMapsService):
     def __init__(self, db_session: Session) -> None:
@@ -34,6 +40,7 @@ class MapsService(IMapsService):
 
     @staticmethod
     def _map_room(room: Room) -> RoomSchema:
+        logger.debug(room.items_claimed)
         return RoomSchema(
             id = room.id,
             name = room.name,
@@ -66,34 +73,38 @@ class MapsService(IMapsService):
         return PassageSchema(
             id = p.id,
             room1_id = p.room1_id,
-            room2_id = p.room1_id,
+            room2_id = p.room2_id,
             position = PositionSchema(
                 x = p.position.x,
                 y = p.position.y,
             ),
-        ), 
+        )
 
     @staticmethod
     def _map2_passage(p: PassageSchema, map_id: str) -> Passage:
-        p.model_validate()
         return Passage(
             id = p.id,
             map_id = map_id,
             room1_id = p.room1_id,
             room2_id = p.room2_id,
-            position = p.position
+            position = Position(
+                x = p.position.x,
+                y = p.position.y
             )
+        )
 
 
     @staticmethod
     def _map_sensor(sensor: Sensor) -> SensorSchema:
         return SensorSchema(
-            position = sensor.position
+            position = PositionSchema(
+                x = sensor.position.x,
+                y = sensor.position.y
+            )
         )
 
     @staticmethod
     def _map2_sensor(s: SensorSchema, room_id: int) -> Sensor:
-        s.model_validate()
         return Sensor(
             position = s.position,
             room_id = room_id
@@ -103,15 +114,17 @@ class MapsService(IMapsService):
     @staticmethod
     def _map_qr_code(qr_code: QrCode) -> QrCodeSchema:
         return QrCodeSchema(
-            position=qr_code.position,
+            position=PositionSchema(
+                x = qr_code.position.x,
+                y = qr_code.position.y
+            ),
         )
 
     @staticmethod
     def _map2_qr_code(q: QrCodeSchema, room_id: int) -> QrCode:
-        q.model_validate()
         return QrCode(
             position = q.position,
-            content = q.content,
+            content = "https://www.youtube.com/watch?v=xvFZjo5PgG0",
             room_id = room_id
         )
 
@@ -128,20 +141,27 @@ class MapsService(IMapsService):
     def _ensure_edit_rights(self, user_id: str, game_id: str):
         game = self.db_session.get(Game, game_id)
         if game is None or game.author_id != user_id:
-            raise NotFoundError("Chamber not found, or user has no access")
+            raise NotFoundError("Game not found, or user has no access")
 
                 
 
     def _ensure_viewing_rights(self, user_id: str, game_id: str):
-        return
-        
+        game = self.db_session.get(Game, game_id)
+        if game is None:
+            raise NotFoundError("Game not found, or user has no access")        
 
     def get_room(self, game_id, room_id, user_id):
         self._ensure_viewing_rights(user_id, game_id)
         room = self.db_session.get(Room, room_id)
         if room is None:
-            raise NotFoundError(f"Chamber not found")
+            logger.debug(f"The room with id [{room_id}] doesn't exist")
+            _chamber_not_found()
+        elif room.map.game_id != game_id:
+            logger.debug(f"The room doesn't belong to the specified game. room.map.game_id: [{room.map.game_id}], game_id: [{game_id}]")
+            _chamber_not_found()
+
         return self._map_room(room)
+        
 
 
     def get_inventory_items(self, game_id, user_id):
@@ -154,17 +174,29 @@ class MapsService(IMapsService):
 
     def _update_items(self, room: Room, new_amounts: dict[str, int]):
 
+        logger.debug(f"Adding items: {new_amounts}")
+
         if room is None:
             raise NotFoundError("Room not found")
 
-        room.items_claimed = [
-            RoomItemClaim(room = room, item_id = item[0], amount=item[1]) for item in new_amounts.items()
-        ]
+        room.items_claimed = []
 
+        for item_id, amount in new_amounts.items():
+            logger.debug(f"Adding {amount} item(s): {item_id}")
+            item = self.db_session.get(InventoryItem, item_id)
+            if item is None:
+                logger.debug(f"The claimed item relationship doesn't point to an existing Item. item_id: [{item_id}]")
+                _item_not_found()
+                break
+            elif item.game_id != room.map.game_id:
+                logger.debug(f"The item exists, but belongs to another game. Current game: [{room.map.game_id}], belongs to: [{item.game_id}]")
+                _item_not_found()
+                break
+
+            
+            room.items_claimed.append(RoomItemClaim(item = item, amount = amount))
 
         for item_claimed in room.items_claimed:
-            if item_claimed.item is None or item_claimed.item.game_id != room.id:
-                raise NotFoundError("No such item exists or it's not assigned to this game")
             available_amount = item_claimed.item.available
             all_claims = item_claimed.item.claims
 
@@ -173,6 +205,7 @@ class MapsService(IMapsService):
                 raise UnprocessableContentError("There are not enough items in game's inventory")
 
 
+        logger.debug(f"Items for room after add: {list(map(lambda l: l.item.item_id, room.items_claimed))}")
 
     def _change_id(self, previous_id, new_id):
         pass
@@ -182,7 +215,6 @@ class MapsService(IMapsService):
         # QUESTION: Can a passage be between maps? 
 
         for passage in passages:
-            passage.model_validate()
             room1_id = passage.room1_id
             room2_id = passage.room2_id
 
@@ -193,20 +225,24 @@ class MapsService(IMapsService):
                 raise NotFoundError("One or more rooms not found for passage")
 
             if room1.map_id != room2.map_id:
-                raise ValidationError("A passage needs to be between rooms on the same map") #TODO: Pick a better error
+                raise ForbiddenError("A passage needs to be between rooms on the same map") #TODO: Pick a better error
 
             if room.id not in [room1.id, room2.id]:
-                raise ValidationError("The passage needs to include this room")
+                raise ForbiddenError("The passage needs to include this room")
 
         room.exit_passages = []
         room.entry_passages = []
 
         for passage in passages:
+
+            if self.db_session.get(Passage, passage.id) is not None:
+                raise ConflictError("Using this id would overwrite an existing relationship between other rooms.")
             p = MapsService._map2_passage(passage, room.map_id)
 
-            if p.to_room.id == room.id:
+
+            if p.room2_id == room.id:
                 room.entry_passages.append(p)
-            elif p.from_room.id == room.id:
+            elif p.room1_id == room.id:
                 room.exit_passages.append(p)
 
 
@@ -217,7 +253,6 @@ class MapsService(IMapsService):
         
 
     def update_room(self, game_id, room_id, user_id, dto : RoomSchema):
-        RoomSchema.model_validate(dto)
         self._ensure_edit_rights(user_id, game_id)
 
         room = self.db_session.get(Room, room_id)
@@ -229,7 +264,7 @@ class MapsService(IMapsService):
         requested_items = dto.items
 
 
-        self._update_items(room, {item_id: amount for (item_id, amount) in requested_items})
+        self._update_items(room, {item.item_id: 1 for item in requested_items})
         self._update_passages(room, dto.passages)
 
         # FIXME: Zmiana id pokoju może powodować problemy z powiązaniami w bazie danych, dlatego na razie jest ignorowana
@@ -245,8 +280,8 @@ class MapsService(IMapsService):
         room.width = dto.width
         room.height = dto.height
 
-        room.sensors = map(lambda s: MapsService._map2_sensor(s, room.id), dto.sensors)
-        room.qr_codes = map(lambda q: MapsService._map2_qr_code(q, room.id), dto.qr_codes)
+        room.sensors = list(map(lambda s: MapsService._map2_sensor(s, room.id), dto.sensors))
+        room.qr_codes = list(map(lambda q: MapsService._map2_qr_code(q, room.id), dto.qr_codes))
 
         self.db_session.commit()
 

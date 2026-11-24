@@ -46,7 +46,7 @@ def get_inventory_items(
 ) -> list[InventoryItemSchema]:
     return service.get_inventory_items(game_id, user_id)
 
-@router.post("/{game_id}/maps/rooms/{room_id}")
+@router.put("/{game_id}/map/rooms/{room_id}")
 def update_room(
     game_id: str,
     room_id: int,
