@@ -1,3 +1,14 @@
+# Model struktury logicznej - backend
+
+Backend jest podzielony na te same grupy funkcjonalne co frontend. Diagram pokazuje porty REST, kontrolery i serwisy wszystkich grup oraz zależności między serwisami.
+Serwisy korzystają z encji przez warstwę modeli (SQLAlchemy) - encje: [model danych](backend/data-model.md).
+
+Oznaczenia: kontroler realizuje port `IXxxApi` i woła `IXxxService` o tych samych metodach. Strzałki pokazują tylko, który komponent korzysta z którego - bez podpisów.
+Metody portów i serwisów: [interfejsy backendu](backend/interfaces.md).
+Definicję mapy (PU60) i czujnika (PU50) obsługują `GamesController` / `GamesService` (`/games/{id}/map`, `/games/{id}/sensor`), edycję komnaty (PU59) i mapę gracza (PU35) - `MapsController` / `MapsService`.
+
+## Grupy funkcjonalne i zależności między serwisami
+
 <div hidden>
 
 ```
@@ -7,9 +18,9 @@ skinparam componentStyle uml2
 skinparam packageStyle rectangle
 skinparam shadowing false
 skinparam roundcorner 6
-skinparam linetype ortho
-skinparam nodesep 22
-skinparam ranksep 70
+skinparam linetype polyline
+skinparam nodesep 18
+skinparam ranksep 80
 skinparam package {
     BackgroundColor #FAFAFA
     BorderColor #888888
@@ -27,116 +38,100 @@ skinparam database {
     BorderColor #B7791F
 }
 
-title Model struktury logicznej - backend (komponenty i interfejsy)
+title Model struktury logicznej - backend: grupy funkcjonalne i zależności między serwisami
 
-package "Controllers (/api/v1)" as C {
+package "Kalendarz i wydarzenia (PU1, PU2, PU46)" as G_Cal {
     () "ICalendarApi\n/calendar" as R_Calendar
-    () "IGamesApi\n/games" as R_Games
-    () "IScenariosApi\n/games/{id}/scenario" as R_Scenarios
-    () "IActionsApi\n/actions" as R_Actions
     () "IReservationsApi\n/reservations" as R_Reservations
-    () "IMapsApi\n/games/{id}/map" as R_Maps
     () "IEventsApi\n/events" as R_Events
-    () "ISensorsApi\n/games/{id}/sensor" as R_Sensors
-
     component [CalendarController] as C_Calendar
-    component [GamesController] as C_Games
-    component [ScenariosController] as C_Scenarios
-    component [ActionsController] as C_Actions
     component [ReservationsController] as C_Reservations
-    component [MapsController] as C_Maps
     component [EventsController] as C_Events
-    component [SensorsController] as C_Sensors
-
-    R_Calendar -- C_Calendar
-    R_Games -- C_Games
-    R_Scenarios -- C_Scenarios
-    R_Actions -- C_Actions
-    R_Reservations -- C_Reservations
-    R_Maps -- C_Maps
-    R_Events -- C_Events
-    R_Sensors -- C_Sensors
-}
-
-package "Services" as S {
     () "ICalendarService" as IS_Calendar
-    () "IGamesService" as IS_Games
-    () "IScenariosService" as IS_Scenarios
-    () "IActionsService" as IS_Actions
     () "IReservationsService" as IS_Reservations
-    () "IMapsService" as IS_Maps
     () "IEventsService" as IS_Events
-    () "ISensorsService" as IS_Sensors
-
-    component [CalendarService] as S_Calendar
-    component [GamesService] as S_Games
-    component [ScenariosService] as S_Scenarios
-    component [ActionsService] as S_Actions
-    component [ReservationsService] as S_Reservations
-    component [MapsService] as S_Maps
-    component [EventsService] as S_Events
-    component [SensorsService] as S_Sensors
-
     () "IPaymentService" as IS_Payment
     () "IMessageService" as IS_Message
+    component [CalendarService] as S_Calendar
+    component [ReservationsService] as S_Reservations
+    component [EventsService] as S_Events
     component [PaymentService] as S_Payment
     component [MessageService] as S_Message
-
+    R_Calendar -- C_Calendar
+    R_Reservations -- C_Reservations
+    R_Events -- C_Events
+    C_Calendar --( IS_Calendar
+    C_Reservations --( IS_Reservations
+    C_Events --( IS_Events
     IS_Calendar -- S_Calendar
-    IS_Games -- S_Games
-    IS_Scenarios -- S_Scenarios
-    IS_Actions -- S_Actions
     IS_Reservations -- S_Reservations
+    IS_Events -- S_Events
     IS_Payment -- S_Payment
     IS_Message -- S_Message
-    IS_Maps -- S_Maps
-    IS_Events -- S_Events
-    IS_Sensors -- S_Sensors
+}
 
-    S_Reservations --( IS_Payment
-    S_Reservations --( IS_Message
-    S_Games --( IS_Maps
-    S_Sensors --( IS_Actions
+package "Gry, mapa gry i czujniki (PU25, PU49, PU60, PU50)" as G_Games {
+    () "IGamesApi\n/games" as R_Games
+    component [GamesController] as C_Games
+    () "IGamesService" as IS_Games
+    component [GamesService] as S_Games
+    R_Games -- C_Games
+    C_Games --( IS_Games
+    IS_Games -- S_Games
+}
+
+package "Akcje (PU51, PU62)" as G_Actions {
+    () "IActionsApi\n/actions" as R_Actions
+    component [ActionsController] as C_Actions
+    () "IActionsService" as IS_Actions
+    component [ActionsService] as S_Actions
+    R_Actions -- C_Actions
+    C_Actions --( IS_Actions
+    IS_Actions -- S_Actions
+}
+
+package "Scenariusz (PU56, PU57, PU58)" as G_Scenario {
+    () "IScenariosApi\n/games/{id}/scenario" as R_Scenarios
+    component [ScenariosController] as C_Scenarios
+    () "IScenariosService" as IS_Scenarios
+    component [ScenariosService] as S_Scenarios
+    R_Scenarios -- C_Scenarios
+    C_Scenarios --( IS_Scenarios
+    IS_Scenarios -- S_Scenarios
+}
+
+package "Komnaty i mapa gracza (PU59, PU35)" as G_Map {
+    () "IMapsApi\n/games/{id}/map/..." as R_Maps
+    component [MapsController] as C_Maps
+    () "IMapsService" as IS_Maps
+    component [MapsService] as S_Maps
+    R_Maps -- C_Maps
+    C_Maps --( IS_Maps
+    IS_Maps -- S_Maps
 }
 
 component "Models\n(SQLAlchemy ORM)" as M
 database "SQLite" as DB
 
-C_Calendar --( IS_Calendar
-C_Games --( IS_Games
-C_Scenarios --( IS_Scenarios
-C_Actions --( IS_Actions
-C_Reservations --( IS_Reservations
-C_Maps --( IS_Maps
-C_Events --( IS_Events
-C_Sensors --( IS_Sensors
+S_Reservations --( IS_Payment
+S_Reservations --( IS_Message
 
 S_Calendar --> M
-S_Games --> M
-S_Scenarios --> M
-S_Actions --> M
 S_Reservations --> M
+S_Events --> M
 S_Payment --> M
 S_Message --> M
+S_Games --> M
+S_Actions --> M
+S_Scenarios --> M
 S_Maps --> M
-S_Events --> M
-S_Sensors --> M
-M --> DB : Session
+M --> DB
 
-note bottom of C
-    Kontroler realizuje port IXxxApi, serwis dostaje
-    przez Depends jako IXxxService. Błędy domenowe (AppError)
-    zamienia na odpowiedź jeden handler (core/exceptions),
-    z polem code, gdy jeden status ma kilka przyczyn (PU46: event_full, event_inactive).
+note as N1
+    Kontroler dostaje serwis przez Depends jako IXxxService.
+    Błędy domenowe (AppError) zamienia na odpowiedź {detail}
+    jeden handler (core/exceptions). Walidacja schematów -> 422 (FastAPI).
 end note
-
-note bottom of S
-    IActionsService.get_actions - lista akcji gry (PU62, wybór akcji czujnika w PU50).
-    IScenariosService - warunki zwycięstwa (PU58), sprzeczność -> ConflictError.
-    IMapsService - mapa, komnaty, przejścia i magazyn przedmiotów jednej gry (PU60, PU59)
-    oraz widok mapy dla gracza (PU35). ISensorsService - typy i dodanie czujnika w komnacie (PU50). GamesService pyta o poprawność mapy przed publikacją.
-end note
-
 @enduml
 ```
 

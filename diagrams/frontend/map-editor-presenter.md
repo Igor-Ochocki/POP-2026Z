@@ -33,7 +33,7 @@ interface IMapEditorActions <<interface>> {
 }
 
 interface IRoomEditActions <<interface>> {
-    + onOpenRoomEditor(room: RoomDTO)
+    + onEditRoom(gameId: string, roomId: number)
 }
 
 interface IMapEditorWindows <<interface>> {
@@ -48,7 +48,7 @@ interface IMapEditorWindows <<interface>> {
 class useMapEditor <<Hook>> {
     - handleAutoSaveLocally(map: GameMapDTO)
     - saveMapToSystem(map: GameMapDTO)
-    - validateMap(map: GameMapDTO)
+    - isMapValid(map: GameMapDTO): boolean
 }
 
 class MapEditorViewModel <<State>> {
@@ -107,12 +107,12 @@ class MapSaveDTO <<DTO>>
 
 useMapEditor .u.|> IMapEditorActions
 useMapEditor -u-> IMapEditorWindows
-useMapEditor --> IRoomEditActions
+useMapEditor --> IRoomEditActions : onEditRoom (PU59)
 useMapEditor *-- "1" MapEditorViewModel : state
 MapEditorViewModel *-- "1" GameMapDTO : map
 GameMapDTO *-- "1" MapContainerDTO : container
 GameMapDTO *-- "*" RoomDTO : rooms
-RoomDTO *-- "*" PassageDTO : passages
+GameMapDTO *-- "*" PassageDTO : passages
 RoomDTO *-- "1" PositionDTO
 PassageDTO *-- "1" PositionDTO
 MapEditorViewModel ..> MapEditorDialogTypes

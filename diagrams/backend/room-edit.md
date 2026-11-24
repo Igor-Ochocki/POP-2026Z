@@ -31,7 +31,10 @@ interface IMapsService <<interface>> {
 
 class MapsService <<Service>> {
     - db_session: Session
-    - _check_items_available(game_id: str, items: list[InventoryItemSchema])
+    - _ensure_edit_rights(user_id: str, game_id: str)
+    - _ensure_viewing_rights(user_id: str, game_id: str)
+    - _update_items(room: Room, new_amounts: dict[str, int])
+    - _update_passages(room: Room, passages: list[PassageSchema])
     - _map_room(room: Room): RoomSchema
 }
 
@@ -128,6 +131,8 @@ class QrCodeSchema <<BaseModel>> {
 
 class NotFoundError <<Exception>>
 class ConflictError <<Exception>>
+class ForbiddenError <<Exception>>
+class UnprocessableContentError <<Exception>>
 
 MapsController .u.|> IMapsApi
 MapsController --> IMapsService
@@ -137,8 +142,10 @@ MapsService --> Room
 MapsService --> InventoryItem
 MapsService ..> RoomSchema
 MapsService ..> InventoryItemSchema
-MapsService ..> NotFoundError : gra, mapa albo komnata\nnie istnieje lub jest cudza
-MapsService ..> ConflictError : code = item_unavailable\n(przedmiotu brak w magazynie)
+MapsService ..> NotFoundError : gra, komnata albo przedmiot\nnie istnieje lub jest cudzy
+MapsService ..> UnprocessableContentError : za mało przedmiotów\nw magazynie gry
+MapsService ..> ForbiddenError : przejście do innej mapy\nlub bez tej komnaty
+MapsService ..> ConflictError : id przejścia zajęte
 
 Map *-- "*" Room
 Map *-- "*" Passage
@@ -165,11 +172,12 @@ note right of IMapsApi
 end note
 
 note bottom of MapsService
-    update_room: brak komnaty / cudza gra -> NotFoundError (404);
-    błędne pola -> 422 (walidacja schematu); przedmiot z items
-    niedostępny w magazynie (available = 0) -> ConflictError (409,
-    item_unavailable) -> MissingInventoryItemMessageDialog;
-    inny błąd zapisu -> 500 -> RoomSaveErrorMessageDialog.
+    update_room: brak komnaty / cudza gra / przedmiot spoza gry -> 404;
+    błędne pola -> 422 (walidacja schematu); za mało przedmiotów
+    w magazynie -> UnprocessableContentError (422);
+    przejście niezgodne z komnatą -> 403; zajęte id przejścia -> 409.
+    Frontend: 409 -> MissingInventoryItemMessageDialog,
+    pozostałe błędy zapisu -> RoomSaveErrorMessageDialog.
     Błąd w get_room -> RoomLoadErrorMessageDialog.
 end note
 

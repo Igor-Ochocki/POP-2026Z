@@ -13,136 +13,150 @@ hide empty members
 
 title PU60 Definicja mapy gry - backend
 
-interface IMapsApi <<interface>> \n<< /api/v1/games >> {
-    + <<GET /{game_id}/map >>\n\tget_map(game_id: str, user_id: str) : MapSchema
-    + <<POST /{game_id}/map/edit >>\n\tedit_map(game_id: str, user_id: str, data: MapSchema) : MapSchema
+interface IGamesApi <<interface>>\n<< /api/v1/games >> {
+    + <<GET /{game_id}/map >>\n\tget_map(game_id: str, user_id: str): MapSchema
+    + <<POST /{game_id}/map/edit >>\n\tedit_map(game_id: str, user_id: str, data: MapSchema): MapSchema
 }
 
-class MapsController implements IMapsApi {
-    - maps_service: IMapsService
+class GamesController <<Controller>> {
+    - games_service: IGamesService
 }
 
-interface IMapsService <<interface>> {
-    + get_map(game_id: str, user_id: str) : MapSchema
-    + edit_map(game_id: str, user_id: str, data: MapSchema) : MapSchema
+interface IGamesService <<interface>> {
+    + get_map(game_id: str, user_id: str): MapSchema
+    + edit_map(game_id: str, user_id: str, data: MapSchema): MapSchema
 }
 
-MapsController --> IMapsService
-
-class MapsService implements IMapsService {
+class GamesService <<Service>> {
+    - db_session: Session
+    - _ensure_unique_ids(ids: list[str | int], entity_name: str)
+    - _ensure_ids_available(...)
+    - _map_to_schema(map_model: Map): MapSchema
+    - _position_to_schema(position: Position): PositionSchema
+    - _position_from_schema(position: PositionSchema): Position
 }
 
-class Map <<BaseModel>> {
-    + id: int
+class Map <<Base>> {
+    + map_id: str
+    + game_id: str
     + name: str
     + description: str
-    + rooms: Room[]
-    + passages: Passage[]
+    + is_valid: bool
+    + container: {width, height} | None
 }
 
-class MapSchema {
+class Room <<Base>> {
     + id: int
-    + name: str
-    + description: str
-    + rooms: RoomSchema[]
-    + passages: PassageSchema[]
-}
-
-class InventoryItem <<BaseModel>> {
-    + id: int
-    + name: str
-    + total: number
-    + available: number
-}
-
-class Room <<BaseModel>> {
-    + id: int
+    + map_id: str
     + name: str
     + description: str
     + hidden: bool
     + zone: str
-    + items: InventoryItem[]
-    + sensors: Sensor[]
-    + qrCodes: QrCode[]
+    + position: Position
+    + width: float
+    + height: float
 }
 
-class Sensor <<BaseModel>> {
+class Passage <<Base>> {
     + id: int
+    + map_id: str
+    + room1_id: int
+    + room2_id: int
     + position: Position
 }
 
-class QrCode <<BaseModel>> {
-    + id: int
-    + position: Position
-    + content: str
+class Position <<composite>> {
+    + x: float
+    + y: float
 }
 
-class RoomSchema {
+class MapSchema <<BaseModel>> {
+    + id: str
+    + game_id: str
+    + name: str
+    + description: str
+    + is_valid: bool
+    + container: MapContainerSchema | None
+    + rooms: list[RoomSchema]
+    + passages: list[PassageSchema]
+}
+
+class MapContainerSchema <<BaseModel>> {
+    + width: int
+    + height: int
+}
+
+class RoomSchema <<BaseModel>> {
     + id: int
     + name: str
     + description: str
+    + width: int
+    + height: int
+    + position: PositionSchema
     + hidden: bool
     + zone: str
-    + items: InventoryItemSchema[]
-    + sensors: SensorSchema[]
-    + qrCodes: QrCodeSchema[]
+    + items: list[InventoryItemSchema]
+    + sensors: list[SensorSchema]
+    + qrCodes: list[QRCodeSchema]
 }
 
-class SensorSchema {
+class PassageSchema <<BaseModel>> {
     + id: int
-    + position: Position
+    + room1_id: int
+    + room2_id: int
+    + position: PositionSchema
 }
 
-class QrCodeSchema {
-    + id: int
-    + position: Position
+class PositionSchema <<BaseModel>> {
+    + x: float
+    + y: float
 }
 
-class InventoryItemSchema {
-    + id: int
+class InventoryItemSchema <<BaseModel>> {
+    + id: str
     + name: str
+    + total: int
+    + available: int
 }
 
-class Position <<BaseModel>> {
-    + x: number
-    + y: number
+class SensorSchema <<BaseModel>>
+class QRCodeSchema <<BaseModel>> {
+    + id: str
+    + position: PositionSchema
 }
 
-class PositionSchema {
-    + x: number
-    + y: number
-}
+class NotFoundError <<Exception>>
+class ConflictError <<Exception>>
 
-class Passage <<BaseModel>> {
-    + id: int
-    + room1Id: int
-    + room2Id: int
-}
+GamesController .u.|> IGamesApi
+GamesController --> IGamesService
+GamesService .u.|> IGamesService
+GamesService --> Map
+GamesService ..> MapSchema
+GamesService ..> NotFoundError : gra nie istnieje lub jest cudza,\nbrak mapy (get_map)
+GamesService ..> ConflictError : powtórzone lub zajęte id,\nprzejście spoza mapy,\nid / game_id mapy niezgodne
 
-class PassageSchema {
-    + id: int
-    + room1Id: int
-    + room2Id: int
-}
+Map *-- "*" Room
+Map *-- "*" Passage
+Passage "*" --> "2" Room : room1_id, room2_id
+Room --> Position
+Passage --> Position
 
-class NotFoundException <<Exception>> {
+MapSchema *-- "0..1" MapContainerSchema
+MapSchema *-- "*" RoomSchema
+MapSchema *-- "*" PassageSchema
+RoomSchema *-- "*" InventoryItemSchema
+RoomSchema *-- "*" SensorSchema
+RoomSchema *-- "*" QRCodeSchema
 
-}
-
-class DataIncorrectException <<Exception>> {
-
-}
-
-class SaveFailedException <<Exception>> {
-
-}
-
-MapsService --> Map
-MapsService ..> MapSchema
-MapsService ..> NotFoundException : Gra nie istnieje lub twórca nie ma do niej dostępu
-MapsService ..> DataIncorrectException : Niepoprawne dane
-MapsService ..> SaveFailedException : Zapisanie danych nie powiodło się
-
+note bottom of SensorSchema
+    Pełna definicja - PU50 (sensor-definition.md).
+end note
+note right of GamesService
+    Metody mapy są częścią IGamesApi / IGamesService
+    (pozostałe metody - PU25, PU49).
+    Zapis mapy zastępuje komnaty i przejścia mapy gry.
+end note
 @enduml
 ```
 

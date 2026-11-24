@@ -13,36 +13,38 @@ hide empty members
 
 title PU50 Zdefiniowanie czujnika - widok
 
-class SensorDefinitionWindows
-
 class SensorDefinitionView <<View>>
 
-class MessageDialog
+class SensorPositionSelector <<Component>> {
+    - handleClick(e: MouseEvent)
+}
+
+class MessageDialog {
+    + onClosed()
+}
 
 class DataErrorDialog
 class SaveErrorDialog
 class SaveSuccessDialog
 
 interface ISensorDefinitionWindows <<interface>>
-interface ISensorDefinitionActions <<interface>>
+interface SensorDefinitionActions <<interface>>
 class SensorDefinitionViewModel <<State>>
-
-
-SensorDefinitionWindows .u.|> ISensorDefinitionWindows
-SensorDefinitionWindows --> SensorDefinitionView
-SensorDefinitionWindows --> MessageDialog
 
 DataErrorDialog -u-|> MessageDialog
 SaveErrorDialog -u-|> MessageDialog
 SaveSuccessDialog -u-|> MessageDialog
 
-DataErrorDialog --> ISensorDefinitionActions
-SaveErrorDialog --> ISensorDefinitionActions
-SaveSuccessDialog --> ISensorDefinitionActions
+SensorDefinitionView *-- SensorPositionSelector
+SensorDefinitionView *-- DataErrorDialog
+SensorDefinitionView *-- SaveErrorDialog
+SensorDefinitionView *-- SaveSuccessDialog
 
-SensorDefinitionView --> ISensorDefinitionActions
+SensorDefinitionView --> SensorDefinitionActions : onSensorSubmit,\nonCreateSensorCancel,\nonChangeParameter
+SensorPositionSelector --> SensorDefinitionActions : onChangeParameter
+MessageDialog --> SensorDefinitionActions : onChangeParameter\n(zamknięcie okna)
 SensorDefinitionView --> SensorDefinitionViewModel
-
+ISensorDefinitionWindows ..> SensorDefinitionView : widok i okna sterowane\npolami *Open stanu
 @enduml
 ```
 

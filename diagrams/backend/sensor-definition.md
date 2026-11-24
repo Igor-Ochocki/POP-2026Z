@@ -11,73 +11,99 @@ skinparam nodesep 30
 skinparam ranksep 40
 hide empty members
 
-title PU50 Zdefiniowanie czujnika - backend
+title PU50 Dodanie czujnika - backend
 
-interface ISensorsApi <<interface>> \n<< /api/v1/games >> {
-    + <<GET /sensor_types >>\n\tget_sensor_types() : str[]
-    + <<PUT /{game_id}/sensor/add >>\n\tadd_sensor(game_id: str, user_id: str, room_id: str, data: SensorSchema) : SensorSchema
+interface IGamesApi <<interface>>\n<< /api/v1/games >> {
+    + <<GET /sensor_types >>\n\tget_sensor_types(): list[str]
+    + <<PUT /{game_id}/sensor/add >>\n\tadd_sensor(game_id: str, user_id: str, room_id: int, data: SensorSchema): SensorSchema
 }
 
-class SensorsController implements ISensorsApi {
-    - sensors_service: ISensorsService
+class GamesController <<Controller>> {
+    - games_service: IGamesService
 }
 
-interface ISensorsService <<interface>> {
-    + get_sensor_types() : str[]
-    + add_sensor(game_id: str, user_id: str, room_id: str, data: SensorSchema) : SensorSchema
+interface IGamesService <<interface>> {
+    + get_sensor_types(): list[str]
+    + add_sensor(game_id: str, user_id: str, room_id: int, data: SensorSchema): SensorSchema
 }
 
-SensorsController --> ISensorsService
-
-class SensorsService implements ISensorsService {
+class GamesService <<Service>> {
+    - db_session: Session
+    - _sensor_to_schema(sensor: Sensor): SensorSchema
+    - _position_from_schema(position: PositionSchema): Position
 }
 
-class Sensor <<BaseModel>> {
+class Sensor <<Base>> {
     + id: str
-    + name: str
-    + type: str
-    + action: str
-    + description: str
+    + room_id: int
     + position: Position
+    + name: str | None
+    + type: str | None
+    + description: str | None
+    + action_id: str | None
 }
 
-class SensorSchema {
+class Room <<Base>> {
+    + id: int
+    + map_id: str
+}
+
+class Action <<Base>> {
+    + action_id: str
+    + game_id: str
+}
+
+class Position <<composite>> {
+    + x: float
+    + y: float
+}
+
+class SensorSchema <<BaseModel>> {
     + id: str
-    + name: str
-    + type: str
-    + action: str
-    + description: str
+    + name: str | None
+    + type: str | None
+    + action: ActionSchema | None
+    + description: str | None
     + position: PositionSchema
 }
 
-class Position <<BaseModel>> {
-    + x: number
-    + y: number
+class ActionSchema <<BaseModel>> {
+    + action_id: str
+    + game_id: str
+    + name: str
+    + action_type: str
+    + outcome_type: str
+    + outcome_value: str
 }
 
-class PositionSchema {
-    + x: number
-    + y: number
+class PositionSchema <<BaseModel>> {
+    + x: float
+    + y: float
 }
 
-class SaveFailedException <<Exception>> {
+class NotFoundError <<Exception>>
+class ConflictError <<Exception>>
+class UnprocessableContentError <<Exception>>
 
-}
+GamesController .u.|> IGamesApi
+GamesController --> IGamesService
+GamesService .u.|> IGamesService
+GamesService --> Sensor
+GamesService ..> SensorSchema
+GamesService ..> NotFoundError : gra (cudza), komnata\nalbo akcja nie istnieje
+GamesService ..> UnprocessableContentError : czujnik bez akcji
+GamesService ..> ConflictError : akcja z innej gry,\nczujnik o tym id istnieje
 
-class NotFoundException <<Exception>> {
+Room *-- "*" Sensor
+Sensor "*" --> "0..1" Action : action_id
+Sensor --> Position
+SensorSchema *-- "0..1" ActionSchema
+SensorSchema *-- "1" PositionSchema
 
-}
-
-class DataIncorrectException <<Exception>> {
-
-}
-
-SensorsService --> Sensor
-SensorsService ..> SensorSchema
-SensorsService ..> NotFoundException : Gra lub pokój, do którego chcemy dodać czujnik\nnie istnieje lub twórca nie ma dostępu
-SensorsService ..> DataIncorrectException : Niepoprawne dane
-SensorsService ..> SaveFailedException : Zapisanie danych nie powiodło się
-
+note right of GamesService
+    Metody czujnika są częścią IGamesApi / IGamesService.
+    Komnata (room_id) musi należeć do mapy tej gry.
+end note
 @enduml
 ```
 

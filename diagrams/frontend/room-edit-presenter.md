@@ -98,11 +98,6 @@ PassageDTO *-- "1" PositionDTO
 SensorDTO *-- "1" PositionDTO
 QrCodeDTO *-- "1" PositionDTO
 
-class Event
-class Interaction
-
-RoomDTO o-- "*" Event : has
-RoomDTO o-- "*" Interaction : has
 @enduml
 ```
 

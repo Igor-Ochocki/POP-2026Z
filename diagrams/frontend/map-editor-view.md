@@ -39,7 +39,6 @@ class MapEditorViewModel <<State>>
 interface IMapEditorWindows <<interface>>
 interface IMapEditorActions <<interface>>
 interface IGameDefinitionActions <<interface>>
-interface IRoomEditActions <<interface>>
 
 MapEditorWindows .u.|> IMapEditorWindows
 MapEditorWindows --> MapEditorView
@@ -48,7 +47,6 @@ MapEditorWindows --> MessageDialog
 MapEditorView --> MapEditorViewModel
 MapEditorView --> IMapEditorActions : wywołuje akcje użytkownika
 MapEditorView --> IGameDefinitionActions : onOpenGame (PU49)
-MapEditorView --> IRoomEditActions : onOpenRoomEditor (wejście do komnaty)
 
 MapSavedMessageDialog --> IGameDefinitionActions : onOpenGame (PU49)
 IncorrectMapDataMessageDialog --> IMapEditorActions

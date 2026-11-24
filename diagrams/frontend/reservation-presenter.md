@@ -38,7 +38,6 @@ class useReservation <<Hook>> {
     - getSelectedSlot(locationState: unknown): CalendarEventDTO | null
     - loadSlots(slotDate: string)
     - createReservation()
-    - startPayment(reservationId: string)
     - cancelReservation()
 }
 

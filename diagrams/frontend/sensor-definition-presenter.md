@@ -14,46 +14,67 @@ hide empty members
 title PU50 Zdefiniowanie czujnika - presenter
 
 interface ISensorDefinitionWindows <<interface>> {
-    +showSensorDefinitionView(gameId: string)
-    +showDataErrorDialog()
-    +showSaveErrorDialog()
-    +showSaveSuccessDialog()
+    + showSensorDefinitionView()
+    + showSensorPositionSelector()
+    + showDataErrorDialog()
+    + showSaveErrorDialog()
+    + showSaveSuccessDialog()
 }
 
-interface ISensorDefinitionActions <<interface>> {
-    +onCreateSensor(gameId: string)
-    +onChangeParameter(field: string, value: any)
-    +onOpenPositionSelector()
-    +onSensorSubmit()
-    +onSensorCancel()
-    +onDataErrorDialogConfirm()
-    +onSaveErrorDialogConfirm()
-    +onSaveSuccessDialogConfirm()
+interface SensorDefinitionActions <<interface>> {
+    + onChangeParameter(field: string, value: any)
+    + onCreateSensor()
+    + onOpenPositionSelector()
+    + onSensorSubmit()
+    + onCreateSensorCancel()
 }
 
 class useSensorDefinition <<Hook>> {
-    -loadSensorTypes()
-    -validateSensorData()
-    -loadGameMap()
+    - loadSensorTypes(setState)
+    - loadActions(setState, gameId: string)
+    - loadGameMap(setState, gameId: string)
+    - isSensorDataValid(state: SensorDefinitionViewModel): boolean
 }
 
 class SensorDefinitionViewModel <<State>> {
-    +gameId: string
-    +sensorTypes: string[*]
-    +actions: ActionDTO[*]
-    +selectedPosition: Position
+    + gameId: string
+    + roomId: string
+    + sensorTypes: string[*]
+    + actions: ActionDTO[*]
+    + gameMap: GameMapDTO
+    + selectedPosition: PositionDTO | null
+    + selectedAction: string
+    + selectedType: string
+    + dataErrorDialogOpen: boolean
+    + saveErrorDialogOpen: boolean
+    + saveSuccessDialogOpen: boolean
+    + positionSelectorOpen: boolean
 }
 
-interface ISensorsApi <<interface>>
-interface IMapsApi <<interface>>
+class SensorDTO <<DTO>> {
+    + type: string
+    + action: string
+    + position: PositionDTO
+}
+
+interface ISensorsApi <<interface>> {
+    + getSensorTypes(): Promise<string[]>
+    + addSensor(gameId: string, userId: string, sensor: SensorDTO): Promise<SensorDTO>
+}
 interface IActionsApi <<interface>>
 
-useSensorDefinition .u.|> ISensorDefinitionActions
+useSensorDefinition .u.|> SensorDefinitionActions
 useSensorDefinition -u-> ISensorDefinitionWindows
 useSensorDefinition *-- "1" SensorDefinitionViewModel : state
 useSensorDefinition --> ISensorsApi
-useSensorDefinition --> IMapsApi
 useSensorDefinition --> IActionsApi
+ISensorsApi ..> SensorDTO
+
+note bottom of useSensorDefinition
+    Trasa: /creator/games/:gameId/map/rooms/:roomId/add-sensor.
+    onCreateSensor wczytuje typy czujników, akcje gry i mapę,
+    potem otwiera widok. loadGameMap - na razie pusta (bez IMapsApi).
+end note
 @enduml
 ```
 
