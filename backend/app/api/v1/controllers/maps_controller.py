@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
+from app.schemas.player_map import PlayerMapSchema
 from app.schemas.maps import RoomSchema, InventoryItemSchema
 from app.services.maps_service import IMapsService, MapsService
 
@@ -18,6 +19,9 @@ class IMapsApi(ABC):
 
     @abstractmethod
     def update_room(self, game_id: str, room_id: int, user_id: str, dto: RoomSchema) -> RoomSchema: ...
+
+    @abstractmethod
+    def get_player_map(self, game_id: str, user_id: str) -> PlayerMapSchema: ...
 
 
 
@@ -56,3 +60,12 @@ def update_room(
 
 ) -> RoomSchema:
     return service.update_room(game_id, room_id, user_id, dto)
+
+
+@router.get("/{game_id}/map/player", response_model=PlayerMapSchema)
+def get_player_map(
+    game_id: str,
+    user_id: str,
+    service: Annotated[IMapsService, Depends(get_maps_service)],
+) -> PlayerMapSchema:
+    return service.get_player_map(game_id, user_id)

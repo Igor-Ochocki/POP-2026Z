@@ -8,6 +8,7 @@ tables for models imported in this file, e.g.:
     __all__ = ["Game"]
 """
 from app.models.actions import Action
+from app.models.character import Character
 from app.models.events import Event
 from app.models.game import Game
 from app.models.inventory_item import InventoryItem
@@ -26,6 +27,6 @@ from app.models.time_slot import TimeSlot
 from app.models.victory_condition import VictoryCondition
 
 __all__: list[str] = [
-    "Action", "Event", "Game", "InventoryItem", "Map", "Message", "Passage", "Payment", "QrCode",
+    "Action", "Character", "Event", "Game", "InventoryItem", "Map", "Message", "Passage", "Payment", "QrCode",
     "Reservation", "Room", "RoomItemClaim", "Scenario", "Sensor", "Task", "TimeSlot", "VictoryCondition",
 ]
