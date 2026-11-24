@@ -31,12 +31,16 @@ class IMapsService(ABC):
 def _chamber_not_found():
     raise NotFoundError("Chamber not found.")
 
+def _item_not_found():
+    raise NotFoundError("Item not found or is unaccessible for the current user/game.")
+
 class MapsService(IMapsService):
     def __init__(self, db_session: Session) -> None:
         self.db_session = db_session
 
     @staticmethod
     def _map_room(room: Room) -> RoomSchema:
+        logger.debug(room.items_claimed)
         return RoomSchema(
             id = room.id,
             name = room.name,
@@ -170,17 +174,29 @@ class MapsService(IMapsService):
 
     def _update_items(self, room: Room, new_amounts: dict[str, int]):
 
+        logger.debug(f"Adding items: {new_amounts}")
+
         if room is None:
             raise NotFoundError("Room not found")
 
-        room.items_claimed = [
-            RoomItemClaim(room = room, item_id = item[0], amount=item[1]) for item in new_amounts.items()
-        ]
+        room.items_claimed = []
 
+        for item_id, amount in new_amounts.items():
+            logger.debug(f"Adding {amount} item(s): {item_id}")
+            item = self.db_session.get(InventoryItem, item_id)
+            if item is None:
+                logger.debug(f"The claimed item relationship doesn't point to an existing Item. item_id: [{item_id}]")
+                _item_not_found()
+                break
+            elif item.game_id != room.map.game_id:
+                logger.debug(f"The item exists, but belongs to another game. Current game: [{room.map.game_id}], belongs to: [{item.game_id}]")
+                _item_not_found()
+                break
+
+            
+            room.items_claimed.append(RoomItemClaim(item = item, amount = amount))
 
         for item_claimed in room.items_claimed:
-            if item_claimed.item is None or item_claimed.item.game_id != room.id:
-                raise NotFoundError("No such item exists or it's not assigned to this game")
             available_amount = item_claimed.item.available
             all_claims = item_claimed.item.claims
 
@@ -189,6 +205,7 @@ class MapsService(IMapsService):
                 raise UnprocessableContentError("There are not enough items in game's inventory")
 
 
+        logger.debug(f"Items for room after add: {list(map(lambda l: l.item.item_id, room.items_claimed))}")
 
     def _change_id(self, previous_id, new_id):
         pass
@@ -247,7 +264,7 @@ class MapsService(IMapsService):
         requested_items = dto.items
 
 
-        self._update_items(room, {item_id: amount for (item_id, amount) in requested_items})
+        self._update_items(room, {item.item_id: 1 for item in requested_items})
         self._update_passages(room, dto.passages)
 
         # FIXME: Zmiana id pokoju może powodować problemy z powiązaniami w bazie danych, dlatego na razie jest ignorowana
