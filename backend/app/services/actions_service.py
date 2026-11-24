@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
@@ -15,6 +16,9 @@ class IActionsService(ABC):
 
     @abstractmethod
     def get_action(self, action_id: str) -> ActionSchema: ...
+
+    @abstractmethod
+    def get_actions_list(self, game_id: str) -> list[ActionSchema]: ...
 
     @abstractmethod
     def get_action_types(self) -> list[str]: ...
@@ -51,6 +55,22 @@ class ActionsService(IActionsService):
             raise NotFoundError(f"Action '{action_id}' not found")
 
         return ActionSchema.model_validate(action, from_attributes=True)
+
+
+    def get_actions_list(self, game_id: str) -> list[ActionSchema]:
+
+        game = self.db_session.get(Game, game_id)
+
+        if game is None: 
+            raise NotFoundError(f"Game '{game_id}' not found")
+
+        query = (
+            select(Action)
+            .where(Action.game_id == game_id)
+        )
+
+        return [ActionSchema.model_validate(action, from_attributes=True) for action in self.db_session.scalars(query)]
+
 
     @staticmethod
     def get_action_types() -> list[str]:

@@ -90,7 +90,3 @@ export interface IMapEditorActions {
   onRemoveSelectedPassage(): void;
   onGenerateMap(): void;
 }
-
-export interface IRoomEditActions {
-  onOpenRoomEditor(room: RoomDTO): void;
-}

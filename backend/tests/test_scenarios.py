@@ -5,7 +5,7 @@ from app.core.exceptions import NotFoundError
 from app.models.scenario import Scenario
 from app.models.task import Task
 from app.schemas.game import GameCreateSchema
-from app.schemas.scenario import TaskCreateSchema
+from app.schemas.scenario import TaskCreateSchema, VictoryConditionCreateSchema
 from app.services.games_service import GamesService
 from app.services.scenarios_service import ScenariosService
 
@@ -282,4 +282,306 @@ def test_add_task_appends_tasks_in_order(db_session: Session) -> None:
     tasks = service.load_scenario(game_id, TEST_USER_ID).tasks
 
     assert [task.title for task in tasks] == ["First", "Second", "Third"]
+
+
+# --- Victory condition tests ---
+
+def _vc_payload() -> dict:
+    return {
+        "name": "Get the treasure",
+        "target": "faction",
+        "value": "100",
+        "condition_type": "completeTasks",
+    }
+
+
+def test_create_victory_condition_ok(db_session: Session) -> None:
+    game_id = create_game(db_session)
+    service = ScenariosService(db_session)
+
+    result = service.create_victory_condition(game_id, TEST_USER_ID, VictoryConditionCreateSchema(**_vc_payload()))
+
+    assert result.name == "Get the treasure"
+    assert result.target == "faction"
+    assert result.value == "100"
+    assert result.condition_type == "completeTasks"
+    assert result.victory_condition_id != ""
+
+
+def test_create_victory_condition_wrong_user(db_session: Session) -> None:
+    game_id = create_game(db_session)
+    service = ScenariosService(db_session)
+
+    try:
+        service.create_victory_condition(game_id, "other-user", VictoryConditionCreateSchema(**_vc_payload()))
+        assert False, "Expected NotFoundError"
+    except NotFoundError:
+        pass
+
+
+def test_create_victory_condition_game_not_found(db_session: Session) -> None:
+    service = ScenariosService(db_session)
+
+    try:
+        service.create_victory_condition("non-existent-id", TEST_USER_ID, VictoryConditionCreateSchema(**_vc_payload()))
+        assert False, "Expected NotFoundError"
+    except NotFoundError:
+        pass
+
+
+def test_get_victory_conditions_ok(db_session: Session) -> None:
+    game_id = create_game(db_session)
+    service = ScenariosService(db_session)
+    service.create_victory_condition(game_id, TEST_USER_ID, VictoryConditionCreateSchema(**_vc_payload()))
+
+    conditions = service.get_victory_condition_list(game_id, TEST_USER_ID)
+
+    assert len(conditions) == 1
+    assert conditions[0].name == "Get the treasure"
+
+
+def test_get_victory_conditions_wrong_user(db_session: Session) -> None:
+    game_id = create_game(db_session)
+    service = ScenariosService(db_session)
+
+    try:
+        service.get_victory_condition_list(game_id, "other-user")
+        assert False, "Expected NotFoundError"
+    except NotFoundError:
+        pass
+
+
+def test_get_victory_condition_ok(db_session: Session) -> None:
+    game_id = create_game(db_session)
+    service = ScenariosService(db_session)
+    created = service.create_victory_condition(game_id, TEST_USER_ID, VictoryConditionCreateSchema(**_vc_payload()))
+
+    result = service.get_victory_condition(game_id, created.victory_condition_id, TEST_USER_ID)
+
+    assert result.victory_condition_id == created.victory_condition_id
+    assert result.name == "Get the treasure"
+
+
+def test_get_victory_condition_not_found(db_session: Session) -> None:
+    game_id = create_game(db_session)
+    service = ScenariosService(db_session)
+
+    try:
+        service.get_victory_condition(game_id, "non-existent-id", TEST_USER_ID)
+        assert False, "Expected NotFoundError"
+    except NotFoundError:
+        pass
+
+
+def test_get_victory_condition_wrong_user(db_session: Session) -> None:
+    game_id = create_game(db_session)
+    service = ScenariosService(db_session)
+    created = service.create_victory_condition(game_id, TEST_USER_ID, VictoryConditionCreateSchema(**_vc_payload()))
+
+    try:
+        service.get_victory_condition(game_id, created.victory_condition_id, "other-user")
+        assert False, "Expected NotFoundError"
+    except NotFoundError:
+        pass
+
+
+def test_edit_victory_condition_ok(db_session: Session) -> None:
+    game_id = create_game(db_session)
+    service = ScenariosService(db_session)
+    created = service.create_victory_condition(game_id, TEST_USER_ID, VictoryConditionCreateSchema(**_vc_payload()))
+
+    updated = service.edit_victory_condition(
+        game_id, created.victory_condition_id, TEST_USER_ID,
+        VictoryConditionCreateSchema(name="Zmieniona", target="character", value="200", condition_type="reachScore"),
+    )
+
+    assert updated.name == "Zmieniona"
+    assert updated.target == "character"
+    assert updated.value == "200"
+    assert updated.condition_type == "reachScore"
+    assert updated.victory_condition_id == created.victory_condition_id
+
+
+def test_edit_victory_condition_not_found(db_session: Session) -> None:
+    game_id = create_game(db_session)
+    service = ScenariosService(db_session)
+
+    try:
+        service.edit_victory_condition(game_id, "non-existent-id", TEST_USER_ID, VictoryConditionCreateSchema(**_vc_payload()))
+        assert False, "Expected NotFoundError"
+    except NotFoundError:
+        pass
+
+
+def test_edit_victory_condition_wrong_user(db_session: Session) -> None:
+    game_id = create_game(db_session)
+    service = ScenariosService(db_session)
+    created = service.create_victory_condition(game_id, TEST_USER_ID, VictoryConditionCreateSchema(**_vc_payload()))
+
+    try:
+        service.edit_victory_condition(game_id, created.victory_condition_id, "other-user", VictoryConditionCreateSchema(**_vc_payload()))
+        assert False, "Expected NotFoundError"
+    except NotFoundError:
+        pass
+
+
+# --- Endpoint tests ---
+
+def test_create_victory_condition_endpoint_ok(client: TestClient, db_session: Session) -> None:
+    game_id = create_game(db_session)
+
+    response = client.post(
+        f"/api/v1/games/{game_id}/scenario/victory_conditions",
+        params={"user_id": TEST_USER_ID},
+        json=_vc_payload(),
+    )
+
+    assert response.status_code == 201
+    data = response.json()
+    assert data["name"] == "Get the treasure"
+    assert data["victory_condition_id"] != ""
+
+
+def test_create_victory_condition_endpoint_game_not_found(client: TestClient) -> None:
+    response = client.post(
+        "/api/v1/games/non-existent-id/scenario/victory_conditions",
+        params={"user_id": TEST_USER_ID},
+        json=_vc_payload(),
+    )
+
+    assert response.status_code == 404
+
+
+def test_create_victory_condition_endpoint_wrong_user(client: TestClient, db_session: Session) -> None:
+    game_id = create_game(db_session)
+
+    response = client.post(
+        f"/api/v1/games/{game_id}/scenario/victory_conditions",
+        params={"user_id": "other-user"},
+        json=_vc_payload(),
+    )
+
+    assert response.status_code == 404
+
+
+def test_create_victory_condition_endpoint_enum_validation(client: TestClient, db_session: Session) -> None:
+    game_id = create_game(db_session)
+
+    invalid_type = {**_vc_payload(), "condition_type": "invalidType"}
+    response = client.post(
+        f"/api/v1/games/{game_id}/scenario/victory_conditions",
+        params={"user_id": TEST_USER_ID},
+        json=invalid_type,
+    )
+    assert response.status_code == 422
+
+    invalid_target = {**_vc_payload(), "target": "invalidTarget"}
+    response = client.post(
+        f"/api/v1/games/{game_id}/scenario/victory_conditions",
+        params={"user_id": TEST_USER_ID},
+        json=invalid_target,
+    )
+    assert response.status_code == 422
+
+
+def test_get_victory_conditions_endpoint_ok(client: TestClient, db_session: Session) -> None:
+    game_id = create_game(db_session)
+    ScenariosService(db_session).create_victory_condition(game_id, TEST_USER_ID, VictoryConditionCreateSchema(**_vc_payload()))
+
+    response = client.get(
+        f"/api/v1/games/{game_id}/scenario/victory_conditions",
+        params={"user_id": TEST_USER_ID},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["name"] == "Get the treasure"
+
+
+def test_get_victory_condition_endpoint_ok(client: TestClient, db_session: Session) -> None:
+    game_id = create_game(db_session)
+    created = ScenariosService(db_session).create_victory_condition(game_id, TEST_USER_ID, VictoryConditionCreateSchema(**_vc_payload()))
+
+    response = client.get(
+        f"/api/v1/games/{game_id}/scenario/victory_conditions/{created.victory_condition_id}",
+        params={"user_id": TEST_USER_ID},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["victory_condition_id"] == created.victory_condition_id
+    assert data["name"] == "Get the treasure"
+
+
+def test_get_victory_condition_endpoint_not_found(client: TestClient, db_session: Session) -> None:
+    game_id = create_game(db_session)
+
+    response = client.get(
+        f"/api/v1/games/{game_id}/scenario/victory_conditions/non-existent-id",
+        params={"user_id": TEST_USER_ID},
+    )
+
+    assert response.status_code == 404
+
+
+def test_edit_victory_condition_endpoint_ok(client: TestClient, db_session: Session) -> None:
+    game_id = create_game(db_session)
+    created = ScenariosService(db_session).create_victory_condition(game_id, TEST_USER_ID, VictoryConditionCreateSchema(**_vc_payload()))
+
+    response = client.put(
+        f"/api/v1/games/{game_id}/scenario/victory_conditions/{created.victory_condition_id}",
+        params={"user_id": TEST_USER_ID},
+        json={
+            "name": "Zmieniona",
+            "target": "character",
+            "value": "200",
+            "condition_type": "reachScore",
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["name"] == "Zmieniona"
+    assert data["target"] == "character"
+    assert data["value"] == "200"
+    assert data["condition_type"] == "reachScore"
+
+
+def test_edit_victory_condition_endpoint_wrong_user(client: TestClient, db_session: Session) -> None:
+    game_id = create_game(db_session)
+    created = ScenariosService(db_session).create_victory_condition(game_id, TEST_USER_ID, VictoryConditionCreateSchema(**_vc_payload()))
+
+    response = client.put(
+        f"/api/v1/games/{game_id}/scenario/victory_conditions/{created.victory_condition_id}",
+        params={"user_id": "other-user"},
+        json=_vc_payload(),
+    )
+
+    assert response.status_code == 404
+
+
+def test_edit_victory_condition_endpoint_wrong_user_duplicate(client: TestClient, db_session: Session) -> None:
+    game_id = create_game(db_session)
+    created = ScenariosService(db_session).create_victory_condition(game_id, TEST_USER_ID, VictoryConditionCreateSchema(**_vc_payload()))
+
+    response = client.put(
+        f"/api/v1/games/{game_id}/scenario/victory_conditions/{created.victory_condition_id}",
+        params={"user_id": "other-user"},
+        json=_vc_payload(),
+    )
+
+    assert response.status_code == 404
+
+
+def test_victory_condition_appears_in_scenario(client: TestClient, db_session: Session) -> None:
+    game_id = create_game(db_session)
+    ScenariosService(db_session).create_victory_condition(game_id, TEST_USER_ID, VictoryConditionCreateSchema(**_vc_payload()))
+
+    response = client.get(f"/api/v1/games/{game_id}/scenario", params={"user_id": TEST_USER_ID})
+
+    assert response.status_code == 200
+    scenario = response.json()
+    assert len(scenario["victory_conditions"]) == 1
+    assert scenario["victory_conditions"][0]["name"] == "Get the treasure"
 

@@ -4,15 +4,21 @@ export interface CalendarEventDTO {
   datetime: Date;
 }
 
+// slots - every time slot (PU1); events - paid reservations open for joining (PU46).
+export type CalendarMode = 'slots' | 'events';
+
 export interface CalendarViewModel {
   events: CalendarEventDTO[];
   month: Date | null;
+  mode: CalendarMode;
   errorMessage: string | null;
 }
 
 export interface ICalendarActions {
   onShowCalendar(): void;
   onChangeMonth(month: Date): void;
+  onShowSlots(): void;
+  onShowEvents(): void;
   onBack(): void;
 }
 

@@ -29,7 +29,6 @@ package "View" as V {
     component [Layout] as V_Layout
     component [CalendarView] as V_Calendar
     component [ReservationView] as V_Reservation
-    component [EventListView] as V_EventList
     component [CreatorPanelView] as V_Creator
     component [GameListView] as V_GameList
     component [GameDefinitionView] as V_GameDef
@@ -142,6 +141,7 @@ A_Http --( REST
 A_Draft --( LS
 
 V_Calendar --( I_Calendar
+V_Calendar --( I_EventJoin
 V_Reservation --( I_Reservation
 V_Creator --( I_Creator
 V_GameList --( I_GameList
@@ -157,9 +157,9 @@ V_Sensor --( I_Sensor
 V_PlayerMap --( I_PlayerMap
 
 V_Layout --( I_Calendar
-V_EventList --( I_EventJoin
 
 P_Calendar --( IA_Calendar
+P_Calendar --( IA_Events
 P_Reservation --( IA_Reservations
 P_EventJoin --( IA_Events
 P_GameList --( IA_Games
@@ -188,7 +188,7 @@ note bottom of V
     Każdy widok realizuje też IXxxWindows swojego PU
     i przy przejściach woła prezentery innych PU
     (szczegóły: diagramy widoków PU).
-    EventListView należy do PU45 - PU46 dodaje na nim akcję "Dołącz".
+    CalendarView (PU1) otwiera też dołączenie do wydarzenia (PU46) w trybie "Wydarzenia".
 end note
 @enduml
 ```

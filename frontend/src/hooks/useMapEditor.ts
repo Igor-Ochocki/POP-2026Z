@@ -360,7 +360,7 @@ setState((prev) => ({
 
     onEditSelectedRoom: () => {
       const room = state.map.rooms.find((r) => r.id === state.selectedRoomId);
-      if (room) roomEditActions.onOpenRoomEditor(room);
+      if (room) roomEditActions.onEditRoom(gameId, room.id);
     },
 
     onAddRoom: () => {
